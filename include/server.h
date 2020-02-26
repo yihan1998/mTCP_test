@@ -35,6 +35,10 @@
 #define MAX_CPUS		16
 #endif
 
+#ifndef MIN
+#define MIN(v1, v2)	((v1) < (v2) ? (v1) : (v2))
+#endif
+
 struct thread_context {
 	mctx_t mctx;
 	int ep;

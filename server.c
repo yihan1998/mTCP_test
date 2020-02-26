@@ -5,20 +5,78 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 	mtcp_close(ctx->mctx, sockid);
 }
 
+void CleanServerVariable(struct server_vars *sv){
+	sv->recv_len = 0;
+	sv->request_len = 0;
+	sv->total_read = 0;
+	sv->total_sent = 0;
+	sv->done = 0;
+	sv->rspheader_sent = 0;
+	sv->keep_alive = 0;
+}
+
+static int SendUntilAvailable(struct thread_context *ctx, int sockid, struct server_vars *sv){
+	int ret;
+	int sent;
+	int len;
+
+	if (sv->done || !sv->rspheader_sent) {
+		return 0;
+	}
+
+	sent = 0;
+	ret = 1;
+	while (ret > 0) {
+		len = MIN(SNDBUF_SIZE, sv->fsize - sv->total_sent);
+		if (len <= 0) {
+			break;
+		}
+		ret = mtcp_write(ctx->mctx, sockid,  
+				fcache[sv->fidx].file + sv->total_sent, len);
+		if (ret < 0) {
+			TRACE_APP("Connection closed with client.\n");
+			break;
+		}
+		TRACE_APP("Socket %d: mtcp_write try: %d, ret: %d\n", sockid, len, ret);
+		sent += ret;
+		sv->total_sent += ret;
+	}
+
+	if (sv->total_sent >= fcache[sv->fidx].size) {
+		struct mtcp_epoll_event ev;
+		sv->done = TRUE;
+		finished++;
+
+		if (sv->keep_alive) {
+			/* if keep-alive connection, wait for the incoming request */
+			ev.events = MTCP_EPOLLIN;
+			ev.data.sockid = sockid;
+			mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_MOD, sockid, &ev);
+
+			CleanServerVariable(sv);
+		} else {
+			/* else, close connection */
+			CloseConnection(ctx, sockid, sv);
+		}
+	}
+
+	return sent;
+}
+
 static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *sv){
-	struct mtcp_epoll_event ev;
+//	struct mtcp_epoll_event ev;
 	char buf[BUF_SIZE];
 
-	char response[HTTP_HEADER_LEN];
+//	char response[HTTP_HEADER_LEN];
 
 	int scode;
-	time_t t_now;
+//	time_t t_now;
 	char t_str[128];
-	char keepalive_str[128];
+//	char keepalive_str[128];
 	int rd;
-	int i;
-	int len;
-	int sent;
+//	int i;
+//	int len;
+//	int sent;
 
 	rd = mtcp_read(ctx->mctx, sockid, buf, BUF_SIZE);
 	if (rd <= 0) {
@@ -35,7 +93,8 @@ static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server
 	sv->recv_len += rd;
 	//sv->request[rd] = '\0';
 	//fprintf(stderr, "HTTP Request: \n%s", request);
-	sv->request_len = find_http_header(sv->request, sv->recv_len);
+/*	
+    sv->request_len = find_http_header(sv->request, sv->recv_len);
 	if (sv->request_len <= 0) {
 		printf("Socket %d: Failed to parse HTTP request header.\n"
 				"read bytes: %d, recv_len: %d, "
@@ -44,7 +103,7 @@ static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server
 				sv->request_len, strlen(sv->request), sv->request);
 		return rd;
 	}
-/*
+
 	http_get_url(sv->request, sv->request_len, url, URL_LEN);
 	printf("Socket %d URL: %s\n", sockid, url);
 	sprintf(sv->fname, "%s%s", www_main, url);
@@ -323,7 +382,7 @@ void * RunServerThread(void *arg){
 				}
 
 			} else {
-				assert(0);
+//				assert(0);
 			}
 		}
 
@@ -360,6 +419,27 @@ void SignalHandler(int signum){
 	}
 }
 
+int mystrtol(const char *nptr, int base){
+	int rval;
+	char *endptr;
+
+	errno = 0;
+	rval = strtol(nptr, &endptr, 10);
+	/* check for strtol errors */
+	if ((errno == ERANGE && (rval == LONG_MAX ||
+				 rval == LONG_MIN))
+	    || (errno != 0 && rval == 0)) {
+		perror("strtol");
+		exit(EXIT_FAILURE);
+	}
+	if (endptr == nptr) {
+		fprintf(stderr, "Parsing strtol error!\n");
+		exit(EXIT_FAILURE);
+	}
+
+	return rval;
+}
+
 int main(int argc, char * argv[]){
 	int ret;
 	struct mtcp_conf mcfg;
@@ -370,7 +450,6 @@ int main(int argc, char * argv[]){
 	num_cores = GetNumCPUs();
 	core_limit = num_cores;
 	process_cpu = -1;
-	dir = NULL;
 
 	if (argc < 2) {
 		printf("$%s directory_to_service\n", argv[0]);
@@ -461,6 +540,6 @@ int main(int argc, char * argv[]){
 	}
 	
 	mtcp_destroy();
-	closedir(dir);
+
 	return 0;
 }
