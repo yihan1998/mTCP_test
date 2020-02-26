@@ -92,10 +92,9 @@ static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server
 	char keepalive_str[128];
 	int rd;
 	int i;
+*/
 	int len;
 	int sent;
-*/
-    int len;
 	
     len = mtcp_read(ctx->mctx, sockid, buf, HTTP_HEADER_LEN);
 	if (len <= 0) {
