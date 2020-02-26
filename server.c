@@ -408,9 +408,6 @@ int main(int argc, char * argv[]){
 		case 'b':
 			backlog = mystrtol(optarg, 10);
 			break;
-		case 'h':
-			printHelp(argv[0]);
-			break;
 		}
 	}
 
@@ -440,7 +437,7 @@ int main(int argc, char * argv[]){
 	/* register signal handler to mtcp */
 	mtcp_register_signal(SIGINT, SignalHandler);
 
-	TRACE_INFO("Application initialization finished.\n");
+	printf("Application initialization finished.\n");
 
 	for (i = ((process_cpu == -1) ? 0 : process_cpu); i < core_limit; i++) {
 		cores[i] = i;
