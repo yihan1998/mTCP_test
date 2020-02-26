@@ -30,7 +30,6 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 }
 
 static int SendUntilAvailable(struct thread_context *ctx, int sockid, struct server_vars *sv){
-#if 0
 	int ret;
 	int sent;
 	int len;
@@ -76,8 +75,7 @@ static int SendUntilAvailable(struct thread_context *ctx, int sockid, struct ser
 	}
 
 	return sent;
-#endif
-	return 0;
+
 }
 
 static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *sv){
@@ -105,11 +103,11 @@ static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server
 //    printf("[SERVER] recv: %s\n", buf);
 
     sent = mtcp_write(ctx->mctx, sockid, buf, len);
-
+/*
     ev.events = MTCP_EPOLLIN | MTCP_EPOLLOUT;
 	ev.data.sockid = sockid;
 	mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_MOD, sockid, &ev);
-
+*/
     return sent;
 }
 
