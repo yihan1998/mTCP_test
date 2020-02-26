@@ -172,5 +172,5 @@ int main(int argc, char * argv[]){
         pthread_join(threads[i], NULL);
     }
 
-    return;
+    return 0;
 }
