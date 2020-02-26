@@ -1,5 +1,5 @@
 TARGETS = server client
-CC=@CC@ -g -O3 -Wall -Werror -fgnu89-inline
+CC=gcc -g -O3 -Wall -Werror -fgnu89-inline
 DPDK=@DPDK@
 PS=@PSIO@
 NETMAP=@NETMAP@
