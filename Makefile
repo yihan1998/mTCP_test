@@ -86,10 +86,10 @@ server: server.o ${MTCP_FLD}/lib/libmtcp.a
 	$(HIDE) ${CC} $< ${LIBS} ${UTIL_OBJ} -o $@
 
 client.o: client.c include/*.h
-		${CC} -c $(CFLAGS) $< -o $@
+		${CC} -c ${CFLAGS} $< -o $@
 
 client: client.o
-		$(LD) $(LDFLAGS) client -o $(TARGET) $(LIBS)
+		${LD} ${LDFLAGS} client -o ${TARGET} ${LIBS}
 
 clean:
 		rm -f *.o $(TARGET)
