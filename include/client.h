@@ -43,10 +43,4 @@ struct send_info {
 
 int connect_server(char * server_ip, int port);
 
-void send_request_thread(struct send_info * info);
-
 void * send_request(void * arg);
-
-void receive_response_thread(struct send_info * info);
-
-void response_process(int sock, short event, void * arg);

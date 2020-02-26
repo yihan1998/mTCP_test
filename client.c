@@ -107,7 +107,7 @@ void * send_request(void * arg){
 
         if(end.tv_sec - time1.tv_sec > 10){
             printf("[CLIENT] request complete\n");
-            return;
+            return NULL;
         }
     }
     
@@ -116,103 +116,6 @@ void * send_request(void * arg){
 #ifdef __EV_RTT__
     fclose(fp);
 #endif
-}
-
-void response_process(int sock, short event, void * arg){
-#ifdef RECEIVE_DEBUG
-    struct debug_response_arg * debug_arg = (struct debug_response_arg *)arg;
-
-    struct event * read_ev = debug_arg->read_ev;
-    struct send_info * info = debug_arg->info;
-    FILE * fp = debug_arg->fp;
-#else
-    struct response_arg * response_process_arg = (struct response_arg *)arg;
-
-    struct event * read_ev = response_process_arg->read_ev;
-    struct send_info * info = response_process_arg->info;
-#endif
-
-//    pthread_mutex_t * recv_lock = info->recv_lock;
-    int * recv_byte = info->recv_byte;
-    int * send_byte = info->send_byte;
-
-    char recv_buf[buf_size + 1];
-    memset(recv_buf, 0, sizeof(recv_buf));
-
-    int recv_size = read(sock, recv_buf, buf_size);
-
-    if(recv_size == 0){
-        printf("[CLIENT] close connection\n");
-        close(sock);
-    }
-
-#ifdef RECEIVE_DEBUG
-    fwrite(recv_buf, recv_size, 1, fp);
-    fflush(fp);
-#endif
-
-//    pthread_mutex_lock(recv_lock);
-    (*recv_byte) += recv_size;
-//    pthread_mutex_unlock(recv_lock);
-    
-//    printf("[CLIENT %d] receive reply: %s\n", sock, recv_buf);
-
-    if((*recv_byte) == (*send_byte)){
-        printf("[CLIENT %d] receive reply complete, close connection\n", sock);
-
-        work_done_flag = 1;
-
-        event_del(read_ev);
-#ifdef RECEIVE_DEBUG
-        fclose(fp);
-#endif
-        close(sock);
-    }
-}
-
-void * create_response_process(void * arg){
-    struct send_info * info = (struct send_info *)arg;
-
-    int fd = *(info->sockfd);
-
-    struct event_base * base = event_base_new();
-
-    struct event * read_ev = (struct event *)malloc(sizeof(struct event));
-
-#ifdef RECEIVE_DEBUG
-    FILE * recv_fp = fopen("server-ouput.dat", "wb");
-
-    struct debug_response_arg * debug_arg = (struct debug_response_arg *)malloc(sizeof(struct debug_response_arg));
-    debug_arg->read_ev = read_ev;
-    debug_arg->info = info;
-    debug_arg->fp = recv_fp;
-
-    event_set(read_ev, fd, EV_READ|EV_PERSIST, response_process, debug_arg);
-#else
-    struct response_arg * response_process_arg = (struct response_arg *)malloc(RESPONSE_ARG_SIZE);
-    response_process_arg->read_ev = read_ev;
-    response_process_arg->info = info;
-
-    event_set(read_ev, fd, EV_READ|EV_PERSIST, response_process, response_process_arg);
-#endif
-
-    event_base_set(base, read_ev);
-
-    event_add(read_ev, NULL);
-
-    event_base_dispatch(base);
-}
-
-void receive_response_thread(struct send_info * info){
-    pthread_t thread;
-    pthread_create(&thread, NULL, create_response_process, (void *)info);
-    pthread_detach(thread);
-}
-
-void send_request_thread(struct send_info * info){
-    pthread_t thread;
-    pthread_create(&thread, NULL, send_request, (void *)info);
-    pthread_detach(thread);
 }
 
 void * client_thread(void * argv){
