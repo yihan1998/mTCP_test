@@ -29,57 +29,6 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 	mtcp_close(ctx->mctx, sockid);
 }
 
-int SendUntilAvailable(struct thread_context *ctx, int sockid, struct server_vars *sv){
-#if 0
-	int ret;
-	int sent;
-	int len;
-
-	if (sv->done || !sv->rspheader_sent) {
-		return 0;
-	}
-
-	sent = 0;
-	ret = 1;
-	while (ret > 0) {
-		len = MIN(SNDBUF_SIZE, sv->fsize - sv->total_sent);
-		if (len <= 0) {
-			break;
-		}
-		ret = mtcp_write(ctx->mctx, sockid,  
-				fcache[sv->fidx].file + sv->total_sent, len);
-		if (ret < 0) {
-			TRACE_APP("Connection closed with client.\n");
-			break;
-		}
-		TRACE_APP("Socket %d: mtcp_write try: %d, ret: %d\n", sockid, len, ret);
-		sent += ret;
-		sv->total_sent += ret;
-	}
-
-	if (sv->total_sent >= fcache[sv->fidx].size) {
-		struct mtcp_epoll_event ev;
-		sv->done = TRUE;
-		finished++;
-
-		if (sv->keep_alive) {
-			/* if keep-alive connection, wait for the incoming request */
-			ev.events = MTCP_EPOLLIN;
-			ev.data.sockid = sockid;
-			mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_MOD, sockid, &ev);
-
-			CleanServerVariable(sv);
-		} else {
-			/* else, close connection */
-			CloseConnection(ctx, sockid, sv);
-		}
-	}
-
-	return sent;
-#endif
-	return 1;
-}
-
 int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *sv){
 	char buf[HTTP_HEADER_LEN];
 
@@ -303,16 +252,7 @@ void * RunServerThread(void *arg){
 					}
 				}
 
-			}/* else if (events[i].events & MTCP_EPOLLOUT) {
-				struct server_vars *sv = &ctx->svars[events[i].data.sockid];
-				if (sv->rspheader_sent) {
-					SendUntilAvailable(ctx, events[i].data.sockid, sv);
-				} else {
-					TRACE_APP("Socket %d: Response header not sent yet.\n", 
-							events[i].data.sockid);
-				}
-
-			}*/ else {
+			} else {
 				assert(0);
 			}
 		}

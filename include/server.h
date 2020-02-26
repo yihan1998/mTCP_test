@@ -53,10 +53,6 @@ struct server_vars {
 	uint8_t done;
 	uint8_t rspheader_sent;
 	uint8_t keep_alive;
-
-	int fidx;						// file cache index
-	char fname[NAME_LIMIT];				// file name
-	long int fsize;					// file size
 };
 
 static int num_cores;
