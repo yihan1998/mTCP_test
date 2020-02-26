@@ -123,7 +123,7 @@ void * send_request(void * arg){
 
 void * client_thread(void * argv){
     printf("[CLIENT] ------ client thread ------\n");
-    int buf_size = *((int *)argv);
+    buf_size = *((int *)argv);
     
     int send_byte, recv_byte;
     send_byte = recv_byte = 0;
@@ -132,7 +132,7 @@ void * client_thread(void * argv){
     pthread_mutex_init(&rtt_lock, NULL);
 #endif
 
-    int sockfd = connect_server(inet_addr("192.168.3.2"), 12345);
+    int sockfd = connect_server("192.168.3.2", 12345);
     if(sockfd == -1){
         perror("[CLIENT] tcp connect error");
         exit(1);
