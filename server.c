@@ -362,6 +362,9 @@ void * RunServerThread(void *arg){
 				ret = HandleReadEvent(ctx, events[i].data.sockid, 
 						&ctx->svars[events[i].data.sockid]);
 
+                CloseConnection(ctx, events[i].data.sockid, 
+					&ctx->svars[events[i].data.sockid]);
+
 				if (ret == 0) {
 					/* connection closed by remote host */
 					CloseConnection(ctx, events[i].data.sockid, 
