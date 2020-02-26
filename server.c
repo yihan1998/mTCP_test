@@ -624,7 +624,9 @@ static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server
 	int len;
 	int sent;
 */
-	rd = mtcp_read(ctx->mctx, sockid, buf, HTTP_HEADER_LEN);
+    int rd;
+	
+    rd = mtcp_read(ctx->mctx, sockid, buf, HTTP_HEADER_LEN);
 	if (rd <= 0) {
 		return rd;
 	}
