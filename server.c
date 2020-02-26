@@ -81,18 +81,8 @@ static int SendUntilAvailable(struct thread_context *ctx, int sockid, struct ser
 }
 
 static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *sv){
-//	struct mtcp_epoll_event ev;
 	char buf[HTTP_HEADER_LEN];
-/*    
-	char url[URL_LEN];
-	char response[HTTP_HEADER_LEN];
-	int scode;						// status code
-	time_t t_now;
-	char t_str[128];
-	char keepalive_str[128];
-	int rd;
-	int i;
-*/
+
 	int len;
 	int sent;
 	
@@ -101,15 +91,8 @@ static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server
 		return len;
 	}
 
-//    buf[len] = '\0';
-//    printf("[SERVER] recv: %s\n", buf);
-
     sent = mtcp_write(ctx->mctx, sockid, buf, len);
-/*
-    ev.events = MTCP_EPOLLIN | MTCP_EPOLLOUT;
-	ev.data.sockid = sockid;
-	mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_MOD, sockid, &ev);
-*/
+
     return sent;
 }
 
@@ -320,7 +303,7 @@ void * RunServerThread(void *arg){
 					}
 				}
 
-			} else if (events[i].events & MTCP_EPOLLOUT) {
+			}/* else if (events[i].events & MTCP_EPOLLOUT) {
 				struct server_vars *sv = &ctx->svars[events[i].data.sockid];
 				if (sv->rspheader_sent) {
 					SendUntilAvailable(ctx, events[i].data.sockid, sv);
@@ -329,7 +312,7 @@ void * RunServerThread(void *arg){
 							events[i].data.sockid);
 				}
 
-			} else {
+			}*/ else {
 				assert(0);
 			}
 		}
