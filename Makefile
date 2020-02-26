@@ -74,6 +74,8 @@ LIBS += -L$(LIBCCP) -lccp -lstartccp
 INC += -I$(LIBCCP)
 endif
 
+CLI_LIBS = -lpthread
+
 server.o: server.c
 	$(MSG) "   CC $<"
 	$(HIDE) ${CC} -c $< ${CFLAGS} ${INC}
@@ -86,7 +88,7 @@ client.o: client.c
 		${CC} -c $< ${CFLAGS} ${INC}
 
 client: client.o
-		${CC} $< ${LIBS} -o $@
+		${CC} $< ${CLI_LIBS} -o $@
 
 clean:
 		rm -f *.o $(TARGET)
