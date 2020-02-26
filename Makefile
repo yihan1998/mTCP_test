@@ -1,13 +1,11 @@
-# TODO: Make this Makefile.in pretty
-
-TARGETS = epserver epwget
-CC=@CC@ -g -O3 -Wall -Werror -fgnu89-inline
-DPDK=@DPDK@
-PS=@PSIO@
-NETMAP=@NETMAP@
-ONVM=@ONVM@
-CCP=@CCP@
-CFLAGS=@CFLAGS@
+TARGETS = client
+CC		= gcc
+DPDK	= 1
+PS		= 0
+NETMAP	= 0
+ONVM	= 0
+CCP		= 0
+CFLAGS	= -g -O3 -Wall -Werror -fgnu89-inline
 
 # Add arch-specific optimization
 ifeq ($(shell uname -m),x86_64)
@@ -15,12 +13,12 @@ LIBS += -m64
 endif
 
 # mtcp library and header 
-MTCP_FLD    =../../mtcp/
+MTCP_FLD    =~/yangyihan/mtcp/mtcp/
 MTCP_INC    =-I${MTCP_FLD}/include
 MTCP_LIB    =-L${MTCP_FLD}/lib
 MTCP_TARGET = ${MTCP_LIB}/libmtcp.a
 
-UTIL_FLD = ../../util
+UTIL_FLD = ~/yangyihan/mtcp/util
 UTIL_INC = -I${UTIL_FLD}/include
 UTIL_OBJ = ${UTIL_FLD}/http_parsing.o ${UTIL_FLD}/tdate_parse.o ${UTIL_FLD}/netlib.o
 
@@ -30,7 +28,7 @@ LIBS = ${MTCP_LIB}
 
 # psio-specific variables
 ifeq ($(PS),1)
-PS_DIR = ../../io_engine/
+PS_DIR = ~/yangyihan/mtcp/io_engine/
 PS_INC = ${PS_DIR}/include
 INC += -I{PS_INC}
 LIBS += -lmtcp -L${PS_DIR}/lib -lps -lpthread -lnuma -lrt
