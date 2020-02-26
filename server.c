@@ -77,7 +77,7 @@ static int SendUntilAvailable(struct thread_context *ctx, int sockid, struct ser
 
 	return sent;
 #endif
-	return 0
+	return 0;
 }
 
 static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *sv){
