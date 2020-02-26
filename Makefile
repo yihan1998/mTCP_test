@@ -1,4 +1,4 @@
-TARGETS = client
+TARGETS = server client
 CC		= gcc
 DPDK	= 1
 PS		= 0
@@ -82,7 +82,7 @@ server.o: server.c
 
 server: server.o ${MTCP_FLD}/lib/libmtcp.a
 	$(MSG) "   LD $<"
-	$(HIDE) ${CC} $< ${LIBS} -o $@
+	$(HIDE) ${CC} $< ${LIBS} ${UTIL_OBJ} -o $@
 
 client.o: client.c
 		${CC} -c $< ${CFLAGS} ${INC}

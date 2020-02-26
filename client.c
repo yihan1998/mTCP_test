@@ -121,9 +121,7 @@ void * send_request(void * arg){
 }
 
 void * client_thread(void * argv){
-    struct client_arg * server = (struct client_arg *)argv;
-
-    buf_size = server->buf_size;
+    int buf_size = *((int *)argv);
     
     int send_byte, recv_byte;
     send_byte = recv_byte = 0;
@@ -132,7 +130,7 @@ void * client_thread(void * argv){
     pthread_mutex_init(&rtt_lock, NULL);
 #endif
 
-    int sockfd = connect_server(*(server->ip_addr), server->port);
+    int sockfd = connect_server(inet_addr("192.168.3.2"), 12345);
     if(sockfd == -1){
         perror("[CLIENT] tcp connect error");
         exit(1);
@@ -157,14 +155,12 @@ int main(int argc, char * argv[]){
 
     int i;
     for(i = 0;i < client_thread_num;i++){
-        struct client_arg arg;
-        arg.ip_addr = inet_addr("192.168.3.2");
-        arg.port = atoi(12345);
-        arg.buf_size = atoi(argv[2]);
+        int * buf_size = (int *)malloc(sizeof(int));
+        *buf_size = atoi(argv[2]);
 #ifdef __BIND_CORE__
         arg.sequence = i;
 #endif
-        pthread_create(&threads[i], NULL, client_thread, (void *)&arg);
+        pthread_create(&threads[i], NULL, client_thread, (void *)buf_size);
     }
 
     for(i = 0;i < client_thread_num;i++){
