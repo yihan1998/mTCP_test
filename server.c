@@ -30,6 +30,7 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 }
 
 static int SendUntilAvailable(struct thread_context *ctx, int sockid, struct server_vars *sv){
+#if 0
 	int ret;
 	int sent;
 	int len;
@@ -75,10 +76,12 @@ static int SendUntilAvailable(struct thread_context *ctx, int sockid, struct ser
 	}
 
 	return sent;
+#endif
+	return 0
 }
 
 static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *sv){
-//	struct mtcp_epoll_event ev;
+	struct mtcp_epoll_event ev;
 	char buf[HTTP_HEADER_LEN];
 /*    
 	char url[URL_LEN];
