@@ -157,11 +157,10 @@ int main(int argc, char * argv[]){
 
     int i;
     for(i = 0;i < client_thread_num;i++){
-
         struct client_arg arg;
-        arg.ip_addr = &argv[2];
-        arg.port = atoi(argv[3]);
-        arg.buf_size = atoi(argv[4]);
+        arg.ip_addr = inet_addr("192.168.3.2");
+        arg.port = atoi(12345);
+        arg.buf_size = atoi(argv[2]);
 #ifdef __BIND_CORE__
         arg.sequence = i;
 #endif

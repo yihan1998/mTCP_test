@@ -411,7 +411,7 @@ void SignalHandler(int signum){
 
 	for (i = 0; i < core_limit; i++) {
 		if (app_thread[i] == pthread_self()) {
-			//printf("Server thread %d got SIGINT\n", i);
+			printf("Server thread %d got SIGINT\n", i);
 			done[i] = TRUE;
 		} else {
 			if (!done[i]) {
