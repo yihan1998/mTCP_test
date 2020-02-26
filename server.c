@@ -1,6 +1,5 @@
-#if 0
 #include "server.h"
-
+#if 0
 void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
 	mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_DEL, sockid, NULL);
 	mtcp_close(ctx->mctx, sockid);
@@ -530,108 +529,6 @@ int main(int argc, char * argv[]){
 }
 #endif
 
-#define _LARGEFILE64_SOURCE
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdint.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <dirent.h>
-#include <string.h>
-#include <time.h>
-#include <pthread.h>
-#include <signal.h>
-#include <limits.h>
-
-#include <mtcp_api.h>
-#include <mtcp_epoll.h>
-
-#include "cpu.h"
-#include "http_parsing.h"
-#include "netlib.h"
-#include "debug.h"
-
-#define MAX_FLOW_NUM  (10000)
-
-#define RCVBUF_SIZE (2*1024)
-#define SNDBUF_SIZE (8*1024)
-
-#define MAX_EVENTS (MAX_FLOW_NUM * 3)
-
-#define HTTP_HEADER_LEN 1024
-#define URL_LEN 128
-
-#define MAX_FILES 30
-
-#define NAME_LIMIT 256
-#define FULLNAME_LIMIT 512
-
-#ifndef TRUE
-#define TRUE (1)
-#endif
-
-#ifndef FALSE
-#define FALSE (0)
-#endif
-
-#ifndef ERROR
-#define ERROR (-1)
-#endif
-
-#define HT_SUPPORT FALSE
-
-#ifndef MAX_CPUS
-#define MAX_CPUS		16
-#endif
-/*----------------------------------------------------------------------------*/
-struct file_cache
-{
-	char name[NAME_LIMIT];
-	char fullname[FULLNAME_LIMIT];
-	uint64_t size;
-	char *file;
-};
-/*----------------------------------------------------------------------------*/
-struct server_vars
-{
-	char request[HTTP_HEADER_LEN];
-	int recv_len;
-	int request_len;
-	long int total_read, total_sent;
-	uint8_t done;
-	uint8_t rspheader_sent;
-	uint8_t keep_alive;
-
-	int fidx;						// file cache index
-	char fname[NAME_LIMIT];				// file name
-	long int fsize;					// file size
-};
-/*----------------------------------------------------------------------------*/
-struct thread_context
-{
-	mctx_t mctx;
-	int ep;
-	struct server_vars *svars;
-};
-/*----------------------------------------------------------------------------*/
-static int num_cores;
-static int core_limit;
-static pthread_t app_thread[MAX_CPUS];
-static int done[MAX_CPUS];
-static char *conf_file = NULL;
-static int backlog = -1;
-/*----------------------------------------------------------------------------*/
-const char *www_main;
-static struct file_cache fcache[MAX_FILES];
-static int nfiles;
-/*----------------------------------------------------------------------------*/
-static int finished;
-/*----------------------------------------------------------------------------*/
 static char *
 StatusCodeToString(int scode)
 {
@@ -1075,22 +972,10 @@ SignalHandler(int signum)
 		}
 	}
 }
-/*----------------------------------------------------------------------------*/
-static void
-printHelp(const char *prog_name)
-{
-	TRACE_CONFIG("%s -p <path_to_www/> -f <mtcp_conf_file> "
-		     "[-N num_cores] [-c <per-process core_id>] [-h]\n",
-		     prog_name);
-	exit(EXIT_SUCCESS);
-}
-/*----------------------------------------------------------------------------*/
+
 int 
 main(int argc, char **argv)
 {
-	DIR *dir;
-	struct dirent *ent;
-	int fd;
 	int ret;
 	uint64_t total_read;
 	struct mtcp_conf mcfg;
@@ -1110,16 +995,6 @@ main(int argc, char **argv)
 
 	while (-1 != (o = getopt(argc, argv, "N:f:p:c:b:h"))) {
 		switch (o) {
-		case 'p':
-			/* open the directory to serve */
-			www_main = optarg;
-			dir = opendir(www_main);
-			if (!dir) {
-				TRACE_CONFIG("Failed to open %s.\n", www_main);
-				perror("opendir");
-				return FALSE;
-			}
-			break;
 		case 'N':
 			core_limit = mystrtol(optarg, 10);
 			if (core_limit > num_cores) {
@@ -1149,69 +1024,8 @@ main(int argc, char **argv)
 		case 'b':
 			backlog = mystrtol(optarg, 10);
 			break;
-		case 'h':
-			printHelp(argv[0]);
-			break;
 		}
 	}
-	
-	if (dir == NULL) {
-		TRACE_CONFIG("You did not pass a valid www_path!\n");
-		exit(EXIT_FAILURE);
-	}
-
-	nfiles = 0;
-	while ((ent = readdir(dir)) != NULL) {
-		if (strcmp(ent->d_name, ".") == 0)
-			continue;
-		else if (strcmp(ent->d_name, "..") == 0)
-			continue;
-
-		snprintf(fcache[nfiles].name, NAME_LIMIT, "%s", ent->d_name);
-		snprintf(fcache[nfiles].fullname, FULLNAME_LIMIT, "%s/%s",
-			 www_main, ent->d_name);
-		fd = open(fcache[nfiles].fullname, O_RDONLY);
-		if (fd < 0) {
-			perror("open");
-			continue;
-		} else {
-			fcache[nfiles].size = lseek64(fd, 0, SEEK_END);
-			lseek64(fd, 0, SEEK_SET);
-		}
-
-		fcache[nfiles].file = (char *)malloc(fcache[nfiles].size);
-		if (!fcache[nfiles].file) {
-			TRACE_CONFIG("Failed to allocate memory for file %s\n", 
-				     fcache[nfiles].name);
-			perror("malloc");
-			continue;
-		}
-
-		TRACE_INFO("Reading %s (%lu bytes)\n", 
-				fcache[nfiles].name, fcache[nfiles].size);
-		total_read = 0;
-		while (1) {
-			ret = read(fd, fcache[nfiles].file + total_read, 
-					fcache[nfiles].size - total_read);
-			if (ret < 0) {
-				break;
-			} else if (ret == 0) {
-				break;
-			}
-			total_read += ret;
-		}
-		if (total_read < fcache[nfiles].size) {
-			free(fcache[nfiles].file);
-			continue;
-		}
-		close(fd);
-		nfiles++;
-
-		if (nfiles >= MAX_FILES)
-			break;
-	}
-
-	finished = 0;
 
 	/* initialize mtcp */
 	if (conf_file == NULL) {
@@ -1263,6 +1077,5 @@ main(int argc, char **argv)
 	}
 	
 	mtcp_destroy();
-	closedir(dir);
 	return 0;
 }

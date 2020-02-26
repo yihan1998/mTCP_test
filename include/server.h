@@ -53,6 +53,10 @@ struct server_vars {
 	uint8_t done;
 	uint8_t rspheader_sent;
 	uint8_t keep_alive;
+
+	int fidx;						// file cache index
+	char fname[NAME_LIMIT];				// file name
+	long int fsize;					// file size
 };
 
 static int num_cores;
@@ -61,5 +65,11 @@ static pthread_t app_thread[MAX_CPUS];
 static int done[MAX_CPUS];
 static char *conf_file = NULL;
 static int backlog = -1;
+
+const char *www_main;
+static struct file_cache fcache[MAX_FILES];
+static int nfiles;
+
+static int finished;
 
 void * server_thread(void * arg);
