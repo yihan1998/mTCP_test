@@ -30,7 +30,6 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 }
 
 static int SendUntilAvailable(struct thread_context *ctx, int sockid, struct server_vars *sv){
-#if 0
 	int ret;
 	int sent;
 	int len;
@@ -76,8 +75,6 @@ static int SendUntilAvailable(struct thread_context *ctx, int sockid, struct ser
 	}
 
 	return sent;
-#endif
-    return 1;
 }
 
 static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *sv){
@@ -95,15 +92,25 @@ static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server
 	int len;
 	int sent;
 */
-    int rd;
+    int len;
 	
-    rd = mtcp_read(ctx->mctx, sockid, buf, HTTP_HEADER_LEN);
-	if (rd <= 0) {
-		return rd;
+    len = mtcp_read(ctx->mctx, sockid, buf, HTTP_HEADER_LEN);
+	if (len <= 0) {
+		return len;
 	}
 
-    buf[rd] = '\0';
-    printf("[SERVER] recv: %s\n", buf);
+//    buf[len] = '\0';
+//    printf("[SERVER] recv: %s\n", buf);
+
+    sent = mtcp_write(ctx->mctx, sockid, buf, len);
+
+    ev.events = MTCP_EPOLLIN | MTCP_EPOLLOUT;
+	ev.data.sockid = sockid;
+	mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_MOD, sockid, &ev);
+
+//	SendUntilAvailable(ctx, sockid, sv);
+
+    return sent;
 #if 0
 	memcpy(sv->request + sv->recv_len, 
 			(char *)buf, MIN(rd, HTTP_HEADER_LEN - sv->recv_len));
@@ -178,7 +185,6 @@ static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server
 
 	return rd;
 #endif
-    return 1;
 }
 
 int AcceptConnection(struct thread_context *ctx, int listener){

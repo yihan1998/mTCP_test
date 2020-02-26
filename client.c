@@ -29,7 +29,6 @@ int connect_server(char * server_ip, int port){
 }
 
 void * send_request(void * arg){
-    printf("[CLIENT] ------ send request ------\n");
     struct send_info * info = (struct send_info *)arg;
 
     int fd = *(info->sockfd);
@@ -122,7 +121,6 @@ void * send_request(void * arg){
 }
 
 void * client_thread(void * argv){
-    printf("[CLIENT] ------ client thread ------\n");
     buf_size = *((int *)argv);
     
     int send_byte, recv_byte;
@@ -151,7 +149,6 @@ void * client_thread(void * argv){
 }
 
 int main(int argc, char * argv[]){
-    printf("[CLIENT] ------ client main thread ------\n");
     client_thread_num = atoi(argv[1]);
 
     pthread_t * threads = (pthread_t *)malloc(sizeof(pthread_t) * client_thread_num);
