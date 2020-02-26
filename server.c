@@ -529,9 +529,7 @@ int main(int argc, char * argv[]){
 }
 #endif
 
-char *
-StatusCodeToString(int scode)
-{
+char * StatusCodeToString(int scode){
 	switch (scode) {
 		case 200:
 			return "OK";
@@ -544,10 +542,8 @@ StatusCodeToString(int scode)
 
 	return NULL;
 }
-/*----------------------------------------------------------------------------*/
-void
-CleanServerVariable(struct server_vars *sv)
-{
+
+void CleanServerVariable(struct server_vars *sv){
 	sv->recv_len = 0;
 	sv->request_len = 0;
 	sv->total_read = 0;
@@ -556,17 +552,13 @@ CleanServerVariable(struct server_vars *sv)
 	sv->rspheader_sent = 0;
 	sv->keep_alive = 0;
 }
-/*----------------------------------------------------------------------------*/
-void 
-CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv)
-{
+
+void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
 	mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_DEL, sockid, NULL);
 	mtcp_close(ctx->mctx, sockid);
 }
-/*----------------------------------------------------------------------------*/
-static int 
-SendUntilAvailable(struct thread_context *ctx, int sockid, struct server_vars *sv)
-{
+
+static int SendUntilAvailable(struct thread_context *ctx, int sockid, struct server_vars *sv){
 #if 0
 	int ret;
 	int sent;
@@ -616,13 +608,11 @@ SendUntilAvailable(struct thread_context *ctx, int sockid, struct server_vars *s
 #endif
     return 1;
 }
-/*----------------------------------------------------------------------------*/
-static int 
-HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *sv)
-{
-#if 0
-	struct mtcp_epoll_event ev;
+
+static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *sv){
+//	struct mtcp_epoll_event ev;
 	char buf[HTTP_HEADER_LEN];
+/*    
 	char url[URL_LEN];
 	char response[HTTP_HEADER_LEN];
 	int scode;						// status code
@@ -633,17 +623,20 @@ HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *sv)
 	int i;
 	int len;
 	int sent;
-
-	/* HTTP request handling */
+*/
 	rd = mtcp_read(ctx->mctx, sockid, buf, HTTP_HEADER_LEN);
 	if (rd <= 0) {
 		return rd;
 	}
+
+    buf[rd] = '\0';
+    printf("[SERVER] recv: %s\n", buf);
+#if 0
 	memcpy(sv->request + sv->recv_len, 
 			(char *)buf, MIN(rd, HTTP_HEADER_LEN - sv->recv_len));
 	sv->recv_len += rd;
-	//sv->request[rd] = '\0';
-	//fprintf(stderr, "HTTP Request: \n%s", request);
+	sv->request[rd] = '\0';
+
 	sv->request_len = find_http_header(sv->request, sv->recv_len);
 	if (sv->request_len <= 0) {
 		TRACE_ERROR("Socket %d: Failed to parse HTTP request header.\n"
@@ -714,10 +707,8 @@ HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *sv)
 #endif
     return 1;
 }
-/*----------------------------------------------------------------------------*/
-int 
-AcceptConnection(struct thread_context *ctx, int listener)
-{
+
+int AcceptConnection(struct thread_context *ctx, int listener){
 	mctx_t mctx = ctx->mctx;
 	struct server_vars *sv;
 	struct mtcp_epoll_event ev;
@@ -749,10 +740,8 @@ AcceptConnection(struct thread_context *ctx, int listener)
 
 	return c;
 }
-/*----------------------------------------------------------------------------*/
-struct thread_context *
-InitializeServerThread(int core)
-{
+
+struct thread_context * InitializeServerThread(int core){
 	struct thread_context *ctx;
 
 	/* affinitize application thread to a CPU core */
@@ -798,10 +787,8 @@ InitializeServerThread(int core)
 
 	return ctx;
 }
-/*----------------------------------------------------------------------------*/
-int 
-CreateListeningSocket(struct thread_context *ctx)
-{
+
+int CreateListeningSocket(struct thread_context *ctx){
 	int listener;
 	struct mtcp_epoll_event ev;
 	struct sockaddr_in saddr;
@@ -819,10 +806,10 @@ CreateListeningSocket(struct thread_context *ctx)
 		return -1;
 	}
 
-	/* bind to port 80 */
+	/* bind to port 12345 */
 	saddr.sin_family = AF_INET;
 	saddr.sin_addr.s_addr = INADDR_ANY;
-	saddr.sin_port = htons(80);
+	saddr.sin_port = htons(12345);
 	ret = mtcp_bind(ctx->mctx, listener, 
 			(struct sockaddr *)&saddr, sizeof(struct sockaddr_in));
 	if (ret < 0) {
@@ -844,10 +831,8 @@ CreateListeningSocket(struct thread_context *ctx)
 
 	return listener;
 }
-/*----------------------------------------------------------------------------*/
-void *
-RunServerThread(void *arg)
-{
+
+void * RunServerThread(void *arg){
 	int core = *(int *)arg;
 	struct thread_context *ctx;
 	mctx_t mctx;
@@ -961,10 +946,8 @@ RunServerThread(void *arg)
 
 	return NULL;
 }
-/*----------------------------------------------------------------------------*/
-void
-SignalHandler(int signum)
-{
+
+void SignalHandler(int signum){
 	int i;
 
 	for (i = 0; i < core_limit; i++) {
@@ -979,9 +962,7 @@ SignalHandler(int signum)
 	}
 }
 
-int 
-main(int argc, char **argv)
-{
+int main(int argc, char **argv){
 	int ret;
 	struct mtcp_conf mcfg;
 	int cores[MAX_CPUS];
@@ -997,7 +978,7 @@ main(int argc, char **argv)
 		return FALSE;
 	}
 
-	while (-1 != (o = getopt(argc, argv, "N:f:p:c:b:h"))) {
+	while (-1 != (o = getopt(argc, argv, "N:f:c:b"))) {
 		switch (o) {
 		case 'N':
 			core_limit = mystrtol(optarg, 10);
