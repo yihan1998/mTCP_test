@@ -116,6 +116,8 @@ void * send_request(void * arg){
 #ifdef __EV_RTT__
     fclose(fp);
 #endif
+
+    return NULL;
 }
 
 void * client_thread(void * argv){
@@ -169,4 +171,6 @@ int main(int argc, char * argv[]){
     for(i = 0;i < client_thread_num;i++){
         pthread_join(threads[i], NULL);
     }
+
+    return;
 }
