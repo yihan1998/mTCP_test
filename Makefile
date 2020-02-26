@@ -7,6 +7,8 @@ ONVM	= 0
 CCP		= 0
 CFLAGS	= -g -O3 -Wall -Werror -fgnu89-inline
 
+HDRS	= 
+
 # Add arch-specific optimization
 ifeq ($(shell uname -m),x86_64)
 LIBS += -m64
@@ -82,8 +84,8 @@ server: server.o ${MTCP_FLD}/lib/libmtcp.a
 	$(MSG) "   LD $<"
 	$(HIDE) ${CC} $< ${LIBS} ${UTIL_OBJ} -o $@
 
-client.o: client.c include/*.h
-		${CC} -c ${CFLAGS} $< -o $@
+client.o: client.c
+		${CC} -c $< ${CFLAGS} ${INC}
 
 client: client.o
 		${LD} ${LDFLAGS} client -o ${TARGET} ${LIBS}
