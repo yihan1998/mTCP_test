@@ -1,5 +1,5 @@
 TARGETS = server client
-CC=gcc -g -O3 -Wall -Werror -fgnu89-inline
+CC=@CC@ -g -O3 -Wall -Werror -fgnu89-inline
 DPDK=@DPDK@
 PS=@PSIO@
 NETMAP=@NETMAP@
@@ -86,7 +86,7 @@ server: server.o ${MTCP_FLD}/lib/libmtcp.a
 	$(HIDE) ${CC} $< ${LIBS} ${UTIL_OBJ} -o $@
 
 client.o: client.c include/*.h
-		$(CC) -c $(CFLAGS) $< -o $@
+		${CC} -c $(CFLAGS) $< -o $@
 
 client: client.o
 		$(LD) $(LDFLAGS) client -o $(TARGET) $(LIBS)
