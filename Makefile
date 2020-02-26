@@ -82,7 +82,7 @@ server.o: server.c
 
 server: server.o ${MTCP_FLD}/lib/libmtcp.a
 	$(MSG) "   LD $<"
-	$(HIDE) ${CC} $< ${LIBS} ${UTIL_OBJ} -o $@
+	$(HIDE) ${CC} $< ${LIBS} -o $@
 
 client.o: client.c
 		${CC} -c $< ${CFLAGS} ${INC}
