@@ -66,10 +66,6 @@ static int done[MAX_CPUS];
 static char *conf_file = NULL;
 static int backlog = -1;
 
-const char *www_main;
-static struct file_cache fcache[MAX_FILES];
-static int nfiles;
-
 static int finished;
 
 void * server_thread(void * arg);

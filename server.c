@@ -977,7 +977,6 @@ int
 main(int argc, char **argv)
 {
 	int ret;
-	uint64_t total_read;
 	struct mtcp_conf mcfg;
 	int cores[MAX_CPUS];
 	int process_cpu;
@@ -986,7 +985,6 @@ main(int argc, char **argv)
 	num_cores = GetNumCPUs();
 	core_limit = num_cores;
 	process_cpu = -1;
-	dir = NULL;
 
 	if (argc < 2) {
 		TRACE_CONFIG("$%s directory_to_service\n", argv[0]);
