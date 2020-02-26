@@ -7,8 +7,6 @@ ONVM	= 0
 CCP		= 0
 CFLAGS	= -g -O3 -Wall -Werror -fgnu89-inline
 
-HDRS	= 
-
 # Add arch-specific optimization
 ifeq ($(shell uname -m),x86_64)
 LIBS += -m64
