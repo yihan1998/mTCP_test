@@ -13,12 +13,12 @@ LIBS += -m64
 endif
 
 # mtcp library and header 
-MTCP_FLD    =~/yangyihan/mtcp/mtcp
+MTCP_FLD    =../mtcp/mtcp
 MTCP_INC    =-I${MTCP_FLD}/include -I${MTCP_FLD}/src/include
 MTCP_LIB    =-L${MTCP_FLD}/lib
 MTCP_TARGET = ${MTCP_LIB}/libmtcp.a
 
-UTIL_FLD = ~/yangyihan/mtcp/util
+UTIL_FLD = ../mtcp/util
 UTIL_INC = -I${UTIL_FLD}/include
 UTIL_OBJ = ${UTIL_FLD}/http_parsing.o ${UTIL_FLD}/tdate_parse.o ${UTIL_FLD}/netlib.o
 
@@ -28,7 +28,7 @@ LIBS = ${MTCP_LIB}
 
 # psio-specific variables
 ifeq ($(PS),1)
-PS_DIR = ~/yangyihan/mtcp/io_engine/
+PS_DIR = ../mtcp/io_engine/
 PS_INC = ${PS_DIR}/include
 INC += -I{PS_INC}
 LIBS += -lmtcp -L${PS_DIR}/lib -lps -lpthread -lnuma -lrt
