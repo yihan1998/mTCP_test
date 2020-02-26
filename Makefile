@@ -86,7 +86,7 @@ client.o: client.c
 		${CC} -c $< ${CFLAGS} ${INC}
 
 client: client.o
-		${LD} ${LDFLAGS} client -o ${TARGET} ${LIBS}
+		${CC} $< ${LIBS} ${UTIL_OBJ} -o $@
 
 clean:
 		rm -f *.o $(TARGET)
