@@ -66,6 +66,4 @@ static int done[MAX_CPUS];
 static char *conf_file = NULL;
 static int backlog = -1;
 
-static int finished;
-
 void * server_thread(void * arg);

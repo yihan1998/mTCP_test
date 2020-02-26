@@ -529,7 +529,7 @@ int main(int argc, char * argv[]){
 }
 #endif
 
-static char *
+char *
 StatusCodeToString(int scode)
 {
 	switch (scode) {
