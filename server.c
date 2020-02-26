@@ -37,7 +37,7 @@ static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server
 	//fprintf(stderr, "HTTP Request: \n%s", request);
 	sv->request_len = find_http_header(sv->request, sv->recv_len);
 	if (sv->request_len <= 0) {
-		TRACE_ERROR("Socket %d: Failed to parse HTTP request header.\n"
+		printf("Socket %d: Failed to parse HTTP request header.\n"
 				"read bytes: %d, recv_len: %d, "
 				"request_len: %d, strlen: %ld, request: \n%s\n", 
 				sockid, rd, sv->recv_len, 
@@ -46,9 +46,9 @@ static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server
 	}
 /*
 	http_get_url(sv->request, sv->request_len, url, URL_LEN);
-	TRACE_APP("Socket %d URL: %s\n", sockid, url);
+	printf("Socket %d URL: %s\n", sockid, url);
 	sprintf(sv->fname, "%s%s", www_main, url);
-	TRACE_APP("Socket %d File name: %s\n", sockid, sv->fname);
+	printf("Socket %d File name: %s\n", sockid, sv->fname);
 
 	sv->keep_alive = FALSE;
 	if (http_header_str_val(sv->request, "Connection: ", 
@@ -71,7 +71,7 @@ static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server
 			break;
 		}
 	}
-	TRACE_APP("Socket %d File size: %ld (%ldMB)\n", 
+	printf("Socket %d File size: %ld (%ldMB)\n", 
 			sockid, sv->fsize, sv->fsize / 1024 / 1024);
 */
 	/* Response header handling */
@@ -90,9 +90,9 @@ static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server
 			"Connection: %s\r\n\r\n", 
 			scode, StatusCodeToString(scode), t_str, sv->fsize, keepalive_str);
 	len = strlen(response);
-	TRACE_APP("Socket %d HTTP Response: \n%s", sockid, response);
+	printf("Socket %d HTTP Response: \n%s", sockid, response);
 	sent = mtcp_write(ctx->mctx, sockid, response, len);
-	TRACE_APP("Socket %d Sent response header: try: %d, sent: %d\n", 
+	printf("Socket %d Sent response header: try: %d, sent: %d\n", 
 			sockid, len, sent);
 	assert(sent == len);
 	sv->rspheader_sent = TRUE;
@@ -116,22 +116,22 @@ int AcceptConnection(struct thread_context *ctx, int listener){
 
 	if (c >= 0) {
 		if (c >= MAX_FLOW_NUM) {
-			TRACE_ERROR("Invalid socket id %d.\n", c);
+			printf("Invalid socket id %d.\n", c);
 			return -1;
 		}
 
 		sv = &ctx->svars[c];
 		CleanServerVariable(sv);
-		TRACE_APP("New connection %d accepted.\n", c);
+		printf("New connection %d accepted.\n", c);
 		ev.events = MTCP_EPOLLIN;
 		ev.data.sockid = c;
 		mtcp_setsock_nonblock(ctx->mctx, c);
 		mtcp_epoll_ctl(mctx, ctx->ep, MTCP_EPOLL_CTL_ADD, c, &ev);
-		TRACE_APP("Socket %d registered.\n", c);
+		printf("Socket %d registered.\n", c);
 
 	} else {
 		if (errno != EAGAIN) {
-			TRACE_ERROR("mtcp_accept() error %s\n", 
+			printf("mtcp_accept() error %s\n", 
 					strerror(errno));
 		}
 	}
@@ -151,14 +151,14 @@ struct thread_context * InitializeServerThread(int core){
 
 	ctx = (struct thread_context *)calloc(1, sizeof(struct thread_context));
 	if (!ctx) {
-		TRACE_ERROR("Failed to create thread context!\n");
+		printf("Failed to create thread context!\n");
 		return NULL;
 	}
 
 	/* create mtcp context: this will spawn an mtcp thread */
 	ctx->mctx = mtcp_create_context(core);
 	if (!ctx->mctx) {
-		TRACE_ERROR("Failed to create mtcp context!\n");
+		printf("Failed to create mtcp context!\n");
 		free(ctx);
 		return NULL;
 	}
@@ -168,7 +168,7 @@ struct thread_context * InitializeServerThread(int core){
 	if (ctx->ep < 0) {
 		mtcp_destroy_context(ctx->mctx);
 		free(ctx);
-		TRACE_ERROR("Failed to create epoll descriptor!\n");
+		printf("Failed to create epoll descriptor!\n");
 		return NULL;
 	}
 
@@ -179,7 +179,7 @@ struct thread_context * InitializeServerThread(int core){
 		mtcp_close(ctx->mctx, ctx->ep);
 		mtcp_destroy_context(ctx->mctx);
 		free(ctx);
-		TRACE_ERROR("Failed to create server_vars struct!\n");
+		printf("Failed to create server_vars struct!\n");
 		return NULL;
 	}
 
@@ -195,12 +195,12 @@ int CreateListeningSocket(struct thread_context *ctx){
 	/* create socket and set it as nonblocking */
 	listener = mtcp_socket(ctx->mctx, AF_INET, SOCK_STREAM, 0);
 	if (listener < 0) {
-		TRACE_ERROR("Failed to create listening socket!\n");
+		printf("Failed to create listening socket!\n");
 		return -1;
 	}
 	ret = mtcp_setsock_nonblock(ctx->mctx, listener);
 	if (ret < 0) {
-		TRACE_ERROR("Failed to set socket in nonblocking mode.\n");
+		printf("Failed to set socket in nonblocking mode.\n");
 		return -1;
 	}
 
@@ -211,14 +211,14 @@ int CreateListeningSocket(struct thread_context *ctx){
 	ret = mtcp_bind(ctx->mctx, listener, 
 			(struct sockaddr *)&saddr, sizeof(struct sockaddr_in));
 	if (ret < 0) {
-		TRACE_ERROR("Failed to bind to the listening socket!\n");
+		printf("Failed to bind to the listening socket!\n");
 		return -1;
 	}
 
 	/* listen (backlog: can be configured) */
 	ret = mtcp_listen(ctx->mctx, listener, backlog);
 	if (ret < 0) {
-		TRACE_ERROR("mtcp_listen() failed!\n");
+		printf("mtcp_listen() failed!\n");
 		return -1;
 	}
 	
@@ -244,7 +244,7 @@ void * RunServerThread(void *arg){
 	/* initialization */
 	ctx = InitializeServerThread(core);
 	if (!ctx) {
-		TRACE_ERROR("Failed to initialize server thread.\n");
+		printf("Failed to initialize server thread.\n");
 		return NULL;
 	}
 	mctx = ctx->mctx;
@@ -253,13 +253,13 @@ void * RunServerThread(void *arg){
 	events = (struct mtcp_epoll_event *)
 			calloc(MAX_EVENTS, sizeof(struct mtcp_epoll_event));
 	if (!events) {
-		TRACE_ERROR("Failed to create event struct!\n");
+		printf("Failed to create event struct!\n");
 		exit(-1);
 	}
 
 	listener = CreateListeningSocket(ctx);
 	if (listener < 0) {
-		TRACE_ERROR("Failed to create listening socket.\n");
+		printf("Failed to create listening socket.\n");
 		exit(-1);
 	}
 
@@ -283,7 +283,7 @@ void * RunServerThread(void *arg){
 				socklen_t len = sizeof(err);
 
 				/* error on the connection */
-				TRACE_APP("[CPU %d] Error on socket %d\n", 
+				printf("[CPU %d] Error on socket %d\n", 
 						core, events[i].data.sockid);
 				if (mtcp_getsockopt(mctx, events[i].data.sockid, 
 						SOL_SOCKET, SO_ERROR, (void *)&err, &len) == 0) {
@@ -318,7 +318,7 @@ void * RunServerThread(void *arg){
 				if (sv->rspheader_sent) {
 					SendUntilAvailable(ctx, events[i].data.sockid, sv);
 				} else {
-					TRACE_APP("Socket %d: Response header not sent yet.\n", 
+					printf("Socket %d: Response header not sent yet.\n", 
 							events[i].data.sockid);
 				}
 
@@ -350,7 +350,7 @@ void SignalHandler(int signum){
 
 	for (i = 0; i < core_limit; i++) {
 		if (app_thread[i] == pthread_self()) {
-			//TRACE_INFO("Server thread %d got SIGINT\n", i);
+			//printf("Server thread %d got SIGINT\n", i);
 			done[i] = TRUE;
 		} else {
 			if (!done[i]) {
@@ -373,7 +373,7 @@ int main(int argc, char * argv[]){
 	dir = NULL;
 
 	if (argc < 2) {
-		TRACE_CONFIG("$%s directory_to_service\n", argv[0]);
+		printf("$%s directory_to_service\n", argv[0]);
 		return FALSE;
 	}
 
@@ -382,7 +382,7 @@ int main(int argc, char * argv[]){
 		case 'N':
 			core_limit = mystrtol(optarg, 10);
 			if (core_limit > num_cores) {
-				TRACE_CONFIG("CPU limit should be smaller than the "
+				printf("CPU limit should be smaller than the "
 					     "number of CPUs: %d\n", num_cores);
 				return FALSE;
 			}
@@ -401,7 +401,7 @@ int main(int argc, char * argv[]){
 		case 'c':
 			process_cpu = mystrtol(optarg, 10);
 			if (process_cpu > core_limit) {
-				TRACE_CONFIG("Starting CPU is way off limits!\n");
+				printf("Starting CPU is way off limits!\n");
 				return FALSE;
 			}
 			break;
@@ -413,19 +413,19 @@ int main(int argc, char * argv[]){
 
 	/* initialize mtcp */
 	if (conf_file == NULL) {
-		TRACE_CONFIG("You forgot to pass the mTCP startup config file!\n");
+		printf("You forgot to pass the mTCP startup config file!\n");
 		exit(EXIT_FAILURE);
 	}
 
 	ret = mtcp_init(conf_file);
 	if (ret) {
-		TRACE_CONFIG("Failed to initialize mtcp\n");
+		printf("Failed to initialize mtcp\n");
 		exit(EXIT_FAILURE);
 	}
 
 	mtcp_getconf(&mcfg);
 	if (backlog > mcfg.max_concurrency) {
-		TRACE_CONFIG("backlog can not be set larger than CONFIG.max_concurrency\n");
+		printf("backlog can not be set larger than CONFIG.max_concurrency\n");
 		return FALSE;
 	}
 
@@ -446,7 +446,7 @@ int main(int argc, char * argv[]){
 		if (pthread_create(&app_thread[i], 
 				   NULL, RunServerThread, (void *)&cores[i])) {
 			perror("pthread_create");
-			TRACE_CONFIG("Failed to create server thread.\n");
+			printf("Failed to create server thread.\n");
 				exit(EXIT_FAILURE);
 		}
 		if (process_cpu != -1)

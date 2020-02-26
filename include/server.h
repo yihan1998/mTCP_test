@@ -35,6 +35,12 @@
 #define MAX_CPUS		16
 #endif
 
+struct thread_context {
+	mctx_t mctx;
+	int ep;
+	struct server_vars *svars;
+};
+
 struct server_vars {
 	char request[HTTP_HEADER_LEN];
 	int recv_len;
