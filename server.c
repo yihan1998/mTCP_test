@@ -16,7 +16,7 @@ void CleanServerVariable(struct server_vars *sv){
 }
 
 static int SendUntilAvailable(struct thread_context *ctx, int sockid, struct server_vars *sv){
-	int ret;
+/*	int ret;
 	int sent;
 	int len;
 
@@ -48,19 +48,20 @@ static int SendUntilAvailable(struct thread_context *ctx, int sockid, struct ser
 		finished++;
 
 		if (sv->keep_alive) {
-			/* if keep-alive connection, wait for the incoming request */
+			// if keep-alive connection, wait for the incoming request 
 			ev.events = MTCP_EPOLLIN;
 			ev.data.sockid = sockid;
 			mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_MOD, sockid, &ev);
 
 			CleanServerVariable(sv);
 		} else {
-			/* else, close connection */
+			// else, close connection 
 			CloseConnection(ctx, sockid, sv);
 		}
 	}
 
 	return sent;
+*/
 }
 
 static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *sv){
@@ -69,9 +70,9 @@ static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server
 
 //	char response[HTTP_HEADER_LEN];
 
-	int scode;
+//	int scode;
 //	time_t t_now;
-	char t_str[128];
+//	char t_str[128];
 //	char keepalive_str[128];
 	int rd;
 //	int i;
