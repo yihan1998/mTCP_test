@@ -29,7 +29,7 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 	mtcp_close(ctx->mctx, sockid);
 }
 
-static int SendUntilAvailable(struct thread_context *ctx, int sockid, struct server_vars *sv){
+int SendUntilAvailable(struct thread_context *ctx, int sockid, struct server_vars *sv){
 #if 0
 	int ret;
 	int sent;
@@ -80,7 +80,7 @@ static int SendUntilAvailable(struct thread_context *ctx, int sockid, struct ser
 	return 1;
 }
 
-static int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *sv){
+int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *sv){
 	char buf[HTTP_HEADER_LEN];
 
 	int len;
