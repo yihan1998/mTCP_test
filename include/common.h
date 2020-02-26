@@ -24,6 +24,7 @@
 #include <mtcp_epoll.h>
 
 #include "cpu.h"
+#include "netlib.h"
 
 struct client_arg {
     char ** ip_addr;
