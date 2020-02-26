@@ -23,7 +23,7 @@ UTIL_INC = -I${UTIL_FLD}/include
 UTIL_OBJ = ${UTIL_FLD}/http_parsing.o ${UTIL_FLD}/tdate_parse.o ${UTIL_FLD}/netlib.o
 
 # util library and header
-INC = ${UTIL_INC} ${MTCP_INC} -I${UTIL_FLD}/include -I./include/
+INC = -I./include/ ${UTIL_INC} ${MTCP_INC} -I${UTIL_FLD}/include
 LIBS = ${MTCP_LIB}
 
 # psio-specific variables
