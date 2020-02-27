@@ -11,7 +11,7 @@ then
     rm record_core_*.txt
     make clean
     make server
-    ./server
+    ./server -N 1 -p service -f server.conf
 else
     ./client $2 $server_ip $server_port $3
 fi
