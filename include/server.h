@@ -1,8 +1,8 @@
 #include "common.h"
 
-#define __REAL_TIME_STATS__
+//#define __REAL_TIME_STATS__
 
-//#define __EVAL_CB__
+#define __EVAL_HANDLE__
 
 #define BUF_SIZE 4096
 
@@ -51,6 +51,8 @@ struct server_vars {
 
 	int request_cnt;
 	int byte_sent;
+
+	int total_time;
 };
 
 static int num_cores;

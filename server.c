@@ -48,10 +48,18 @@ void CleanServerVariable(struct server_vars *sv){
 	sv->start_flag = 0;
 	sv->request_cnt = 0;
 	sv->byte_sent = 0;
+	sv->total_time = 0;
 }
 
 void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
+#ifdef __REAL_TIME_STATS__
 	request_end(sockid, sv->start, sv->byte_sent, sv->request_cnt);
+#endif
+
+#ifdef __EVAL_HANDLE__
+	printf("HandleReadEvent average time: %.4f", ((double)sv->total_time)/sv->request_cnt);
+#endif
+
 	mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_DEL, sockid, NULL);
 	mtcp_close(ctx->mctx, sockid);
 }
@@ -64,7 +72,7 @@ int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *
     }
 #endif
 
-#ifdef __EVAL_CB__
+#ifdef __EVAL_HANDLE__
     struct timeval start;
     gettimeofday(&start, NULL);
 #endif
@@ -81,26 +89,18 @@ int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *
     sent = mtcp_write(ctx->mctx, sockid, buf, len);
 
 #ifdef __REAL_TIME_STATS__
-    sv->request_cnt++;
     sv->byte_sent += sent;
 #endif
 
-#ifdef __EVAL_CB__
+#ifdef __EVAL_HANDLE__
     struct timeval end;
     gettimeofday(&end, NULL);
 
     double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
     double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
 
-    char buff[100];
-    
-    sprintf(buff, "total_time %d\n", (int)(end_time - start_time));
-
-    FILE * fp = fopen("read_cb.txt", "a+");
-    fseek(fp, 0, SEEK_END);
-    
-    fwrite(buff, strlen(buff), 1, fp);
-    fclose(fp);
+	sv->request_cnt++;
+	sv->total_time += (int)(end_time - start_time);
 #endif
 
     return sent;
