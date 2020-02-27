@@ -21,8 +21,6 @@ void request_end(int fd, struct timeval start, int byte_sent, int request_cnt){
     FILE * fp = fopen(file_name, "a+");
     fseek(fp, 0, SEEK_END);
 
-    int sec, usec;
-
     struct timeval end;
     gettimeofday(&end, NULL);
 
