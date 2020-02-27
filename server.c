@@ -57,7 +57,15 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 #endif
 
 #ifdef __EVAL_HANDLE__
-	printf("HandleReadEvent average time: %.4f", ((double)sv->total_time)/sv->request_cnt);
+    char buff[100];
+    
+    sprintf(buff, "handle_read %d\n", sv->total_time/sv->request_cnt);
+
+    FILE * fp = fopen("handle_read.txt", "a+");
+    fseek(fp, 0, SEEK_END);
+    
+    fwrite(buff, strlen(buff), 1, fp);
+    fclose(fp);	
 #endif
 
 	mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_DEL, sockid, NULL);
