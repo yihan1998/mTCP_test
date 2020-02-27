@@ -59,7 +59,7 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 #ifdef __EVAL_HANDLE__
     char buff[100];
     
-    sprintf(buff, "handle_read %d\n", sv->total_time/sv->request_cnt);
+    sprintf(buff, "handle_read %.4f\n", ((double)sv->total_time)/sv->request_cnt);
 
     FILE * fp = fopen("handle_read.txt", "a+");
     fseek(fp, 0, SEEK_END);
