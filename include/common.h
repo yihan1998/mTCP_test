@@ -29,3 +29,8 @@
 #include "netlib.h"
 #include "debug.h"
 
+struct client_arg {
+    char ** ip_addr;
+    int port;
+    int buf_size;
+};

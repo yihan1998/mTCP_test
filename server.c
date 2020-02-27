@@ -14,6 +14,31 @@ char * StatusCodeToString(int scode){
 	return NULL;
 }
 
+void request_end(int fd, struct timeval start, int byte_sent, int request_cnt){
+    char file_name[1024];
+    sprintf(file_name, "record_core_%d.txt", fd);
+
+    FILE * fp = fopen(file_name, "a+");
+    fseek(fp, 0, SEEK_END);
+
+    int sec, usec;
+
+    struct timeval end;
+    gettimeofday(&end, NULL);
+
+    double start_time = (double)start.tv_sec + ((double)start.tv_usec/(double)1000000);
+    double end_time = (double)end.tv_sec + ((double)end.tv_usec/(double)1000000);
+
+    char buff[1024];
+
+    sprintf(buff, "start %lf end %lf tot_request %d tot_byte %d\n", 
+            start_time, end_time, request_cnt, byte_sent);
+    
+    fwrite(buff, strlen(buff), 1, fp);
+
+    fclose(fp);
+}
+
 void CleanServerVariable(struct server_vars *sv){
 	sv->recv_len = 0;
 	sv->request_len = 0;
@@ -22,6 +47,9 @@ void CleanServerVariable(struct server_vars *sv){
 	sv->done = 0;
 	sv->rspheader_sent = 0;
 	sv->keep_alive = 0;
+	sv->start_flag = 0;
+	sv->request_cnt = 0;
+	sv->byte_sent = 0;
 }
 
 void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
@@ -30,17 +58,29 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 }
 
 int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *sv){
-	char buf[HTTP_HEADER_LEN];
+#ifdef __REAL_TIME_STATS__
+    if(!sv->start_flag){
+        gettimeofday(&sv->start, NULL);
+        sv->start_flag = 1;
+    }
+#endif
 
-	int len;
-	int sent;
+	char buf[BUF_SIZE];
+
+	int len, sent;
 	
-    len = mtcp_read(ctx->mctx, sockid, buf, HTTP_HEADER_LEN);
+    len = mtcp_read(ctx->mctx, sockid, buf, BUF_SIZE);
 	if (len <= 0) {
 		return len;
 	}
 
     sent = mtcp_write(ctx->mctx, sockid, buf, len);
+
+#ifdef __REAL_TIME_STATS__
+    sv->request_cnt++;
+    sv->byte_sent += sent;
+    request_end(socketid, sv->start, sv->byte_sent, sv->request_cnt);
+#endif
 
     return sent;
 }

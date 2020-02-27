@@ -1,21 +1,14 @@
 #include "common.h"
 
+#define __REAL_TIME_STATS__
+
+//#define __EVAL_CB__
+
 #define BUF_SIZE 4096
 
 #define MAX_FLOW_NUM  (10000)
 
-#define RCVBUF_SIZE (2*1024)
-#define SNDBUF_SIZE (8*1024)
-
 #define MAX_EVENTS (MAX_FLOW_NUM * 3)
-
-#define HTTP_HEADER_LEN 1024
-#define URL_LEN 128
-
-#define MAX_FILES 30
-
-#define NAME_LIMIT 256
-#define FULLNAME_LIMIT 512
 
 #ifndef TRUE
 #define TRUE (1)
@@ -46,13 +39,18 @@ struct thread_context {
 };
 
 struct server_vars {
-	char request[HTTP_HEADER_LEN];
 	int recv_len;
 	int request_len;
 	long int total_read, total_sent;
 	uint8_t done;
 	uint8_t rspheader_sent;
 	uint8_t keep_alive;
+
+	struct timeval start;
+	int start_flag;
+
+	int request_cnt;
+	int byte_sent;
 };
 
 static int num_cores;
