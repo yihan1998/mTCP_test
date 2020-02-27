@@ -82,7 +82,7 @@ int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *
 #ifdef __REAL_TIME_STATS__
     sv->request_cnt++;
     sv->byte_sent += sent;
-    request_end(socketid, sv->start, sv->byte_sent, sv->request_cnt);
+    request_end(sockid, sv->start, sv->byte_sent, sv->request_cnt);
 #endif
 
 #ifdef __EVAL_CB__
