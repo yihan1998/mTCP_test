@@ -65,6 +65,11 @@ int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *
     }
 #endif
 
+#ifdef __EVAL_CB__
+    struct timeval start;
+    gettimeofday(&start, NULL);
+#endif
+
 	char buf[BUF_SIZE];
 
 	int len, sent;
@@ -80,6 +85,24 @@ int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *
     sv->request_cnt++;
     sv->byte_sent += sent;
     request_end(socketid, sv->start, sv->byte_sent, sv->request_cnt);
+#endif
+
+#ifdef __EVAL_CB__
+    struct timeval end;
+    gettimeofday(&end, NULL);
+
+    double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
+    double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
+
+    char buff[100];
+    
+    sprintf(buff, "total_time %d\n", (int)(end_time - start_time));
+
+    FILE * fp = fopen("read_cb.txt", "a+");
+    fseek(fp, 0, SEEK_END);
+    
+    fwrite(buff, strlen(buff), 1, fp);
+    fclose(fp);
 #endif
 
     return sent;
