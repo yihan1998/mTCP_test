@@ -51,6 +51,7 @@ void CleanServerVariable(struct server_vars *sv){
 }
 
 void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
+	request_end(sockid, sv->start, sv->byte_sent, sv->request_cnt);
 	mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_DEL, sockid, NULL);
 	mtcp_close(ctx->mctx, sockid);
 }
@@ -82,7 +83,6 @@ int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *
 #ifdef __REAL_TIME_STATS__
     sv->request_cnt++;
     sv->byte_sent += sent;
-    request_end(sockid, sv->start, sv->byte_sent, sv->request_cnt);
 #endif
 
 #ifdef __EVAL_CB__
