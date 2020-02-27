@@ -1,6 +1,7 @@
 #include "client.h"
 
 int connect_server(char * server_ip, int port){
+    printf("------ connect server ------\n");
     int sockfd;
     
     struct sockaddr_in server_addr;
@@ -29,6 +30,7 @@ int connect_server(char * server_ip, int port){
 }
 
 void * send_request(void * arg){
+    printf("------ send request ------\n");
     struct send_info * info = (struct send_info *)arg;
 
     int fd = *(info->sockfd);
@@ -121,6 +123,7 @@ void * send_request(void * arg){
 }
 
 void * client_thread(void * argv){
+    printf("------ client thread ------\n");
     struct client_arg * server = (struct client_arg *)argv;
 
     buf_size = server->buf_size;
