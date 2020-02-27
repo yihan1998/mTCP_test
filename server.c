@@ -94,7 +94,7 @@ int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *
 		return len;
 	}
 
-	fprintf("[SERVER] recv len: %d\n", len);
+	printf("[SERVER] recv len: %d\n", len);
 
     sent = mtcp_write(ctx->mctx, sockid, buf, len);
 
