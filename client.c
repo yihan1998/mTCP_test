@@ -116,6 +116,7 @@ void * send_request(void * arg){
     pthread_mutex_lock(&rtt_lock);
 
     fwrite(buff, strlen(buff), 1, fp);
+    fflush(fp);
     fclose(fp);
 
     pthread_mutex_unlock(&rtt_lock);
