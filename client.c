@@ -102,21 +102,18 @@ void * send_request(void * arg){
 
         if(end.tv_sec - time1.tv_sec > 10){
             printf("[CLIENT] request complete\n");
-            return NULL;
+            break;
         }
     }
 
 #ifdef __EV_RTT__
     char buff[1024];
 
-    printf("rtt %.4f\n", ((double)total_time)/request_cnt);
-
     sprintf(buff, "rtt %.4f\n", ((double)total_time)/request_cnt);
         
     pthread_mutex_lock(&rtt_lock);
 
     fwrite(buff, strlen(buff), 1, fp);
-    fflush(fp);
     fclose(fp);
 
     pthread_mutex_unlock(&rtt_lock);
