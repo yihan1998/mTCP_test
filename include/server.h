@@ -4,7 +4,7 @@
 
 //#define __EVAL_HANDLE__
 
-#define __EVAL_CYCLE__
+#define __EVAL_FRAM__
 
 #define BUF_SIZE 4096
 

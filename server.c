@@ -2,8 +2,11 @@
 
 struct timeval end_all;
 
-#ifdef __EVAL_CYCLE__
+#ifdef __EVAL_FRAM__
 int trans_start_flag = 0;
+
+int accept_time = 0;
+int accept_cnt = 0;
 #endif
 
 char * StatusCodeToString(int scode){
@@ -48,7 +51,7 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 	gettimeofday(&end_all, NULL);
 #endif
 
-#ifdef __EVAL_CYCLE__
+#ifdef __EVAL_FRAM__
 	trans_start_flag = 0;
 #endif
 
@@ -95,6 +98,11 @@ int AcceptConnection(struct thread_context *ctx, int listener){
 	struct mtcp_epoll_event ev;
 	int c;
 
+#ifdef __EVAL_FRAM__
+	struct timeval start;
+	gettimeofday(&start, NULL);
+#endif
+
 	c = mtcp_accept(mctx, listener, NULL, NULL);
 
 	if (c >= 0) {
@@ -118,6 +126,17 @@ int AcceptConnection(struct thread_context *ctx, int listener){
 					strerror(errno));
 		}
 	}
+
+#ifdef __EVAL_FRAM__
+	struct timeval end;
+	gettimeofday(&end, NULL);
+
+	double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
+    double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
+
+	accept_cnt++;
+	accept_time += (int)(end_time - start_time);
+#endif
 
 	return c;
 }
@@ -232,7 +251,7 @@ void * RunServerThread(void *arg){
 	int byte_sent = 0;
 #endif
 
-#ifdef __EVAL_CYCLE__
+#ifdef __EVAL_FRAM__
 	int cycle_cnt, handle_time, cycle_time;
 	cycle_cnt = handle_time = cycle_time = 0;
 #endif
@@ -260,7 +279,7 @@ void * RunServerThread(void *arg){
 	}
 
 	while (!done[core]) {
-#ifdef __EVAL_CYCLE__
+#ifdef __EVAL_FRAM__
 		struct timeval epoll_start;
 		gettimeofday(&epoll_start, NULL);
 #endif
@@ -270,7 +289,7 @@ void * RunServerThread(void *arg){
 				perror("mtcp_epoll_wait");
 			break;
 		}
-#ifdef __EVAL_CYCLE__
+#ifdef __EVAL_FRAM__
 		struct timeval handle_start;
 		gettimeofday(&handle_start, NULL);
 #endif
@@ -340,7 +359,7 @@ void * RunServerThread(void *arg){
     		}
 #endif
 		}
-#ifdef __EVAL_CYCLE__
+#ifdef __EVAL_FRAM__
 		struct timeval end;
 		gettimeofday(&end, NULL);
 
@@ -360,10 +379,11 @@ void * RunServerThread(void *arg){
 #endif
 	}
 
-#ifdef __EVAL_CYCLE__
+#ifdef __EVAL_FRAM__
 	char buff[100];
     
-    sprintf(buff, "total_time %.4f handle_time %.4f\n", ((double)cycle_time)/cycle_cnt, ((double)handle_time)/cycle_cnt);
+    sprintf(buff, "cycle %.4f handle %.4f accept %.4f\n", 
+			((double)cycle_time)/cycle_cnt, ((double)handle_time)/cycle_cnt, ((double)accept_time)/accept_cnt);
 
     FILE * fp = fopen("cycle.txt", "a+");
     fseek(fp, 0, SEEK_END);
