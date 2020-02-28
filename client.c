@@ -38,6 +38,9 @@ void * send_request(void * arg){
     memset(recv_buf, 0, sizeof(recv_buf));
 
 	int send_size, recv_size;
+    int total_time, request_cnt;
+
+    total_time = request_cnt = 0;
 
     FILE * send_fp = fopen("client-input.dat", "rb");
 #ifdef RECEIVE_DEBUG
@@ -93,16 +96,8 @@ void * send_request(void * arg){
         double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
         double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
 
-        char buff[1024];
-
-        sprintf(buff, "rtt %d\n", (int)(end_time - start_time));
-        
-        pthread_mutex_lock(&rtt_lock);
-
-        fwrite(buff, strlen(buff), 1, fp);
-        fflush(fp);
-
-        pthread_mutex_unlock(&rtt_lock);
+        request_cnt++;
+	    total_time += (int)(end_time - start_time);
 #endif
 
         if(end.tv_sec - time1.tv_sec > 10){
@@ -114,7 +109,16 @@ void * send_request(void * arg){
     fclose(send_fp);
 
 #ifdef __EV_RTT__
+    char buff[1024];
+
+    sprintf(buff, "rtt %.4f\n", ((double)total_time)/request_cnt);
+        
+    pthread_mutex_lock(&rtt_lock);
+
+    fwrite(buff, strlen(buff), 1, fp);
     fclose(fp);
+
+    pthread_mutex_unlock(&rtt_lock);
 #endif
 
     return NULL;
