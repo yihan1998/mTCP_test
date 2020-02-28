@@ -98,6 +98,8 @@ void * send_request(void * arg){
 
         request_cnt++;
 	    total_time += (int)(end_time - start_time);
+
+        printf("[CLIENT] request cnt: %d, total time: %d\n", request_cnt, total_time);
 #endif
 
         if(end.tv_sec - time1.tv_sec > 10){
@@ -105,8 +107,6 @@ void * send_request(void * arg){
             return NULL;
         }
     }
-    
-    fclose(send_fp);
 
 #ifdef __EV_RTT__
     char buff[1024];
@@ -121,6 +121,8 @@ void * send_request(void * arg){
     pthread_mutex_unlock(&rtt_lock);
 #endif
 
+    fclose(send_fp);
+    
     return NULL;
 }
 
