@@ -48,6 +48,10 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 	gettimeofday(&end_all, NULL);
 #endif
 
+#ifdef __EVAL_CYCLE__
+	trans_start_flag = 0;
+#endif
+
 	mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_DEL, sockid, NULL);
 	mtcp_close(ctx->mctx, sockid);
 }
@@ -219,7 +223,7 @@ void * RunServerThread(void *arg){
 	int nevents;
 	int i, ret;
 	int do_accept;
-	
+
 #ifdef __REAL_TIME_STATS__
 	struct timeval start;
 	int start_flag = 0;
