@@ -98,8 +98,6 @@ void * send_request(void * arg){
 
         request_cnt++;
 	    total_time += (int)(end_time - start_time);
-
-        printf("[CLIENT] request cnt: %d, total time: %d\n", request_cnt, total_time);
 #endif
 
         if(end.tv_sec - time1.tv_sec > 10){
