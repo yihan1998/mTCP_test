@@ -109,6 +109,8 @@ void * send_request(void * arg){
 #ifdef __EV_RTT__
     char buff[1024];
 
+    printf("rtt %.4f\n", ((double)total_time)/request_cnt);
+
     sprintf(buff, "rtt %.4f\n", ((double)total_time)/request_cnt);
         
     pthread_mutex_lock(&rtt_lock);
