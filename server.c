@@ -275,17 +275,16 @@ void * RunServerThread(void *arg){
 	}
 
 	while (!done[core]) {
-#ifdef __EVAL_CYCLE__
-		struct timeval start;
-		gettimeofday(&start, NULL);
-#endif
 		nevents = mtcp_epoll_wait(mctx, ep, events, MAX_EVENTS, -1);
 		if (nevents < 0) {
 			if (errno != EINTR)
 				perror("mtcp_epoll_wait");
 			break;
 		}
-
+#ifdef __EVAL_CYCLE__
+		struct timeval start;
+		gettimeofday(&start, NULL);
+#endif
 		do_accept = FALSE;
 		for (i = 0; i < nevents; i++) {
 
