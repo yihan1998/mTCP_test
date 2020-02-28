@@ -37,8 +37,7 @@ void * send_request(void * arg){
     char recv_buf[buf_size + 1];
     memset(recv_buf, 0, sizeof(recv_buf));
 
-	int send_size, recv_size;
-    int total_time, request_cnt;
+	int send_size, recv_size；
 
     total_time = request_cnt = 0;
 
@@ -48,6 +47,7 @@ void * send_request(void * arg){
 #endif
 
 #ifdef __EV_RTT__
+    int total_time, request_cnt;
     FILE * fp = fopen("rtt.txt", "a+");
     fseek(fp, 0, SEEK_END);
 #endif
