@@ -37,7 +37,7 @@ void * send_request(void * arg){
     char recv_buf[buf_size + 1];
     memset(recv_buf, 0, sizeof(recv_buf));
 
-	int send_size, recv_size；
+	int send_size, recv_size;
 
     total_time = request_cnt = 0;
 
