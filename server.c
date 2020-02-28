@@ -219,12 +219,14 @@ void * RunServerThread(void *arg){
 	int nevents;
 	int i, ret;
 	int do_accept;
+	
 #ifdef __REAL_TIME_STATS__
 	struct timeval start;
 	int start_flag = 0;
-#endif
+
 	int request_cnt = 0;
 	int byte_sent = 0;
+#endif
 
 #ifdef __EVAL_CYCLE__
 	int cycle_cnt, handle_time, cycle_time;
@@ -335,8 +337,8 @@ void * RunServerThread(void *arg){
 #endif
 		}
 #ifdef __EVAL_CYCLE__
-		struct timeval handle_end;
-		gettimeofday(&handle_end, NULL);
+		struct timeval end;
+		gettimeofday(&end, NULL);
 
 		if(trans_start_flag){
 			double epoll_start_time = (double)epoll_start.tv_sec * 1000000 + (double)epoll_start.tv_usec;
