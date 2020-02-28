@@ -362,7 +362,7 @@ void * RunServerThread(void *arg){
 
     char buff[1024];
 
-    sprintf(buff, "rps: %.4f, throughput: %.4f\n", 
+    sprintf(buff, "rps %.4f throughput %.4f\n", 
             ((double)request_cnt)/elapsed, ((double)byte_sent)/elapsed);
     
     fwrite(buff, strlen(buff), 1, fp);
