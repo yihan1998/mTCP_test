@@ -350,16 +350,18 @@ void * RunServerThread(void *arg){
 
 #ifdef __REAL_TIME_STATS__
 
-    double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
-    double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
+    double start_time = (double)start.tv_sec + ((double)start.tv_usec/(double)1000000);
+    double end_time = (double)end.tv_sec + ((double)end.tv_usec/(double)1000000);
+
+	double elapsed = end_time - start_time;
 
 	FILE * fp = fopen("throughput", "a+");
     fseek(fp, 0, SEEK_END);
 
     char buff[1024];
 
-    sprintf(buff, "start %lf end %lf tot_request %d tot_byte %d\n", 
-            start_time, end_time, request_cnt, byte_sent);
+    sprintf(buff, "rps: %.4f, throughput: %.4f\n", 
+            ((double)request_cnt)/elapsed, ((double)byte_sent)/elapsed);
     
     fwrite(buff, strlen(buff), 1, fp);
 
