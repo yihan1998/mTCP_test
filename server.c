@@ -1,5 +1,7 @@
 #include "server.h"
 
+struct timeval end_all;
+
 char * StatusCodeToString(int scode){
 	switch (scode) {
 		case 200:
@@ -14,29 +16,6 @@ char * StatusCodeToString(int scode){
 	return NULL;
 }
 
-void request_end(int fd, struct timeval start, int byte_sent, int request_cnt){
-    char file_name[1024];
-    sprintf(file_name, "record_core_%d.txt", fd);
-
-    FILE * fp = fopen(file_name, "a+");
-    fseek(fp, 0, SEEK_END);
-
-    struct timeval end;
-    gettimeofday(&end, NULL);
-
-    double start_time = (double)start.tv_sec + ((double)start.tv_usec/(double)1000000);
-    double end_time = (double)end.tv_sec + ((double)end.tv_usec/(double)1000000);
-
-    char buff[1024];
-
-    sprintf(buff, "start %lf end %lf tot_request %d tot_byte %d\n", 
-            start_time, end_time, request_cnt, byte_sent);
-    
-    fwrite(buff, strlen(buff), 1, fp);
-
-    fclose(fp);
-}
-
 void CleanServerVariable(struct server_vars *sv){
 	sv->recv_len = 0;
 	sv->request_len = 0;
@@ -45,17 +24,10 @@ void CleanServerVariable(struct server_vars *sv){
 	sv->done = 0;
 	sv->rspheader_sent = 0;
 	sv->keep_alive = 0;
-	sv->start_flag = 0;
-	sv->request_cnt = 0;
-	sv->byte_sent = 0;
 	sv->total_time = 0;
 }
 
 void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
-#ifdef __REAL_TIME_STATS__
-	request_end(sockid, sv->start, sv->byte_sent, sv->request_cnt);
-#endif
-
 #ifdef __EVAL_HANDLE__
     char buff[100];
     
@@ -68,17 +40,15 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
     fclose(fp);	
 #endif
 
+#ifdef __REAL_TIME_STATS__
+	gettimeofday(&end_all, NULL);
+#endif
+
 	mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_DEL, sockid, NULL);
 	mtcp_close(ctx->mctx, sockid);
 }
 
 int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *sv){
-#ifdef __REAL_TIME_STATS__
-    if(!sv->start_flag){
-        gettimeofday(&sv->start, NULL);
-        sv->start_flag = 1;
-    }
-#endif
 
 #ifdef __EVAL_HANDLE__
     struct timeval start;
@@ -96,9 +66,6 @@ int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *
 
     sent = mtcp_write(ctx->mctx, sockid, buf, len);
 
-#ifdef __REAL_TIME_STATS__
-    sv->byte_sent += sent;
-#endif
 
 #ifdef __EVAL_HANDLE__
     struct timeval end;
@@ -249,6 +216,12 @@ void * RunServerThread(void *arg){
 	int i, ret;
 	int do_accept;
 
+	struct timeval start;
+	int start_flag = 0;
+
+	int request_cnt = 0;
+	int byte_sent = 0;
+
 	int cycle_cnt, cycle_time;
 	cycle_cnt = cycle_time = 0;
 	
@@ -315,6 +288,11 @@ void * RunServerThread(void *arg){
 				ret = HandleReadEvent(ctx, events[i].data.sockid, 
 						&ctx->svars[events[i].data.sockid]);
 
+#ifdef __REAL_TIME_STATS__
+				request_cnt++;
+				byte_sent += ret;
+#endif
+
 				if (ret == 0) {
 					/* connection closed by remote host */
 					CloseConnection(ctx, events[i].data.sockid, 
@@ -339,6 +317,12 @@ void * RunServerThread(void *arg){
 				if (ret < 0)
 					break;
 			}
+#ifdef __REAL_TIME_STATS__
+		    if(!start_flag){
+        		gettimeofday(&start, NULL);
+        		start_flag = 1;
+    		}
+#endif
 		}
 #ifdef __EVAL_CYCLE__
 		struct timeval end;
@@ -362,6 +346,24 @@ void * RunServerThread(void *arg){
     
     fwrite(buff, strlen(buff), 1, fp);
     fclose(fp);	
+#endif
+
+#ifdef __REAL_TIME_STATS__
+
+    double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
+    double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
+
+	FILE * fp = fopen("throughput", "a+");
+    fseek(fp, 0, SEEK_END);
+
+    char buff[1024];
+
+    sprintf(buff, "start %lf end %lf tot_request %d tot_byte %d\n", 
+            start_time, end_time, request_cnt, byte_sent);
+    
+    fwrite(buff, strlen(buff), 1, fp);
+
+    fclose(fp);
 #endif
 
 	/* destroy mtcp context: this will kill the mtcp thread */

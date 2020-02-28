@@ -1,10 +1,10 @@
 #include "common.h"
 
-//#define __REAL_TIME_STATS__
+#define __REAL_TIME_STATS__
 
 //#define __EVAL_HANDLE__
 
-#define __EVAL_CYCLE__
+//#define __EVAL_CYCLE__
 
 #define BUF_SIZE 4096
 
@@ -47,12 +47,6 @@ struct server_vars {
 	uint8_t done;
 	uint8_t rspheader_sent;
 	uint8_t keep_alive;
-
-	struct timeval start;
-	int start_flag;
-
-	int request_cnt;
-	int byte_sent;
 
 	int total_time;
 };
