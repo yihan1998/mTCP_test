@@ -4,6 +4,8 @@
 
 //#define __EVAL_HANDLE__
 
+#define __EVAL_CYCLE__
+
 #define BUF_SIZE 4096
 
 #define MAX_FLOW_NUM  (10000)
@@ -53,6 +55,9 @@ struct server_vars {
 	int byte_sent;
 
 	int total_time;
+
+	int cycle_cnt;
+	int cycle_time;
 };
 
 static int num_cores;
