@@ -222,8 +222,10 @@ void * RunServerThread(void *arg){
 	int request_cnt = 0;
 	int byte_sent = 0;
 
+#ifdef __EVAL_CYCLE__
 	int cycle_cnt, cycle_time;
 	cycle_cnt = cycle_time = 0;
+#endif
 	
 	/* initialization */
 	ctx = InitializeServerThread(core);
@@ -351,7 +353,7 @@ void * RunServerThread(void *arg){
 #ifdef __REAL_TIME_STATS__
 
     double start_time = (double)start.tv_sec + ((double)start.tv_usec/(double)1000000);
-    double end_time = (double)end.tv_sec + ((double)end.tv_usec/(double)1000000);
+    double end_time = (double)end_all.tv_sec + ((double)end_all.tv_usec/(double)1000000);
 
 	double elapsed = end_time - start_time;
 
