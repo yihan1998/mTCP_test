@@ -49,8 +49,6 @@ void CleanServerVariable(struct server_vars *sv){
 	sv->request_cnt = 0;
 	sv->byte_sent = 0;
 	sv->total_time = 0;
-	sv->cycle_cnt = 0;
-	sv->cycle_time = 0;
 }
 
 void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
@@ -64,18 +62,6 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
     sprintf(buff, "handle_read %.4f\n", ((double)sv->total_time)/sv->request_cnt);
 
     FILE * fp = fopen("handle_read.txt", "a+");
-    fseek(fp, 0, SEEK_END);
-    
-    fwrite(buff, strlen(buff), 1, fp);
-    fclose(fp);	
-#endif
-
-#ifdef __EVAL_CYCLE__
-	char buff[100];
-    
-    sprintf(buff, "cycle %.4f\n", ((double)sv->cycle_time)/sv->cycle_cnt);
-
-    FILE * fp = fopen("cycle.txt", "a+");
     fseek(fp, 0, SEEK_END);
     
     fwrite(buff, strlen(buff), 1, fp);
@@ -262,6 +248,9 @@ void * RunServerThread(void *arg){
 	int nevents;
 	int i, ret;
 	int do_accept;
+
+	int cycle_cnt, cycle_time;
+	cycle_cnt = cycle_time = 0;
 	
 	/* initialization */
 	ctx = InitializeServerThread(core);
@@ -359,10 +348,22 @@ void * RunServerThread(void *arg){
 		double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
         double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
 
-        sv->cycle_cnt++;
-	    sv->cycle_time += (int)(end_time - start_time);
+        cycle_cnt++;
+	    cycle_time += (int)(end_time - start_time);
 #endif
 	}
+
+#ifdef __EVAL_CYCLE__
+	char buff[100];
+    
+    sprintf(buff, "cycle %.4f\n", ((double)cycle_time)/cycle_cnt);
+
+    FILE * fp = fopen("cycle.txt", "a+");
+    fseek(fp, 0, SEEK_END);
+    
+    fwrite(buff, strlen(buff), 1, fp);
+    fclose(fp);	
+#endif
 
 	/* destroy mtcp context: this will kill the mtcp thread */
 	mtcp_destroy_context(mctx);

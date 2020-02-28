@@ -55,9 +55,6 @@ struct server_vars {
 	int byte_sent;
 
 	int total_time;
-
-	int cycle_cnt;
-	int cycle_time;
 };
 
 static int num_cores;
