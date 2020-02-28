@@ -7,6 +7,9 @@ int trans_start_flag = 0;
 
 int accept_time = 0;
 int accept_cnt = 0;
+
+int read_time = 0;
+int read_cnt = 0;
 #endif
 
 char * StatusCodeToString(int scode){
@@ -35,17 +38,6 @@ void CleanServerVariable(struct server_vars *sv){
 }
 
 void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
-#ifdef __EVAL_HANDLE__
-    char buff[100];
-    
-    sprintf(buff, "handle_read %.4f\n", ((double)sv->total_time)/sv->request_cnt);
-
-    FILE * fp = fopen("handle_read.txt", "a+");
-    fseek(fp, 0, SEEK_END);
-    
-    fwrite(buff, strlen(buff), 1, fp);
-    fclose(fp);	
-#endif
 
 #ifdef __REAL_TIME_STATS__
 	gettimeofday(&end_all, NULL);
@@ -61,7 +53,7 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 
 int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *sv){
 
-#ifdef __EVAL_HANDLE__
+#ifdef __EVAL_FRAM__
     struct timeval start;
     gettimeofday(&start, NULL);
 #endif
@@ -77,16 +69,15 @@ int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *
 
     sent = mtcp_write(ctx->mctx, sockid, buf, len);
 
-
-#ifdef __EVAL_HANDLE__
+#ifdef __EVAL_FRAM__
     struct timeval end;
     gettimeofday(&end, NULL);
 
     double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
     double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
 
-	sv->request_cnt++;
-	sv->total_time += (int)(end_time - start_time);
+	read_cnt++;
+	read_time += (int)(end_time - start_time);
 #endif
 
     return sent;
@@ -382,8 +373,9 @@ void * RunServerThread(void *arg){
 #ifdef __EVAL_FRAM__
 	char buff[100];
     
-    sprintf(buff, "cycle %.4f handle %.4f accept %.4f\n", 
-			((double)cycle_time)/cycle_cnt, ((double)handle_time)/cycle_cnt, ((double)accept_time)/accept_cnt);
+    sprintf(buff, "tot_cycle %.4f tot_handle %.4f accept %.4f handleRead %.4f\n", 
+			((double)cycle_time)/cycle_cnt, ((double)handle_time)/cycle_cnt, 
+			((double)accept_time)/accept_cnt, ((double)read_time)/read_cnt);
 
     FILE * fp = fopen("cycle.txt", "a+");
     fseek(fp, 0, SEEK_END);
