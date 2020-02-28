@@ -39,8 +39,6 @@ void * send_request(void * arg){
 
 	int send_size, recv_size;
 
-    total_time = request_cnt = 0;
-
     FILE * send_fp = fopen("client-input.dat", "rb");
 #ifdef RECEIVE_DEBUG
     FILE * recv_fp = fopen("server-ouput.dat", "wb");
@@ -48,6 +46,7 @@ void * send_request(void * arg){
 
 #ifdef __EV_RTT__
     int total_time, request_cnt;
+    total_time = request_cnt = 0;
     FILE * fp = fopen("rtt.txt", "a+");
     fseek(fp, 0, SEEK_END);
 #endif
