@@ -259,6 +259,9 @@ void * RunServerThread(void *arg){
 		exit(-1);
 	}
 
+	FILE * test_fp = fopen("test.txt", "a+");
+    fseek(test_fp, 0, SEEK_END);
+
 	while (!done[core]) {
 #ifdef __EVAL_CYCLE__
 		struct timeval epoll_start;
@@ -352,6 +355,14 @@ void * RunServerThread(void *arg){
     	    cycle_cnt++;
 	    	handle_time += (int)(end_time - handle_start_time);
 	    	cycle_time += (int)(end_time - epoll_start_time);
+
+			char buff[100];
+    
+		    sprintf(buff, "total_time %.4f handle_time %.4f\n", 
+					end_time - epoll_start_time, end_time - handle_start_time);
+
+			fwrite(buff, strlen(buff), 1, test_fp);
+			fflush(test_fp);
 		}
 
 		if(do_accept){
@@ -370,6 +381,8 @@ void * RunServerThread(void *arg){
     
     fwrite(buff, strlen(buff), 1, fp);
     fclose(fp);	
+	
+    fclose(test_fp);	
 #endif
 
 #ifdef __REAL_TIME_STATS__
