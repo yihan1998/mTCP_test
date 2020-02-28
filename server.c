@@ -357,7 +357,7 @@ void * RunServerThread(void *arg){
 
 	double elapsed = end_time - start_time;
 
-	FILE * fp = fopen("throughput", "a+");
+	FILE * fp = fopen("throughput.txt", "a+");
     fseek(fp, 0, SEEK_END);
 
     char buff[1024];
