@@ -2,6 +2,10 @@
 
 struct timeval end_all;
 
+#ifdef __EVAL_CYCLE__
+int trans_start_flag = 0;
+#endif
+
 char * StatusCodeToString(int scode){
 	switch (scode) {
 		case 200:
@@ -215,16 +219,16 @@ void * RunServerThread(void *arg){
 	int nevents;
 	int i, ret;
 	int do_accept;
-
+#ifdef __REAL_TIME_STATS__
 	struct timeval start;
 	int start_flag = 0;
-
+#endif
 	int request_cnt = 0;
 	int byte_sent = 0;
 
 #ifdef __EVAL_CYCLE__
-	int cycle_cnt, cycle_time;
-	cycle_cnt = cycle_time = 0;
+	int cycle_cnt, handle_time, cycle_time;
+	cycle_cnt = handle_time = cycle_time = 0;
 #endif
 	
 	/* initialization */
@@ -250,6 +254,10 @@ void * RunServerThread(void *arg){
 	}
 
 	while (!done[core]) {
+#ifdef __EVAL_CYCLE__
+		struct timeval epoll_start;
+		gettimeofday(&epoll_start, NULL);
+#endif
 		nevents = mtcp_epoll_wait(mctx, ep, events, MAX_EVENTS, -1);
 		if (nevents < 0) {
 			if (errno != EINTR)
@@ -257,8 +265,8 @@ void * RunServerThread(void *arg){
 			break;
 		}
 #ifdef __EVAL_CYCLE__
-		struct timeval start;
-		gettimeofday(&start, NULL);
+		struct timeval handle_start;
+		gettimeofday(&handle_start, NULL);
 #endif
 		do_accept = FALSE;
 		for (i = 0; i < nevents; i++) {
@@ -327,21 +335,29 @@ void * RunServerThread(void *arg){
 #endif
 		}
 #ifdef __EVAL_CYCLE__
-		struct timeval end;
-		gettimeofday(&end, NULL);
+		struct timeval handle_end;
+		gettimeofday(&handle_end, NULL);
 
-		double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
-        double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
+		if(trans_start_flag){
+			double epoll_start_time = (double)epoll_start.tv_sec * 1000000 + (double)epoll_start.tv_usec;
+			double handle_start_time = (double)handle_start.tv_sec * 1000000 + (double)handle_start.tv_usec;
+	        double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
 
-        cycle_cnt++;
-	    cycle_time += (int)(end_time - start_time);
+    	    cycle_cnt++;
+	    	handle_time += (int)(end_time - handle_start_time);
+	    	cycle_time += (int)(end_time - epoll_start_time);
+		}
+
+		if(do_accept){
+			trans_start_flag = 1;
+		}
 #endif
 	}
 
 #ifdef __EVAL_CYCLE__
 	char buff[100];
     
-    sprintf(buff, "cycle %.4f\n", ((double)cycle_time)/cycle_cnt);
+    sprintf(buff, "total_time %.4f handle_time %.4f\n", ((double)cycle_time)/cycle_cnt, ((double)handle_time)/cycle_cnt);
 
     FILE * fp = fopen("cycle.txt", "a+");
     fseek(fp, 0, SEEK_END);

@@ -1,10 +1,10 @@
 #include "common.h"
 
-#define __REAL_TIME_STATS__
+//#define __REAL_TIME_STATS__
 
 //#define __EVAL_HANDLE__
 
-//#define __EVAL_CYCLE__
+#define __EVAL_CYCLE__
 
 #define BUF_SIZE 4096
 
