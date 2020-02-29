@@ -52,7 +52,7 @@ void * send_request(void * arg){
     fseek(fp, 0, SEEK_END);
 #endif
 
-    struct timeval time1;
+    struct timeval time1, time2;
     gettimeofday(&time1, NULL);
 
     while(!feof(send_fp)){
@@ -97,15 +97,13 @@ void * send_request(void * arg){
 #endif
 
         if(end.tv_sec - time1.tv_sec > 10){
+            gettimeofday(&time2, NULL);
             printf("[CLIENT] request complete\n");
             break;
         }
     }
 
 #ifdef __EV_RTT__
-    struct timeval time2;
-    gettimeofday(&time2, NULL);
-
     double start_time = (double)time1.tv_sec * 1000000 + (double)time1.tv_usec;
     double end_time = (double)time2.tv_sec * 1000000 + (double)time2.tv_usec;
 
