@@ -46,7 +46,7 @@ void * send_request(void * arg){
 
 #ifdef __EV_RTT__
     int request_cnt;
-    equest_cnt = 0;
+    request_cnt = 0;
     
     FILE * fp = fopen("rtt.txt", "a+");
     fseek(fp, 0, SEEK_END);
