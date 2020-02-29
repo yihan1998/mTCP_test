@@ -45,8 +45,9 @@ void * send_request(void * arg){
 #endif
 
 #ifdef __EV_RTT__
-    int total_time, request_cnt;
-    total_time = request_cnt = 0;
+    int request_cnt;
+    equest_cnt = 0;
+    
     FILE * fp = fopen("rtt.txt", "a+");
     fseek(fp, 0, SEEK_END);
 #endif
@@ -92,11 +93,7 @@ void * send_request(void * arg){
         gettimeofday(&end, NULL);
 
 #ifdef __EV_RTT__
-        double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
-        double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
-
         request_cnt++;
-	    total_time += (int)(end_time - start_time);
 #endif
 
         if(end.tv_sec - time1.tv_sec > 10){
@@ -106,9 +103,15 @@ void * send_request(void * arg){
     }
 
 #ifdef __EV_RTT__
+    struct timeval time2;
+    gettimeofday(&time2, NULL);
+
+    double start_time = (double)time1.tv_sec * 1000000 + (double)time1.tv_usec;
+    double end_time = (double)time2.tv_sec * 1000000 + (double)time2.tv_usec;
+
     char buff[1024];
 
-    sprintf(buff, "rtt %.4f\n", ((double)total_time)/request_cnt);
+    sprintf(buff, "rtt %.4f\n", ((end_time - start_time)/request_cnt));
         
     pthread_mutex_lock(&rtt_lock);
 
