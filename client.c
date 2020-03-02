@@ -45,7 +45,7 @@ void * send_request(void * arg){
 #endif
 
 #ifdef __EV_RTT__
-    struct timeval record_start[100000], record_end[100000];
+    struct timeval record_start[1000000], record_end[1000000];
 
     int request_cnt;
     request_cnt = 0;
