@@ -2,7 +2,7 @@
 
 //#define RECEIVE_DEBUG
 
-#define __EV_RTT__
+//#define __EV_RTT__
 
 int buf_size;
 
