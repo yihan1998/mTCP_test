@@ -45,6 +45,8 @@ void * send_request(void * arg){
 #endif
 
 #ifdef __EV_RTT__
+    struct timeval record_start[10000], record_end[10000];
+
     int request_cnt;
     request_cnt = 0;
     
@@ -57,8 +59,9 @@ void * send_request(void * arg){
 
     while(!feof(send_fp)){
 
-        struct timeval start;
-        gettimeofday(&start, NULL);
+#ifdef __EV_RTT__
+        gettimeofday(&record_start[request_cnt], NULL);
+#endif
   
 //send request
         send_size = fread(send_buf, 1, buf_size, send_fp);
@@ -89,34 +92,45 @@ void * send_request(void * arg){
             }
         }
 
+#ifdef __EV_RTT__
+        gettimeofday(&record_end[request_cnt], NULL);
+
+        if(record_end[request_cnt].tv_sec - record_start[0].tv_sec > 10){
+            printf("[CLIENT] request complete\n");
+            break;
+        }
+
+        request_cnt++;
+#else
         struct timeval end;
         gettimeofday(&end, NULL);
-
-#ifdef __EV_RTT__
-        request_cnt++;
-#endif
-
+        
         if(end.tv_sec - time1.tv_sec > 10){
             gettimeofday(&time2, NULL);
             printf("[CLIENT] request complete\n");
             break;
         }
     }
+#endif
 
 #ifdef __EV_RTT__
-    double start_time = (double)time1.tv_sec * 1000000 + (double)time1.tv_usec;
-    double end_time = (double)time2.tv_sec * 1000000 + (double)time2.tv_usec;
+    int j;
+    for(j = 0;j < request_cnt;j++){
+        double start_time = (double)record_start[j].tv_sec * 1000000 + (double)record_start[j].tv_usec;
+        double end_time = (double)record_end[j].tv_sec * 1000000 + (double)record_end[j].tv_usec;
 
-    char buff[1024];
+        char buff[1024];
 
-    sprintf(buff, "rtt %.4f\n", ((end_time - start_time)/request_cnt));
+        sprintf(buff, "rtt %d\n", end_time - start_time);
         
-    pthread_mutex_lock(&rtt_lock);
+        pthread_mutex_lock(&rtt_lock);
 
-    fwrite(buff, strlen(buff), 1, fp);
-    fclose(fp);
+        fwrite(buff, strlen(buff), 1, fp);
+        fclose(fp);
 
-    pthread_mutex_unlock(&rtt_lock);
+        pthread_mutex_unlock(&rtt_lock);
+    }
+
 #endif
 
     fclose(send_fp);
