@@ -115,7 +115,7 @@ void * send_request(void * arg){
 
 #ifdef __EV_RTT__
     int j;
-    for(j = 0;j < request_cnt;j++){
+    for(j = 0;j <= request_cnt;j++){
         double start_time = (double)record_start[j].tv_sec * 1000000 + (double)record_start[j].tv_usec;
         double end_time = (double)record_end[j].tv_sec * 1000000 + (double)record_end[j].tv_usec;
 
@@ -126,10 +126,12 @@ void * send_request(void * arg){
         pthread_mutex_lock(&rtt_lock);
 
         fwrite(buff, strlen(buff), 1, fp);
-        fclose(fp);
+        fflush(fp);
 
         pthread_mutex_unlock(&rtt_lock);
     }
+
+    fclose(fp);
 
 #endif
 
