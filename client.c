@@ -110,8 +110,8 @@ void * send_request(void * arg){
             printf("[CLIENT] request complete\n");
             break;
         }
-    }
 #endif
+    }
 
 #ifdef __EV_RTT__
     int j;
