@@ -54,7 +54,7 @@ void * send_request(void * arg){
     fseek(fp, 0, SEEK_END);
 #endif
 
-    struct timeval time1;
+    struct timeval time1, time2;
     gettimeofday(&time1, NULL);
 
     while(!feof(send_fp)){
