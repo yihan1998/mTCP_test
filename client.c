@@ -45,7 +45,7 @@ void * send_request(void * arg){
 #endif
 
 #ifdef __EV_RTT__
-    struct timeval record_start[10000], record_end[10000];
+    struct timeval record_start[100000], record_end[100000];
 
     int request_cnt;
     request_cnt = 0;
@@ -61,7 +61,6 @@ void * send_request(void * arg){
 
 #ifdef __EV_RTT__
         gettimeofday(&record_start[request_cnt], NULL);
-        printf("[start gettimeofday] request cnt: %d\n", request_cnt);
 #endif
   
 //send request
@@ -95,7 +94,6 @@ void * send_request(void * arg){
 
 #ifdef __EV_RTT__
         gettimeofday(&record_end[request_cnt], NULL);
-        printf("[end gettimeofday]\n");
 
         if(record_end[request_cnt].tv_sec - record_start[0].tv_sec > 10){
             printf("[CLIENT] request complete\n");
