@@ -54,7 +54,7 @@ void * send_request(void * arg){
     fseek(fp, 0, SEEK_END);
 #endif
 
-    struct timeval time1, time2;
+    struct timeval time1;
     gettimeofday(&time1, NULL);
 
     while(!feof(send_fp)){
@@ -121,7 +121,7 @@ void * send_request(void * arg){
 
         char buff[1024];
 
-        sprintf(buff, "rtt %d\n", end_time - start_time);
+        sprintf(buff, "rtt %d\n", (int)(end_time - start_time));
         
         pthread_mutex_lock(&rtt_lock);
 
