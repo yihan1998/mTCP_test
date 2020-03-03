@@ -121,7 +121,7 @@ void * send_request(void * arg){
 
         char buff[1024];
 
-        sprintf(buff, "rtt %ld\n", end_time - start_time);
+        sprintf(buff, "%ld\n", end_time - start_time);
         
         pthread_mutex_lock(&rtt_lock);
 
