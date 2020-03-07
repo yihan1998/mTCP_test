@@ -16,9 +16,9 @@ with open("throughput.txt", "r") as f:
            total_rps += float(res[1])
            total_thp += float(res[3])
            count += 1
-            if count == core:
-                total += 1
-                count = 0
+           if count == core:
+               total += 1
+               count = 0
     f.close()
     avg_rps = round(total_rps/float(total), 4)
     avg_thp = round(total_thp/float(total), 4)
