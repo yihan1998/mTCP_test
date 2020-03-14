@@ -637,7 +637,7 @@ int main(int argc, char **argv){
 		sv_thread_arg[i].core = i;
         sv_thread_arg[i].thread_id = i;
 //        sv_thread_arg[i].hi = hi;
-		memcpy(&sv_thread_arg[i].hikv_thread_arg, &hikv_args, HIKV_ARG_SIZE);
+		memcpy(&sv_thread_arg[i].hikv_args, &hikv_args, HIKV_ARG_SIZE);
 		
 		if (pthread_create(&app_thread[i], 
 				   NULL, RunServerThread, (void *)&sv_thread_arg[i])) {
