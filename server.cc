@@ -543,7 +543,7 @@ int main(int argc, char **argv){
         uint64_t n;
         char junk;
         if(sscanf(argv[i], "--config_file=%s%c", conf_file, &junk) == 1){
-            
+            printf("config file: %s\n", conf_file);
         }else if(sscanf(argv[i], "--core_limit=%llu%c", &n, &junk) == 1){
             core_limit = n;
 			if (core_limit > num_cores) {
