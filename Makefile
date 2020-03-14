@@ -83,7 +83,7 @@ endif
 CLI_LIBS = -lpthread
 
 server.o: 
-	${CC} $(HIKV_SRC) server.cc -c $@ ${CFLAGS} ${INC}
+	${CC} $(HIKV_SRC) server.cc -c server.o ${CFLAGS} ${INC}
 
 server: 
 	${CC} server.o ${MTCP_FLD}/lib/libmtcp.a $< ${LIBS} ${UTIL_OBJ} -o $@
