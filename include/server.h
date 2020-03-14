@@ -49,11 +49,39 @@ struct server_vars {
 	int total_time;
 };
 
+struct hikv_arg {
+    size_t pm_size;
+    uint64_t num_server_thread;
+    uint64_t num_backend_thread;
+    uint64_t num_warm_kv;
+    uint64_t num_put_kv;
+    uint64_t num_get_kv;
+    uint64_t num_delete_kv;
+    uint64_t num_scan_kv;
+    uint64_t scan_range;
+    uint64_t seed;
+    uint64_t scan_all;
+};
+
+#define HIKV_ARG_SIZE sizeof(struct hikv_arg)
+
+struct server_arg {
+    int core;
+    int thread_id;
+    struct hikv_arg hikv_thread_arg;
+};
+
 static int num_cores;
 static int core_limit;
 static pthread_t app_thread[MAX_CPUS];
 static int done[MAX_CPUS];
 static char *conf_file = NULL;
 static int backlog = -1;
+
+static pthread_t sv_thread[MAX_CPUS];
+static struct server_arg sv_thread_arg[MAX_CPUS];
+
+static struct hikv * hi;
+static struct hikv_arg * hikv_args;
 
 void * server_thread(void * arg);

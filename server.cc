@@ -38,7 +38,6 @@ void CleanServerVariable(struct server_vars *sv){
 }
 
 void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
-
 #ifdef __REAL_TIME_STATS__
 	gettimeofday(&end_all, NULL);
 #endif
@@ -57,7 +56,7 @@ int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *
     struct timeval start;
     gettimeofday(&start, NULL);
 #endif
-
+/*
 	char buf[BUF_SIZE];
 
 	int len, sent;
@@ -68,6 +67,38 @@ int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *
 	}
 
     sent = mtcp_write(ctx->mctx, sockid, buf, len);
+*/
+    int buf_size = BUF_SIZE / KV_ITEM_SIZE * KV_ITEM_SIZE;
+    struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(buf_size);
+
+    size_t len = mtcp_read(ctx->mctx, sockid, (char *)recv_item, buf_size);
+    int recv_num = len / KV_ITEM_SIZE;
+
+    printf("[SERVER] recv_num: %d\n", recv_num);
+
+//process request
+    int i, res, ret;
+    for(i = 0;i < recv_num;i++){
+        if(recv_item[i].len > 0){
+//            printf("[SERVER] put KV item\n");
+            res = hi->insert(thread_id, (uint8_t *)recv_item[i].key, (uint8_t *)recv_item[i].value);
+//            printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item[i].key, VALUE_SIZE, recv_item[i].value);
+            if (res == true){
+//                printf("[SERVER] insert success\n");
+            }
+        }else if(recv_item[i].len == 0){
+            res = hi->search(thread_id, (uint8_t *)recv_item[i].key, (uint8_t *)recv_item[i].value);
+            if(res == true){
+//                printf("[SERVER] search success\n");
+                recv_item[i].len = VALUE_SIZE;
+                bufferevent_write(bev, (char *)&recv_item[i], KV_ITEM_SIZE);
+            }else{
+//                printf("[SERVER] search failed\n");
+                recv_item[i].len = -1;
+                bufferevent_write(bev, (char *)&recv_item[i], KV_ITEM_SIZE);
+            }
+        }
+    }
 
 #ifdef __EVAL_FRAM__
     struct timeval end;
@@ -224,7 +255,14 @@ int CreateListeningSocket(struct thread_context *ctx){
 }
 
 void * RunServerThread(void *arg){
-	int core = *(int *)arg;
+//	int core = *(int *)arg;
+	struct server_arg * args = (struct server_arg *)arg;
+
+	int core = args->core;
+	int thread_id = args->thread_id;
+    struct hikv * hi = thread_arg->hi;
+	struct hikv_arg hikv_args = args->hikv_args;
+
 	struct thread_context *ctx;
 	mctx_t mctx;
 	int listener;
@@ -441,7 +479,7 @@ int main(int argc, char **argv){
 		TRACE_CONFIG("$%s directory_to_service\n", argv[0]);
 		return FALSE;
 	}
-
+#if 0
 	while (-1 != (o = getopt(argc, argv, "N:f:c:b"))) {
 		switch (o) {
 		case 'N':
@@ -475,6 +513,94 @@ int main(int argc, char **argv){
 			break;
 		}
 	}
+#endif
+
+    int tot_test = NUM_KEYS;
+    int put_percent = PUT_PERCENT;
+
+	struct hikv_arg * hikv_args = (struct hikv_arg *)malloc(struct hikv_arg);
+
+	hikv_args->pm_size = 2;
+	hikv_args->num_server_thread = 1;
+	hikv_args->num_backend_thread = 1;
+	hikv_args->num_warm_kv = 0;
+	hikv_args->num_put_kv = tot_test * put_percent / 100;
+	hikv_args->num_get_kv = tot_test * (100 - put_percent) / 100;
+	hikv_args->num_delete_kv = 0;
+	hikv_args->num_scan_kv = 0;
+	hikv_args->scan_range = 100;
+	hikv_args->seed = 1234;
+	hikv_args->scan_all = 0;
+
+    int i;
+
+	size_t pm_size;
+    uint64_t num_server_thread, num_backend_thread;
+	uint64_t num_warm_kv, num_put_kv, num_get_kv, num_delete_kv, num_scan_kv, scan_range;
+
+    for (i = 0; i < argc; i++){
+        double d;
+        uint64_t n;
+        char junk;
+        if(sscanf(argv[i], "--config_file=%s%c", conf_file, &junk) == 1){
+            
+        }else if(sscanf(argv[i], "--core_limit=%llu%c", &n, &junk) == 1){
+            core_limit = n;
+			if (core_limit > num_cores) {
+				TRACE_CONFIG("CPU limit should be smaller than the "
+					     "number of CPUs: %d\n", num_cores);
+				return FALSE;
+			}
+			mtcp_getconf(&mcfg);
+			mcfg.num_cores = core_limit;
+			mtcp_setconf(&mcfg);
+        }else if(sscanf(argv[i], "--process_cpu=%llu%c", &n, &junk) == 1){
+            process_cpu = n;
+			if (process_cpu > core_limit) {
+				TRACE_CONFIG("Starting CPU is way off limits!\n");
+				return FALSE;
+			}
+        }else if(sscanf(argv[i], "--pm_size=%llu%c", &n, &junk) == 1){
+            hikv_args->pm_size = n;
+        }else if(sscanf(argv[i], "--num_server_thread=%llu%c", &n, &junk) == 1){
+            hikv_args->num_server_thread = n;
+        }else if(sscanf(argv[i], "--num_backend_thread=%llu%c", &n, &junk) == 1){
+            hikv_args->num_backend_thread = n;
+        }else if(sscanf(argv[i], "--num_warm=%llu%c", &n, &junk) == 1){
+            hikv_args->num_warm_kv = n;
+        }else if(sscanf(argv[i], "--num_test=%llu%c", &n, &junk) == 1){
+            tot_test = n;
+        }else if(sscanf(argv[i], "--num_put=%llu%c", &n, &junk) == 1){
+            hikv_args->num_put_kv = n;
+        }else if(sscanf(argv[i], "--put_percent=%d%c", &n, &junk) == 1){
+//            hikv_thread_arg.num_get_kv = hikv_thread_arg.num_put_kv * (100 - n) / n;
+//            printf("[CLIENT] [PUT]: %llu [GET]: %llu\n", hikv_thread_arg.num_put_kv, hikv_thread_arg.num_get_kv);
+            hikv_args->num_put_kv = num_put_kv;
+            hikv_args->num_get_kv = tot_test * (100 - put_percent) / 100;
+        }else if(sscanf(argv[i], "--num_get=%llu%c", &n, &junk) == 1){
+            hikv_args->num_get_kv = n;
+        }else if(sscanf(argv[i], "--num_delete=%llu%c", &n, &junk) == 1){
+            hikv_args->num_delete_kv = n;
+        }else if(sscanf(argv[i], "--num_scan=%llu%c", &n, &junk) == 1){
+            hikv_args->num_scan_kv = n;
+        }else if(sscanf(argv[i], "--scan_range=%llu%c", &n, &junk) == 1){
+            hikv_args->scan_range = n;
+        }else if(sscanf(argv[i], "--num_scan_all=%llu%c", &n, &junk) == 1){
+            hikv_args->scan_all = n;
+        }else if(i > 0){
+            printf("error (%s)!\n", argv[i]);
+        }
+    }
+
+	size_t pm_size = hikv_args->pm_size;
+    uint64_t num_server_thread = hikv_args->num_server_thread;
+    uint64_t num_backend_thread = hikv_args->num_backend_thread;
+    uint64_t num_warm_kv = hikv_args->num_warm_kv;
+    uint64_t num_put_kv = hikv_args->num_put_kv;
+    uint64_t num_get_kv = hikv_args->num_get_kv;
+    uint64_t num_delete_kv = hikv_args->num_delete_kv;
+    uint64_t num_scan_kv = hikv_args->num_scan_kv;
+    uint64_t scan_range = hikv_args->scan_range;
 
 	/* initialize mtcp */
 	if (conf_file == NULL) {
@@ -504,12 +630,21 @@ int main(int argc, char **argv){
 
 	TRACE_INFO("Application initialization finished.\n");
 
+    //Initialize Key-Value storage
+	char pmem[128] = "/home/pmem0/pm";
+    char pmem_meta[128] = "/home/pmem0/pmMETA";
+    hi = new hikv(pm_size * 1024 * 1024 * 1024, num_server_thread, num_backend_thread, num_server_thread * (num_put_kv + num_warm_kv), pmem, pmem_meta);
+
 	for (i = ((process_cpu == -1) ? 0 : process_cpu); i < core_limit; i++) {
 		cores[i] = i;
 		done[i] = FALSE;
+		sv_thread_arg[i].core = i;
+        sv_thread_arg[i].thread_id = i;
+        sv_thread_arg[i].hi = hi;
+		memcpy(&sv_thread_arg[i].hikv_thread_arg, &hikv_thread_arg, HIKV_ARG_SIZE);
 		
 		if (pthread_create(&app_thread[i], 
-				   NULL, RunServerThread, (void *)&cores[i])) {
+				   NULL, RunServerThread, (void *)&sv_thread_arg[i])) {
 			perror("pthread_create");
 			TRACE_CONFIG("Failed to create server thread.\n");
 				exit(EXIT_FAILURE);
