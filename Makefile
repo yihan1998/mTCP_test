@@ -5,7 +5,7 @@ PS		= 0
 NETMAP	= 0
 ONVM	= 0
 CCP		= 0
-CFLAGS	= -g -Wall -Werror -fgnu89-inline
+CFLAGS	= -g -std=c++11 -Wall -Werror -fgnu89-inline
 
 # Add arch-specific optimization
 ifeq ($(shell uname -m),x86_64)
@@ -82,7 +82,7 @@ endif
 
 CLI_LIBS = -lpthread
 
-server.o: $(HIKV_SRC) server.cc -std=c++11
+server.o: $(HIKV_SRC) server.cc 
 	$(MSG) "   CC $<"
 	$(HIDE) ${CC} -c $< ${CFLAGS} ${INC}
 
