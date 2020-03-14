@@ -520,7 +520,7 @@ int main(int argc, char **argv){
     int tot_test = NUM_KEYS;
     int put_percent = PUT_PERCENT;
 
-	struct hikv_arg * hikv_args = (struct hikv_arg *)malloc(struct hikv_arg);
+	struct hikv_arg * hikv_args = (struct hikv_arg *)malloc(HIKV_ARG_SIZE);
 
 	hikv_args->pm_size = 2;
 	hikv_args->num_server_thread = 1;
