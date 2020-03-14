@@ -76,7 +76,8 @@ struct hikv_arg {
 struct server_arg {
     int core;
     int thread_id;
-    struct hikv_arg hikv_thread_arg;
+    struct hikv * hi;
+    struct hikv_arg hikv_arg;
 };
 
 static int num_cores;

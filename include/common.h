@@ -29,6 +29,8 @@
 #include "netlib.h"
 #include "debug.h"
 
+#include "size.h"
+
 #define LL long long
 
 #define NUM_ITER 1000000000
