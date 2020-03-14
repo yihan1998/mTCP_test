@@ -2,7 +2,10 @@
 
 //#define RECEIVE_DEBUG
 
-#define __EV_RTT__
+//#define __EV_RTT__
+
+//#define __TEST_FILE__
+#define __TEST_KV__
 
 int buf_size;
 
@@ -37,10 +40,19 @@ struct send_info {
     int * send_byte;
 //    pthread_mutex_t * recv_lock;
     int * recv_byte;
+    struct hikv_arg * hikv_thread_arg;
 };
 
 #define SEND_INFO_SIZE sizeof(struct send_info)
 
 int connect_server(char * server_ip, int port);
 
+void send_request_thread(struct send_info * info);
+
 void * send_request(void * arg);
+
+void receive_response_thread(struct send_info * info);
+
+void response_process(int sock, short event, void * arg);
+
+void gen_corpus(LL * key_corpus, uint8_t * value_corpus);
