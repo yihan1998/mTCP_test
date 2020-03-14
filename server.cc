@@ -262,7 +262,7 @@ void * RunServerThread(void *arg){
 
 	int core = args->core;
 	int thread_id = args->thread_id;
-    struct hikv * hi = thread_arg->hi;
+    struct hikv * hi = args->hi;
 	struct hikv_arg hikv_args = args->hikv_args;
 
 	struct thread_context *ctx;
