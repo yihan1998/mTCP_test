@@ -1,5 +1,13 @@
 #include "common.h"
 
+//HiKV library
+#include "city.h"
+#include "config.h"
+#include "pflush.h"
+#include "random.h"
+#include "pm_alloc.h"
+#include "hikv.h"
+
 //#define __REAL_TIME_STATS__
 
 //#define __EVAL_FRAM__

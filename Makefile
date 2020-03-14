@@ -1,11 +1,11 @@
 TARGETS = server client
-CC		= gcc
+CC		= g++
 DPDK	= 1
 PS		= 0
 NETMAP	= 0
 ONVM	= 0
 CCP		= 0
-CFLAGS	= -g -O3 -Wall -Werror -fgnu89-inline
+CFLAGS	= -g -Wall -Werror -fgnu89-inline
 
 # Add arch-specific optimization
 ifeq ($(shell uname -m),x86_64)
@@ -18,13 +18,19 @@ MTCP_INC    =-I${MTCP_FLD}/include -I${MTCP_FLD}/src/include
 MTCP_LIB    =-L${MTCP_FLD}/lib
 MTCP_TARGET = ${MTCP_LIB}/libmtcp.a
 
+#HiKV library and header
+HIKV_FLD    = ./HiKV
+HIKV_INC	= -Iinclude -I./Hikv/ntstore -I./Hikv/mem -I./Hikv/lib -I./Hikv/obj -I./Hikv/tbb -I./Hikv/pmdk/include 
+HIKV_LIB	= -L/usr/local/lib/ -L ./third-party/jemalloc-4.2.1/lib -L ./third-party/tbb 
+HIKV_SRC	= ./Hikv/obj/threadpool.cc ./Hikv/obj/btree.cc ./Hikv/mem/pm_alloc.cc ./Hikv/lib/city.cc ./Hikv/lib/pflush.c ./Hikv/ntstore/ntstore.c
+
 UTIL_FLD = ../mtcp/util
 UTIL_INC = -I${UTIL_FLD}/include
 UTIL_OBJ = ${UTIL_FLD}/http_parsing.o ${UTIL_FLD}/tdate_parse.o ${UTIL_FLD}/netlib.o
 
 # util library and header
-INC = -I./include/ ${UTIL_INC} ${MTCP_INC} -I${UTIL_FLD}/include
-LIBS = ${MTCP_LIB}
+INC = -I./include/ ${UTIL_INC} ${MTCP_INC} -I${UTIL_FLD}/include ${HIKV_INC}
+LIBS = ${MTCP_LIB} ${HIKV_LIB}
 
 # psio-specific variables
 ifeq ($(PS),1)
@@ -76,7 +82,7 @@ endif
 
 CLI_LIBS = -lpthread
 
-server.o: server.c
+server.o: $(HIKV_SRC) server.c
 	$(MSG) "   CC $<"
 	$(HIDE) ${CC} -c $< ${CFLAGS} ${INC}
 
