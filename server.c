@@ -469,7 +469,7 @@ void SignalHandler(int signum){
 int main(int argc, char **argv){
 	int ret;
 	struct mtcp_conf mcfg;
-	int cores[MAX_CPUS];
+//	int cores[MAX_CPUS];
 	int process_cpu;
 //	int i, o;
 
@@ -635,7 +635,7 @@ int main(int argc, char **argv){
     hi = new hikv(pm_size * 1024 * 1024 * 1024, num_server_thread, num_backend_thread, num_server_thread * (num_put_kv + num_warm_kv), pmem, pmem_meta);
 */
 	for (i = ((process_cpu == -1) ? 0 : process_cpu); i < core_limit; i++) {
-		cores[i] = i;
+//		cores[i] = i;
 		done[i] = FALSE;
 		sv_thread_arg[i].core = i;
         sv_thread_arg[i].thread_id = i;

@@ -5,7 +5,7 @@ PS		= 0
 NETMAP	= 0
 ONVM	= 0
 CCP		= 0
-CFLAGS	= -g -Wall -Werror
+CFLAGS	= -g -Wall -Werror -fgnu89-inline
 
 # Add arch-specific optimization
 ifeq ($(shell uname -m),x86_64)
