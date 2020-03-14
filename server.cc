@@ -56,7 +56,7 @@ int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *
     struct timeval start;
     gettimeofday(&start, NULL);
 #endif
-/*
+
 	char buf[BUF_SIZE];
 
 	int len, sent;
@@ -67,7 +67,8 @@ int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *
 	}
 
     sent = mtcp_write(ctx->mctx, sockid, buf, len);
-*/
+
+/*
     int buf_size = BUF_SIZE / KV_ITEM_SIZE * KV_ITEM_SIZE;
     struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(buf_size);
 
@@ -75,7 +76,7 @@ int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *
     int recv_num = len / KV_ITEM_SIZE;
 
     printf("[SERVER] recv_num: %d\n", recv_num);
-
+*/
 //process request
     int i, res, ret;
     for(i = 0;i < recv_num;i++){
@@ -633,7 +634,7 @@ int main(int argc, char **argv){
     //Initialize Key-Value storage
 	char pmem[128] = "/home/pmem0/pm";
     char pmem_meta[128] = "/home/pmem0/pmMETA";
-    hi = new hikv(pm_size * 1024 * 1024 * 1024, num_server_thread, num_backend_thread, num_server_thread * (num_put_kv + num_warm_kv), pmem, pmem_meta);
+//    hi = new hikv(pm_size * 1024 * 1024 * 1024, num_server_thread, num_backend_thread, num_server_thread * (num_put_kv + num_warm_kv), pmem, pmem_meta);
 
 	for (i = ((process_cpu == -1) ? 0 : process_cpu); i < core_limit; i++) {
 		cores[i] = i;
