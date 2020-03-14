@@ -77,6 +77,7 @@ int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *
 
     printf("[SERVER] recv_num: %d\n", recv_num);
 */
+/*
 //process request
     int i, res, ret;
     for(i = 0;i < recv_num;i++){
@@ -100,7 +101,7 @@ int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *
             }
         }
     }
-
+*/
 #ifdef __EVAL_FRAM__
     struct timeval end;
     gettimeofday(&end, NULL);
