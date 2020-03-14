@@ -516,10 +516,10 @@ int main(int argc, char **argv){
 		}
 	}
 #endif
-
+/*
     int tot_test = NUM_KEYS;
     int put_percent = PUT_PERCENT;
-/*
+
 	struct hikv_arg * hikv_args = (struct hikv_arg *)malloc(HIKV_ARG_SIZE);
 
 	hikv_args->pm_size = 2;
@@ -537,8 +537,8 @@ int main(int argc, char **argv){
 	int i;
 
     for (i = 0; i < argc; i++){
-        double d;
-        uint64_t n;
+//        double d;
+        long long unsigned n;
         char junk;
         if(sscanf(argv[i], "--config_file=%s%c", conf_file, &junk) == 1){
             printf("config file: %s\n", conf_file);
@@ -629,10 +629,11 @@ int main(int argc, char **argv){
 	TRACE_INFO("Application initialization finished.\n");
 
     //Initialize Key-Value storage
+/*
 	char pmem[128] = "/home/pmem0/pm";
     char pmem_meta[128] = "/home/pmem0/pmMETA";
-//    hi = new hikv(pm_size * 1024 * 1024 * 1024, num_server_thread, num_backend_thread, num_server_thread * (num_put_kv + num_warm_kv), pmem, pmem_meta);
-
+    hi = new hikv(pm_size * 1024 * 1024 * 1024, num_server_thread, num_backend_thread, num_server_thread * (num_put_kv + num_warm_kv), pmem, pmem_meta);
+*/
 	for (i = ((process_cpu == -1) ? 0 : process_cpu); i < core_limit; i++) {
 		cores[i] = i;
 		done[i] = FALSE;
