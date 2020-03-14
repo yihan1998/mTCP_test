@@ -261,7 +261,7 @@ void * RunServerThread(void *arg){
 	struct server_arg * args = (struct server_arg *)arg;
 
 	int core = args->core;
-	int thread_id = args->thread_id;
+//	int thread_id = args->thread_id;
 //    struct hikv * hi = args->hi;
 //	struct hikv_arg hikv_args = args->hikv_args;
 
