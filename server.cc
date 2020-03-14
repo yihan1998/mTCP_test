@@ -535,10 +535,6 @@ int main(int argc, char **argv){
 
     int i;
 
-	size_t pm_size;
-    uint64_t num_server_thread, num_backend_thread;
-	uint64_t num_warm_kv, num_put_kv, num_get_kv, num_delete_kv, num_scan_kv, scan_range;
-
     for (i = 0; i < argc; i++){
         double d;
         uint64_t n;
@@ -641,8 +637,8 @@ int main(int argc, char **argv){
 		done[i] = FALSE;
 		sv_thread_arg[i].core = i;
         sv_thread_arg[i].thread_id = i;
-        sv_thread_arg[i].hi = hi;
-		memcpy(&sv_thread_arg[i].hikv_thread_arg, &hikv_thread_arg, HIKV_ARG_SIZE);
+//        sv_thread_arg[i].hi = hi;
+		memcpy(&sv_thread_arg[i].hikv_thread_arg, &hikv_args, HIKV_ARG_SIZE);
 		
 		if (pthread_create(&app_thread[i], 
 				   NULL, RunServerThread, (void *)&sv_thread_arg[i])) {
