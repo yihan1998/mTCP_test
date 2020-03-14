@@ -21,7 +21,7 @@ MTCP_TARGET = ${MTCP_LIB}/libmtcp.a
 #HiKV library and header
 HIKV_FLD    = ./HiKV
 HIKV_INC	= -Iinclude -I./Hikv/ntstore -I./Hikv/mem -I./Hikv/lib -I./Hikv/obj -I./Hikv/tbb -I./Hikv/pmdk/include 
-HIKV_LIB	= -L/usr/local/lib/ -L ./third-party/jemalloc-4.2.1/lib -L ./third-party/tbb 
+HIKV_LIB	= -L/usr/local/lib/ -L ./third-party/jemalloc-4.2.1/lib -L ./third-party/tbb -lpthread -levent -ljemalloc -ltbb -lpmem
 HIKV_SRC	= ./Hikv/obj/threadpool.cc ./Hikv/obj/btree.cc ./Hikv/mem/pm_alloc.cc ./Hikv/lib/city.cc ./Hikv/lib/pflush.c ./Hikv/ntstore/ntstore.c
 
 UTIL_FLD = ../mtcp/util
@@ -82,19 +82,25 @@ endif
 
 CLI_LIBS = -lpthread
 
-server.o: $(HIKV_SRC) server.c
-	$(MSG) "   CC $<"
-	$(HIDE) ${CC} -c $< ${CFLAGS} ${INC}
+#server.o: $(HIKV_SRC) server.c -std=c++11
+#	$(MSG) "   CC $<"
+#	$(HIDE) ${CC} -c $< ${CFLAGS} ${INC}
 
-server: server.o ${MTCP_FLD}/lib/libmtcp.a
-	$(MSG) "   LD $<"
-	$(HIDE) ${CC} $< ${LIBS} ${UTIL_OBJ} -o $@
+#server: server.o ${MTCP_FLD}/lib/libmtcp.a
+#	$(MSG) "   LD $<"
+#	$(HIDE) ${CC} $< ${LIBS} ${UTIL_OBJ} -o $@
 
-client.o: client.c
-		${CC} -c $< ${CFLAGS} ${INC}
+#client.o: client.c
+#		${CC} -c $< ${CFLAGS} ${INC}
 
-client: client.o
-		${CC} $< ${CLI_LIBS} -o $@
+#client: client.o
+#		${CC} $< ${CLI_LIBS} -o $@
+
+server:
+		$(CC) -std=c++11 $(KV_SRCS) server.cc $(INC) -o $@ $(LIBS)
+
+client:
+		$(CC) -std=c++11 $(KV_SRCS) client.cc $(INC) -o $@ $(LIBS)
 
 clean:
 		rm -f *.o $(TARGET)
