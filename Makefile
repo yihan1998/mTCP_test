@@ -5,7 +5,7 @@ PS		= 0
 NETMAP	= 0
 ONVM	= 0
 CCP		= 0
-CFLAGS	= -g -O3 -Wall -Werror -fgnu89-inline
+CFLAGS	= 
 
 # Add arch-specific optimization
 ifeq ($(shell uname -m),x86_64)
@@ -85,7 +85,7 @@ CLI_LIBS = -lpthread
 
 server.o: server.cc ${HIKV_SRC}
 	$(MSG) "   CC $<"
-	$(HIDE) ${CC} -c $< ${CFLAGS} ${INC}
+	$(HIDE) ${CC} -std=c++11 -c $< ${CFLAGS} ${INC}
 
 server: server.o ${MTCP_FLD}/lib/libmtcp.a
 	$(MSG) "   LD $<"
@@ -95,7 +95,7 @@ client.o: client.cc
 		${CC} -c $< ${CFLAGS} ${INC}
 
 client: client.o
-		${CC} $< ${CLI_LIBS} -o $@
+		${CC} -std=c++11 $< ${CLI_LIBS} -o $@
 
 clean:
 		rm -f *.o $(TARGET)
