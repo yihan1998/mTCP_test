@@ -262,8 +262,8 @@ void * RunServerThread(void *arg){
 
 	int core = args->core;
 	int thread_id = args->thread_id;
-    struct hikv * hi = args->hi;
-	struct hikv_arg hikv_args = args->hikv_args;
+//    struct hikv * hi = args->hi;
+//	struct hikv_arg hikv_args = args->hikv_args;
 
 	struct thread_context *ctx;
 	mctx_t mctx;
@@ -471,7 +471,7 @@ int main(int argc, char **argv){
 	struct mtcp_conf mcfg;
 	int cores[MAX_CPUS];
 	int process_cpu;
-	int i, o;
+//	int i, o;
 
 	num_cores = GetNumCPUs();
 	core_limit = num_cores;
@@ -519,7 +519,7 @@ int main(int argc, char **argv){
 
     int tot_test = NUM_KEYS;
     int put_percent = PUT_PERCENT;
-
+/*
 	struct hikv_arg * hikv_args = (struct hikv_arg *)malloc(HIKV_ARG_SIZE);
 
 	hikv_args->pm_size = 2;
@@ -533,6 +533,8 @@ int main(int argc, char **argv){
 	hikv_args->scan_range = 100;
 	hikv_args->seed = 1234;
 	hikv_args->scan_all = 0;
+*/
+	int i;
 
     for (i = 0; i < argc; i++){
         double d;
@@ -556,7 +558,7 @@ int main(int argc, char **argv){
 				TRACE_CONFIG("Starting CPU is way off limits!\n");
 				return FALSE;
 			}
-        }else if(sscanf(argv[i], "--pm_size=%llu%c", &n, &junk) == 1){
+        }/*else if(sscanf(argv[i], "--pm_size=%llu%c", &n, &junk) == 1){
             hikv_args->pm_size = n;
         }else if(sscanf(argv[i], "--num_server_thread=%llu%c", &n, &junk) == 1){
             hikv_args->num_server_thread = n;
@@ -585,9 +587,9 @@ int main(int argc, char **argv){
             hikv_args->scan_all = n;
         }else if(i > 0){
             printf("error (%s)!\n", argv[i]);
-        }
+        }*/
     }
-
+/*
 	size_t pm_size = hikv_args->pm_size;
     uint64_t num_server_thread = hikv_args->num_server_thread;
     uint64_t num_backend_thread = hikv_args->num_backend_thread;
@@ -597,7 +599,7 @@ int main(int argc, char **argv){
     uint64_t num_delete_kv = hikv_args->num_delete_kv;
     uint64_t num_scan_kv = hikv_args->num_scan_kv;
     uint64_t scan_range = hikv_args->scan_range;
-
+*/
 	/* initialize mtcp */
 	if (conf_file == NULL) {
 		TRACE_CONFIG("You forgot to pass the mTCP startup config file!\n");
@@ -637,7 +639,7 @@ int main(int argc, char **argv){
 		sv_thread_arg[i].core = i;
         sv_thread_arg[i].thread_id = i;
 //        sv_thread_arg[i].hi = hi;
-		memcpy(&sv_thread_arg[i].hikv_args, &hikv_args, HIKV_ARG_SIZE);
+//		memcpy(&sv_thread_arg[i].hikv_args, &hikv_args, HIKV_ARG_SIZE);
 		
 		if (pthread_create(&app_thread[i], 
 				   NULL, RunServerThread, (void *)&sv_thread_arg[i])) {

@@ -53,6 +53,7 @@ void * send_request(void * arg){
     struct send_info * info = (struct send_info *)arg;
 
     int fd = *(info->sockfd);
+
     struct hikv_arg * hikv_args = info->hikv_thread_arg;
 
     size_t pm_size = hikv_args->pm_size;

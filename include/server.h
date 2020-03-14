@@ -76,8 +76,8 @@ struct hikv_arg {
 struct server_arg {
     int core;
     int thread_id;
-    struct hikv * hi;
-    struct hikv_arg hikv_args;
+//    struct hikv * hi;
+//    struct hikv_arg hikv_args;
 };
 
 static int num_cores;
@@ -91,6 +91,6 @@ static pthread_t sv_thread[MAX_CPUS];
 static struct server_arg sv_thread_arg[MAX_CPUS];
 
 //static struct hikv * hi;
-static struct hikv_arg * hikv_args;
+//static struct hikv_arg * hikv_args;
 
 void * server_thread(void * arg);
