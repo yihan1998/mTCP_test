@@ -28,8 +28,8 @@ HIKV_LIB	= -L/usr/local/lib/ -L ./third-party/jemalloc-4.2.1/lib -L ./third-part
 HIKV_SRC	= ./Hikv/obj/threadpool.cc ./Hikv/obj/btree.cc ./Hikv/mem/pm_alloc.cc ./Hikv/lib/city.cc ./Hikv/lib/pflush.c ./Hikv/ntstore/ntstore.c
 
 # util library and header
-INC = -I./include/ ${UTIL_INC} ${MTCP_INC} $(HIKV_INC) -I${UTIL_FLD}/include 
-LIBS = ${MTCP_LIB} $(HIKV_LIB) -lpthread -ljemalloc -ltbb -lpmem
+INC = -I./include/ ${UTIL_INC} $(HIKV_INC) ${MTCP_INC} -I${UTIL_FLD}/include 
+LIBS = $(HIKV_LIB) ${MTCP_LIB} -lpthread -ljemalloc -ltbb -lpmem
 
 # psio-specific variables
 ifeq ($(PS),1)
