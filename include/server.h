@@ -2,7 +2,7 @@
 
 //HiKV library
 #include "city.h"
-#include "config.h"
+#include "../Hikv/obj/config.h"
 #include "pflush.h"
 #include "random.h"
 #include "pm_alloc.h"
