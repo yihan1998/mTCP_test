@@ -76,7 +76,7 @@ endif
 
 CLI_LIBS = -lpthread
 
-server.o: server.c
+server.o: server.cc
 	$(MSG) "   CC $<"
 	$(HIDE) ${CC} -c $< ${CFLAGS} ${INC}
 
