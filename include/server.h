@@ -1,12 +1,12 @@
 #include "common.h"
 
 //HiKV library
-#include "Hikv/lib/city.h"
-#include "Hikv/lib/config.h"
-#include "Hikv/lib/pflush.h"
-#include "Hikv/lib/random.h"
-#include "Hikv/lib/pm_alloc.h"
-#include "Hikv/lib/hikv.h"
+#include "../Hikv/lib/city.h"
+#include "../Hikv/lib/config.h"
+#include "../Hikv/lib/pflush.h"
+#include "../Hikv/lib/random.h"
+#include "../Hikv/lib/pm_alloc.h"
+#include "../Hikv/lib/hikv.h"
 
 //#define __REAL_TIME_STATS__
 
