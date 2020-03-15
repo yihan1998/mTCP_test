@@ -1,5 +1,5 @@
 #include "common.h"
-/*
+
 //HiKV library
 #include "city.h"
 #include "config.h"
@@ -7,7 +7,7 @@
 #include "random.h"
 #include "pm_alloc.h"
 #include "hikv.h"
-*/
+
 //#define __REAL_TIME_STATS__
 
 //#define __EVAL_FRAM__
@@ -89,5 +89,8 @@ static int backlog = -1;
 
 //static pthread_t sv_thread[MAX_CPUS];
 static struct server_arg sv_thread_arg[MAX_CPUS];
+
+static struct hikv * hi;
+static struct hikv_arg * hikv_args;
 
 void * server_thread(void * arg);
