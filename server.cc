@@ -12,6 +12,9 @@ int read_time = 0;
 int read_cnt = 0;
 #endif
 
+struct hikv * hi;
+struct hikv_arg * hikv_args;
+
 void CleanServerVariable(struct server_vars *sv){
 	sv->recv_len = 0;
 	sv->request_len = 0;
@@ -523,7 +526,6 @@ int main(int argc, char **argv){
 	int i;
 
     for (i = 0; i < argc; i++){
-        double d;
         long long unsigned n;
         char junk;
         if(sscanf(argv[i], "--config_file=%s%c", conf_file, &junk) == 1){
@@ -556,7 +558,7 @@ int main(int argc, char **argv){
             tot_test = n;
         }else if(sscanf(argv[i], "--num_put=%llu%c", &n, &junk) == 1){
             hikv_args->num_put_kv = n;
-        }else if(sscanf(argv[i], "--put_percent=%d%c", &n, &junk) == 1){
+        }else if(sscanf(argv[i], "--put_percent=%d%c", &put_percent, &junk) == 1){
 //            hikv_thread_arg.num_get_kv = hikv_thread_arg.num_put_kv * (100 - n) / n;
 //            printf("[CLIENT] [PUT]: %llu [GET]: %llu\n", hikv_thread_arg.num_put_kv, hikv_thread_arg.num_get_kv);
 			hikv_args->num_put_kv = tot_test * put_percent / 100;
@@ -581,10 +583,6 @@ int main(int argc, char **argv){
     uint64_t num_backend_thread = hikv_args->num_backend_thread;
     uint64_t num_warm_kv = hikv_args->num_warm_kv;
     uint64_t num_put_kv = hikv_args->num_put_kv;
-    uint64_t num_get_kv = hikv_args->num_get_kv;
-    uint64_t num_delete_kv = hikv_args->num_delete_kv;
-    uint64_t num_scan_kv = hikv_args->num_scan_kv;
-    uint64_t scan_range = hikv_args->scan_range;
 
 	/* initialize mtcp */
 	if (conf_file == NULL) {
