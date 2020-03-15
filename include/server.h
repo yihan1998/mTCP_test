@@ -6,6 +6,7 @@
 #include "pflush.h"
 #include "random.h"
 #include "pm_alloc.h"
+#include "btree.h"
 #include "hikv.h"
 
 //#define __REAL_TIME_STATS__
