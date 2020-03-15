@@ -28,7 +28,7 @@ HIKV_LIB	= -L/usr/local/lib/ -L ./third-party/jemalloc-4.2.1/lib -L ./third-part
 HIKV_SRC	= ./Hikv/obj/threadpool.cc ./Hikv/obj/btree.cc ./Hikv/mem/pm_alloc.cc ./Hikv/lib/city.cc ./Hikv/lib/pflush.c ./Hikv/ntstore/ntstore.c
 
 # util library and header
-INC = -I./include/ ${UTIL_INC} ${MTCP_INC} -I${UTIL_FLD}/include $(HIKV_INC)
+INC = -I./include/ ${UTIL_INC} ${MTCP_INC} $(HIKV_INC) -I${UTIL_FLD}/include 
 LIBS = ${MTCP_LIB} $(HIKV_LIB) -lpthread -ljemalloc -ltbb -lpmem
 
 # psio-specific variables
@@ -81,9 +81,9 @@ endif
 
 CLI_LIBS = -lpthread
 
-server.o: $(HIKV_SRC) server.cc
+server.o: server.cc $(HIKV_SRC)
 	$(MSG) "   CC $<"
-	$(HIDE) ${CC} -c server.o ${CFLAGS} ${INC}
+	$(HIDE) ${CC} -c $< ${CFLAGS} ${INC}
 
 server: server.o ${MTCP_FLD}/lib/libmtcp.a
 	$(MSG) "   LD $<"
