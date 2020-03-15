@@ -459,7 +459,7 @@ int main(int argc, char **argv){
 	int process_cpu;
 //	int i, o;
 
-	num_cores = GetNumCPUs();
+	num_cores = sysconf(_SC_NPROCESSORS_ONLN);
 	core_limit = num_cores;
 	process_cpu = -1;
 
