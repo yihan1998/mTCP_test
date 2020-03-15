@@ -29,7 +29,7 @@ HIKV_SRC	= ./Hikv/obj/threadpool.cc ./Hikv/obj/btree.cc ./Hikv/mem/pm_alloc.cc .
 
 # util library and header
 INC = -I./include/ ${UTIL_INC} ${MTCP_INC} -I${UTIL_FLD}/include $(HIKV_INC)
-LIBS = ${MTCP_LIB} $(HIKV_LIB) -lpthread -levent -ljemalloc -ltbb -lpmem
+LIBS = ${MTCP_LIB} $(HIKV_LIB) -lpthread -ljemalloc -ltbb -lpmem
 
 # psio-specific variables
 ifeq ($(PS),1)
@@ -81,7 +81,7 @@ endif
 
 CLI_LIBS = -lpthread
 
-server.o: server.cc $(HIKV_SRC)
+server.o: $(HIKV_SRC) server.cc
 	$(MSG) "   CC $<"
 	$(HIDE) ${CC} -c $< ${CFLAGS} ${INC}
 
