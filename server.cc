@@ -12,20 +12,6 @@ int read_time = 0;
 int read_cnt = 0;
 #endif
 
-char * StatusCodeToString(int scode){
-	switch (scode) {
-		case 200:
-			return "OK";
-			break;
-
-		case 404:
-			return "Not Found";
-			break;
-	}
-
-	return NULL;
-}
-
 void CleanServerVariable(struct server_vars *sv){
 	sv->recv_len = 0;
 	sv->request_len = 0;
