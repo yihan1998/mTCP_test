@@ -47,7 +47,7 @@ int HandleReadEvent(struct thread_context *ctx, int sockid, struct server_vars *
 
 	int len, sent;
 	
-    len = mtcp_read(ctx->mctx, sockid, buf, BUF_SIZE);
+    len = mtcp_recv(ctx->mctx, sockid, buf, BUF_SIZE, 0);
 	if (len <= 0) {
 		return len;
 	}
