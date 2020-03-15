@@ -90,6 +90,9 @@ server:
 	$(MSG) "   LD $<"
 	$(HIDE) ${CC} $(HIKV_OBJ) server.o ${MTCP_FLD}/lib/libmtcp.a $< ${LIBS} ${UTIL_OBJ} -o $@
 
+server_all:
+	make server.o && make server
+
 client.o: client.c
 		${CC} -c $< ${CFLAGS} ${INC}
 

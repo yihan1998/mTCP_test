@@ -465,9 +465,6 @@ int main(int argc, char **argv){
 
 	char conf_name[] = "server.conf";
 	conf_file = conf_name;
-	if(conf == NULL){
-		printf("[SERVER] conf_file is NULL\n");
-	}
 
 	if (argc < 2) {
 		TRACE_CONFIG("$%s directory_to_service\n", argv[0]);
