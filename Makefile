@@ -84,11 +84,11 @@ CLI_LIBS = -lpthread
 
 server.o: server.cc $(HIKV_SRC)
 	$(MSG) "   CC $<"
-	$(HIDE) ${CC} -c $^ ${CFLAGS} ${INC}
+	$(HIDE) ${CC} -c $^ ${CFLAGS} ${INC} ${LIBS}
 
 server: server.o ${MTCP_FLD}/lib/libmtcp.a
 	$(MSG) "   LD $<"
-	$(HIDE) ${CC} $< ${LIBS} ${UTIL_OBJ} -o $@
+	$(HIDE) ${CC} $< ${INC} ${LIBS} ${UTIL_OBJ} -o $@
 
 client.o: client.c
 		${CC} -c $< ${CFLAGS} ${INC}
