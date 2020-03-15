@@ -463,6 +463,9 @@ int main(int argc, char **argv){
 	core_limit = num_cores;
 	process_cpu = -1;
 
+	char conf_name[] = "server.conf";
+	conf_file = conf_name;
+
 	if (argc < 2) {
 		TRACE_CONFIG("$%s directory_to_service\n", argv[0]);
 		return FALSE;
@@ -525,9 +528,7 @@ int main(int argc, char **argv){
     for (i = 0; i < argc; i++){
         long long unsigned n;
         char junk;
-        if(sscanf(argv[i], "--config_file=%s%c", conf_file, &junk) == 1){
-            printf("config file: %s\n", conf_file);
-        }else if(sscanf(argv[i], "--core_limit=%llu%c", &n, &junk) == 1){
+        if(sscanf(argv[i], "--core_limit=%llu%c", &n, &junk) == 1){
             core_limit = n;
 			if (core_limit > num_cores) {
 				TRACE_CONFIG("CPU limit should be smaller than the "
