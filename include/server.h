@@ -90,7 +90,7 @@ static int backlog = -1;
 //static pthread_t sv_thread[MAX_CPUS];
 static struct server_arg sv_thread_arg[MAX_CPUS];
 
-//static struct hikv * hi;
-//static struct hikv_arg * hikv_args;
+static struct hikv * hi;
+static struct hikv_arg * hikv_args;
 
 void * server_thread(void * arg);
