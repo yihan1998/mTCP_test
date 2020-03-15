@@ -2,11 +2,11 @@
 
 //HiKV library
 #include "../Hikv/lib/city.h"
-#include "../Hikv/lib/config.h"
+#include "../Hikv/obj/config.h"
 #include "../Hikv/lib/pflush.h"
 #include "../Hikv/lib/random.h"
-#include "../Hikv/lib/pm_alloc.h"
-#include "../Hikv/lib/hikv.h"
+#include "../Hikv/mem/pm_alloc.h"
+#include "../Hikv/obj/hikv.h"
 
 //#define __REAL_TIME_STATS__
 
