@@ -55,16 +55,15 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     sent = mtcp_write(ctx->mctx, sockid, buf, len);
 */
 
-    FILE * fp = fopen("log.txt", "a+");
+    //FILE * fp = fopen("log.txt", "a+");
 
 	int temp, len, sent;
 	len = sent = 0;
 
-    int buf_size = BUF_SIZE / KV_ITEM_SIZE * KV_ITEM_SIZE;
-    struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(buf_size);
+    struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
 
 	while(1){
-		temp = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, buf_size, 0);
+		temp = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE, 0);
 		if(temp < 0){
 			if (errno == EAGAIN) {
 				break;
@@ -73,42 +72,42 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		len += temp;
 	}
     
-//	printf("[SERVER] recv len: %d\n", len);
+	//printf("[SERVER] recv len: %d\n", len);
 
 	int recv_num = len / KV_ITEM_SIZE;
-    
+/*    
 	char buff[1024];
 	sprintf(buff, "[SERVER] recv_len: %d\n", len);
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
-
-//process request
+*/
+	//process request
     int i, res, ret;
     for(i = 0;i < recv_num;i++){
         if(recv_item[i].len > 0){
-//            printf("[SERVER] put KV item\n");
+            //printf("[SERVER] put KV item\n");
             res = hi->insert(thread_id, (uint8_t *)recv_item[i].key, (uint8_t *)recv_item[i].value);
-//            printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item[i].key, VALUE_SIZE, recv_item[i].value);
+            //printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item[i].key, VALUE_SIZE, recv_item[i].value);
             if (res == true){
-//                printf("[SERVER] insert success\n");
-					sprintf(buff, "[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item[i].key, VALUE_SIZE, recv_item[i].value);
-					fwrite(buff, strlen(buff), 1, fp);
-					fflush(fp);
+                //printf("[SERVER] insert success\n");
+				//sprintf(buff, "[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item[i].key, VALUE_SIZE, recv_item[i].value);
+				//fwrite(buff, strlen(buff), 1, fp);
+				//fflush(fp);
             }
         }else if(recv_item[i].len == 0){
             res = hi->search(thread_id, (uint8_t *)recv_item[i].key, (uint8_t *)recv_item[i].value);
             if(res == true){
-//                printf("[SERVER] search success\n");
+                //printf("[SERVER] search success\n");
                 recv_item[i].len = VALUE_SIZE;
-//                bufferevent_write(bev, (char *)&recv_item[i], KV_ITEM_SIZE);
+                //bufferevent_write(bev, (char *)&recv_item[i], KV_ITEM_SIZE);
 				sent = mtcp_write(ctx->mctx, sockid, (char *)&recv_item[i], KV_ITEM_SIZE);
 				sprintf(buff, "[SERVER] get key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item[i].key, VALUE_SIZE, recv_item[i].value);
 				fwrite(buff, strlen(buff), 1, fp);
 				fflush(fp);
 			}else{
-//                printf("[SERVER] search failed\n");
+                //printf("[SERVER] search failed\n");
                 recv_item[i].len = -1;
-//                bufferevent_write(bev, (char *)&recv_item[i], KV_ITEM_SIZE);
+                //bufferevent_write(bev, (char *)&recv_item[i], KV_ITEM_SIZE);
 				sent = mtcp_write(ctx->mctx, sockid, (char *)&recv_item[i], KV_ITEM_SIZE);
             }
         }
