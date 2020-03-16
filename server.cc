@@ -57,19 +57,20 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
     FILE * fp = fopen("log.txt", "a+");
 
-	int len, sent;
+	int temp, len, sent;
 	len = sent = 0;
 
     int buf_size = BUF_SIZE / KV_ITEM_SIZE * KV_ITEM_SIZE;
     struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(buf_size);
 
 	while(1){
-		len = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, buf_size, 0);
-		if(len < 0){
+		temp = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, buf_size, 0);
+		if(temp < 0){
 			if (errno == EAGAIN) {
 				break;
 			}
 		}
+		len += temp;
 	}
     
 //	printf("[SERVER] recv len: %d\n", len);
