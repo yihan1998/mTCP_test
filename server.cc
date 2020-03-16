@@ -42,7 +42,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     struct timeval start;
     gettimeofday(&start, NULL);
 #endif
-
+/*
 	char buf[BUF_SIZE];
 
 	int len, sent;
@@ -53,8 +53,8 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	}
 
     sent = mtcp_write(ctx->mctx, sockid, buf, len);
+*/
 
-/*
     int buf_size = BUF_SIZE / KV_ITEM_SIZE * KV_ITEM_SIZE;
     struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(buf_size);
 
@@ -62,7 +62,6 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     int recv_num = len / KV_ITEM_SIZE;
 
     printf("[SERVER] recv_num: %d\n", recv_num);
-*/
 /*
 //process request
     int i, res, ret;
