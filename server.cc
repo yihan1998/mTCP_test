@@ -60,7 +60,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     int buf_size = BUF_SIZE / KV_ITEM_SIZE * KV_ITEM_SIZE;
     struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(buf_size);
 
-    len = mtcp_recv(ctx->mctx, sockid, recv_item, buf_size, 0);
+    len = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, buf_size, 0);
     
 	int recv_num = len / KV_ITEM_SIZE;
 
