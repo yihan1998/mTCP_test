@@ -38,7 +38,12 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 
 int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struct server_vars *sv){
 
-	printf("===== HandleReadEvent =====\n");
+	FILE * fp = fopen("log.txt", "a+");
+
+	char buff[1024];
+	sprintf(buff, "===== HandleReadEvent =====");
+	fwrite(buff, strlen(buff), 1, fp);
+	fflush(fp);
 
 #ifdef __EVAL_FRAM__
     struct timeval start;
@@ -57,18 +62,15 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     sent = mtcp_write(ctx->mctx, sockid, buf, len);
 */
 
-    FILE * fp = fopen("log.txt", "a+");
-
 	int len, sent;
 
     struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
 
     len = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE, 0);
-//	printf("[SERVER] recv len: %d\n", len);
+	//printf("[SERVER] recv len: %d\n", len);
 
 	int recv_num = len / KV_ITEM_SIZE;
-    
-	char buff[1024];
+
 	sprintf(buff, "[SERVER] recv_len: %d\n", len);
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
