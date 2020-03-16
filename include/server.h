@@ -1,5 +1,14 @@
 #include "common.h"
 
+//mTCP library
+#include <mtcp_api.h>
+#include <mtcp_epoll.h>
+
+#include "cpu.h"
+#include "http_parsing.h"
+#include "netlib.h"
+#include "debug.h"
+
 //HiKV library
 #include "city.h"
 #include "../Hikv/obj/config.h"
