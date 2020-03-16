@@ -55,6 +55,8 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     sent = mtcp_write(ctx->mctx, sockid, buf, len);
 */
 
+    FILE * fp = fopen("log.txt", "a+");
+
 	int len, sent;
 	len = sent = 0;
 
@@ -64,6 +66,11 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     len = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, buf_size, 0);
     
 	int recv_num = len / KV_ITEM_SIZE;
+    
+	char buff[1024];
+	sprintf(buff, "[SERVER] recv_num: %d\n", recv_num);
+	fwrite(buff, strlen(buff), 1, fp);
+	fflush(fp);
 
 //process request
     int i, res, ret;
@@ -74,6 +81,9 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 //            printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item[i].key, VALUE_SIZE, recv_item[i].value);
             if (res == true){
 //                printf("[SERVER] insert success\n");
+					sprintf(buff, "[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item[i].key, VALUE_SIZE, recv_item[i].value);
+					fwrite(buff, strlen(buff), 1, fp);
+					fflush(fp);
             }
         }else if(recv_item[i].len == 0){
             res = hi->search(thread_id, (uint8_t *)recv_item[i].key, (uint8_t *)recv_item[i].value);
@@ -82,7 +92,10 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
                 recv_item[i].len = VALUE_SIZE;
 //                bufferevent_write(bev, (char *)&recv_item[i], KV_ITEM_SIZE);
 				sent = mtcp_write(ctx->mctx, sockid, (char *)&recv_item[i], KV_ITEM_SIZE);
-            }else{
+				sprintf(buff, "[SERVER] get key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item[i].key, VALUE_SIZE, recv_item[i].value);
+				fwrite(buff, strlen(buff), 1, fp);
+				fflush(fp);
+			}else{
 //                printf("[SERVER] search failed\n");
                 recv_item[i].len = -1;
 //                bufferevent_write(bev, (char *)&recv_item[i], KV_ITEM_SIZE);
@@ -90,6 +103,8 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
             }
         }
     }
+
+	fclose(fp);
 
 #ifdef __EVAL_FRAM__
     struct timeval end;
