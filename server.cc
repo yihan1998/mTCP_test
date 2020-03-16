@@ -85,7 +85,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	fflush(fp);
 
 	if(sv->temp_len + len < KV_ITEM_SIZE){
-		memcpy(sv->temp_buff, recv_item, );
+		memcpy(sv->temp_buff, recv_item, sv->temp_len + len);
 		sv->temp_flag = 1;
 		sv->temp_len = len;
 	}
