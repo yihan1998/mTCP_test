@@ -122,6 +122,8 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
             }
         }
     }
+
+	fclose(fp);
 */
 	int res, ret;
     if(recv_item->len > 0){
@@ -143,8 +145,6 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 			sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
         }
     }
-
-	fclose(fp);
 
 #ifdef __EVAL_FRAM__
     struct timeval end;
