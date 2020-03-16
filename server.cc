@@ -64,7 +64,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     
 	int recv_num = len / KV_ITEM_SIZE;
 
-    printf("[SERVER] recv_num: %d\n", recv_num);
+    TRACE_INFO("[SERVER] recv_num: %d\n", recv_num);
 
 	sent = 0;
 /*
