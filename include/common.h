@@ -46,8 +46,41 @@ struct __attribute__((__packed__)) kv_trans_item {
 
 #define KV_ITEM_SIZE sizeof(struct kv_trans_item)
 
-struct client_arg {
-    char ** ip_addr;
-    int port;
-    int buf_size;
+#ifndef MAX_CPUS
+#define MAX_CPUS		16
+#endif
+
+//Server args
+struct hikv_arg {
+    size_t pm_size;
+    uint64_t num_server_thread;
+    uint64_t num_backend_thread;
+    uint64_t num_warm_kv;
+    uint64_t num_put_kv;
+    uint64_t num_get_kv;
+    uint64_t num_delete_kv;
+    uint64_t num_scan_kv;
+    uint64_t scan_range;
+    uint64_t seed;
+    uint64_t scan_all;
 };
+
+#define HIKV_ARG_SIZE sizeof(struct hikv_arg)
+
+struct server_arg {
+    int core;
+    int thread_id;
+//    struct hikv * hi;
+//    struct hikv_arg hikv_args;
+};
+
+//Client args
+struct client_arg {
+    char * ip_addr;
+    int port;
+//    int buf_size;
+    struct hikv_arg hikv_thread_arg;
+};
+
+static pthread_t cl_thread[MAX_CPUS];
+static struct client_arg cl_thread_arg[MAX_CPUS];
