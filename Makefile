@@ -80,7 +80,8 @@ LIBS += -L$(LIBCCP) -lccp -lstartccp
 INC += -I$(LIBCCP)
 endif
 
-CLI_LIBS = -lpthread
+CLI_INC = -Iinclude -I./Hikv/ntstore -I./Hikv/mem -I./Hikv/lib -I./Hikv/obj -I./Hikv/tbb -I./Hikv/pmdk/include 
+CLI_LIB = -L/usr/local/lib/ -L ./third-party/jemalloc-4.2.1/lib -L ./third-party/tbb -lpthread -levent -ljemalloc -ltbb -lpmem
 
 server.o: server.cc $(HIKV_SRC)
 	$(MSG) "   CC $<"
@@ -93,11 +94,8 @@ server:
 server_all:
 	make server.o && make server
 
-client.o: client.c
-		${CC} -c $< ${CFLAGS} ${INC}
-
-client: client.o
-		${CC} $< ${CLI_LIBS} -o $@
+client:
+	$(CC) -std=c++11 $(KV_SRCS) client.cc $(CLI_INC) -o $@ $(CLI_LIB)
 
 clean:
 		rm -f *.o $(TARGET)
