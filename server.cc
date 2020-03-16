@@ -55,7 +55,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     sent = mtcp_write(ctx->mctx, sockid, buf, len);
 */
 
-//    FILE * fp = fopen("log.txt", "a+");
+    FILE * fp = fopen("log.txt", "a+");
 
 	int len, sent;
 	len = sent = 0;
