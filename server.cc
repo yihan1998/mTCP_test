@@ -71,12 +71,12 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
 	if(sv->temp_flag){
 		memcpy(recv_item, sv->temp_buff, sv->temp_len);
+		len = mtcp_recv(ctx->mctx, sockid, (char *)(recv_item + sv->temp_len), KV_ITEM_SIZE - sv->temp_len, 0);
 		sv->temp_flag = 0;
 		sv->temp_len = 0;
+	}else{
+	    len = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE, 0);
 	}
-
-    len = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE, 0);
-	//printf("[SERVER] recv len: %d\n", len);
 
 	int recv_num = len / KV_ITEM_SIZE;
 
@@ -84,8 +84,8 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
 
-	if(len < KV_ITEM_SIZE){
-		memcpy(sv->temp_buff, recv_item, len);
+	if(sv->temp_len + len < KV_ITEM_SIZE){
+		memcpy(sv->temp_buff, recv_item, );
 		sv->temp_flag = 1;
 		sv->temp_len = len;
 	}
