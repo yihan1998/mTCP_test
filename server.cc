@@ -69,7 +69,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
     struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
 
-	if(sv->flag){
+	if(sv->temp_flag){
 		memcpy(recv_item, sv->temp_buff, sv->temp_len);
 		sv->temp_flag = 0;
 		sv->temp_len = 0;
