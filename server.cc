@@ -40,14 +40,14 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 }
 
 int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struct server_vars *sv){
-/*
+
 	FILE * fp = fopen("log.txt", "a+");
 
 	char buff[1024];
 	sprintf(buff, "===== HandleReadEvent =====\n");
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
-*/
+
 #ifdef __EVAL_FRAM__
     struct timeval start;
     gettimeofday(&start, NULL);
@@ -81,11 +81,11 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	}
 
 	int recv_num = tot_len / KV_ITEM_SIZE;
-/*
+
 	sprintf(buff, "[SERVER] recv_len: %d, total len: %d\n", len, tot_len);
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
-*/
+
 	if(tot_len < KV_ITEM_SIZE){
 		memcpy(sv->temp_buff, recv_item, tot_len);
 		sv->temp_flag = 1;
@@ -132,6 +132,9 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
         //printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item[i].key, VALUE_SIZE, recv_item[i].value);
         if (res == true){
             //printf("[SERVER] insert success\n");
+			sprintf(buff, "[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item[i].key, VALUE_SIZE, recv_item[i].value);
+			fwrite(buff, strlen(buff), 1, fp);
+			fflush(fp);
         }
     }else if(recv_item->len == 0){
         res = hi->search(thread_id, (uint8_t *)recv_item->key, (uint8_t *)recv_item->value);
@@ -139,12 +142,17 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
             //printf("[SERVER] search success\n");
             recv_item->len = VALUE_SIZE;
 			sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
+			sprintf(buff, "[SERVER] get key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item[i].key, VALUE_SIZE, recv_item[i].value);
+			fwrite(buff, strlen(buff), 1, fp);
+			fflush(fp);
 		}else{
             //printf("[SERVER] search failed\n");
             recv_item->len = -1;
 			sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
         }
     }
+
+	fclose(fp);
 
 #ifdef __EVAL_FRAM__
     struct timeval end;
