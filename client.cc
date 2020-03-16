@@ -323,13 +323,14 @@ void * send_request(void * arg){
 
 //[Version 3.0 - mixed tests]
     for(iter = 0, key_i = 0, key_j = 0;iter < num_kv;iter++){
+        printf("[CLIENT] iter %d\n", iter);
         if(iter < num_put_kv) {
         //PUT
 //            printf("[CLIENT] put KV item\n");
             snprintf((char *)req_kv->key, KEY_SIZE + 1, "%0llu", key_corpus[key_i]);     //set Key
 		    req_kv->len = VALUE_SIZE;
     		memcpy((char *)req_kv->value, (char *)&value_corpus[key_i * VALUE_SIZE], VALUE_SIZE);   //set Value
-            printf("[CLIENT] PUT key: %llu, value: %.*s\n", key_corpus[key_i], VALUE_SIZE, req_kv->value);
+//            printf("[CLIENT] PUT key: %llu, value: %.*s\n", key_corpus[key_i], VALUE_SIZE, req_kv->value);
 		    key_i = (key_i + 1) % num_put_kv;
 
             put_count++;
@@ -370,10 +371,10 @@ void * send_request(void * arg){
 
                 if(tot_recv == KV_ITEM_SIZE){
                     if(res_kv->len == VALUE_SIZE){
-                        printf("[CLIENT] GET success! key: %.*s, value: %.*s\n", KEY_SIZE, res_kv->key, VALUE_SIZE, res_kv->value);
+//                        printf("[CLIENT] GET success! key: %.*s, value: %.*s\n", KEY_SIZE, res_kv->key, VALUE_SIZE, res_kv->value);
                         match_search++;
                     }else{
-                        printf("[CLIENT] GET failed! key: %.*s, value: %.*s\n", KEY_SIZE, res_kv->key, VALUE_SIZE, res_kv->value);
+//                        printf("[CLIENT] GET failed! key: %.*s, value: %.*s\n", KEY_SIZE, res_kv->key, VALUE_SIZE, res_kv->value);
                     }
                     break;
                 }
