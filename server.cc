@@ -37,6 +37,7 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 }
 
 int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struct server_vars *sv){
+	printf("====== HandleReadEvent ======\n");
 
 #ifdef __EVAL_FRAM__
     struct timeval start;
@@ -355,7 +356,6 @@ void * RunServerThread(void *arg){
 						&ctx->svars[events[i].data.sockid]);
 
 			} else if (events[i].events & MTCP_EPOLLIN) {
-				printf("[SERVER] receive MTCP_EPOLLIN\n");
 				ret = HandleReadEvent(ctx, thread_id, events[i].data.sockid, 
 						&ctx->svars[events[i].data.sockid]);
 
