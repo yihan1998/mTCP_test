@@ -58,7 +58,6 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     FILE * fp = fopen("log.txt", "a+");
 
 	int temp, len, sent;
-	len = sent = 0;
 
     struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
 /*
@@ -72,6 +71,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		len += temp;
 	}
 */
+
 	len = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE, 0);
 	
 	//printf("[SERVER] recv len: %d\n", len);
