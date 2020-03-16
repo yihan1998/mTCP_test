@@ -21,6 +21,9 @@ void CleanServerVariable(struct server_vars *sv){
 	sv->rspheader_sent = 0;
 	sv->keep_alive = 0;
 	sv->total_time = 0;
+	sv->temp_buff = (char *)malloc(KV_ITEM_SIZE);
+	sv->temp_flag = 0;
+	sv->temp_len = 0;
 }
 
 void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
@@ -41,7 +44,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	FILE * fp = fopen("log.txt", "a+");
 
 	char buff[1024];
-	sprintf(buff, "===== HandleReadEvent =====");
+	sprintf(buff, "===== HandleReadEvent =====\n");
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
 
@@ -66,6 +69,12 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
     struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
 
+	if(sv->flag){
+		memcpy(recv_item, sv->temp_buff, sv->temp_len);
+		sv->temp_flag = 0;
+		sv->temp_len = 0;
+	}
+
     len = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE, 0);
 	//printf("[SERVER] recv len: %d\n", len);
 
@@ -74,6 +83,12 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	sprintf(buff, "[SERVER] recv_len: %d\n", len);
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
+
+	if(len < KV_ITEM_SIZE){
+		memcpy(sv->temp_buff, recv_item, len);
+		sv->temp_flag = 1;
+		sv->temp_len = len;
+	}
 
 //process request
     int i, res, ret;

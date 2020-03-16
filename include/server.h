@@ -65,6 +65,10 @@ struct server_vars {
 	uint8_t keep_alive;
 
 	int total_time;
+
+    char * temp_buff;
+    int temp_flag;
+    int temp_len;
 };
 
 static int num_cores;
