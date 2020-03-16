@@ -80,14 +80,14 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
 	int recv_num = len / KV_ITEM_SIZE;
 
-	sprintf(buff, "[SERVER] recv_len: %d\n", len);
+	sprintf(buff, "[SERVER] recv_len: %d, total len: %d\n", len, sv->temp_len + len);
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
 
 	if(sv->temp_len + len < KV_ITEM_SIZE){
 		memcpy(sv->temp_buff, recv_item, sv->temp_len + len);
 		sv->temp_flag = 1;
-		sv->temp_len = len;
+		sv->temp_len = sv->temp_len + len;
 	}
 
 //process request
