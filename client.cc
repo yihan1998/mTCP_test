@@ -351,7 +351,6 @@ void * send_request(void * arg){
         	}else{
                 match_insert++;
             }
-            sleep(1);
 		} else {
 		//GET
 //            printf("[CLIENT] get KV item\n");
