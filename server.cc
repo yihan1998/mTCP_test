@@ -132,7 +132,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
         //printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item[i].key, VALUE_SIZE, recv_item[i].value);
         if (res == true){
             //printf("[SERVER] insert success\n");
-			sprintf(buff, "[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item[i].key, VALUE_SIZE, recv_item[i].value);
+			sprintf(buff, "[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
 			fwrite(buff, strlen(buff), 1, fp);
 			fflush(fp);
         }
@@ -142,7 +142,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
             //printf("[SERVER] search success\n");
             recv_item->len = VALUE_SIZE;
 			sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
-			sprintf(buff, "[SERVER] get key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item[i].key, VALUE_SIZE, recv_item[i].value);
+			sprintf(buff, "[SERVER] get key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
 			fwrite(buff, strlen(buff), 1, fp);
 			fflush(fp);
 		}else{
