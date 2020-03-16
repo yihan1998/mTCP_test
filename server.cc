@@ -355,6 +355,7 @@ void * RunServerThread(void *arg){
 						&ctx->svars[events[i].data.sockid]);
 
 			} else if (events[i].events & MTCP_EPOLLIN) {
+				printf("[SERVER] receive MTCP_EPOLLIN\n");
 				ret = HandleReadEvent(ctx, thread_id, events[i].data.sockid, 
 						&ctx->svars[events[i].data.sockid]);
 
