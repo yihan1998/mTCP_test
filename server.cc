@@ -65,29 +65,31 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     sent = mtcp_write(ctx->mctx, sockid, buf, len);
 */
 
-	int len, sent;
+	int len, sent, tot_len;
 
     struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
 
 	if(sv->temp_flag){
 		memcpy(recv_item, sv->temp_buff, sv->temp_len);
 		len = mtcp_recv(ctx->mctx, sockid, (char *)(recv_item + sv->temp_len), KV_ITEM_SIZE - sv->temp_len, 0);
+		tot_len = sv->temp_len + len;
 		sv->temp_flag = 0;
 		sv->temp_len = 0;
 	}else{
 	    len = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE, 0);
+		tot_len = len;
 	}
 
-	int recv_num = len / KV_ITEM_SIZE;
+	int recv_num = tot_len / KV_ITEM_SIZE;
 
-	sprintf(buff, "[SERVER] recv_len: %d, total len: %d\n", len, sv->temp_len + len);
+	sprintf(buff, "[SERVER] recv_len: %d, total len: %d\n", len, tot_len);
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
 
-	if(sv->temp_len + len < KV_ITEM_SIZE){
-		memcpy(sv->temp_buff, recv_item, sv->temp_len + len);
+	if(tot_len < KV_ITEM_SIZE){
+		memcpy(sv->temp_buff, recv_item, tot_len);
 		sv->temp_flag = 1;
-		sv->temp_len = sv->temp_len + len;
+		sv->temp_len = tot_len;
 	}
 
 //process request
