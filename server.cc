@@ -61,7 +61,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	len = sent = 0;
 
     struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
-
+/*
 	while(1){
 		temp = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE, 0);
 		if(temp < 0){
@@ -71,16 +71,18 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		}
 		len += temp;
 	}
-    
+*/
+	len = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE, 0);
+	
 	//printf("[SERVER] recv len: %d\n", len);
 
 	int recv_num = len / KV_ITEM_SIZE;
-/*    
+ 
 	char buff[1024];
 	sprintf(buff, "[SERVER] recv_len: %d\n", len);
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
-*/
+
 	//process request
     int i, res, ret;
     for(i = 0;i < recv_num;i++){
