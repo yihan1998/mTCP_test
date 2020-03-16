@@ -56,6 +56,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 */
 
 	int len, sent;
+	len = sent = 0;
 
     int buf_size = BUF_SIZE / KV_ITEM_SIZE * KV_ITEM_SIZE;
     struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(buf_size);
@@ -64,10 +65,6 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     
 	int recv_num = len / KV_ITEM_SIZE;
 
-    TRACE_INFO("[SERVER] recv_num: %d\n", recv_num);
-
-	sent = 0;
-/*
 //process request
     int i, res, ret;
     for(i = 0;i < recv_num;i++){
@@ -83,15 +80,17 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
             if(res == true){
 //                printf("[SERVER] search success\n");
                 recv_item[i].len = VALUE_SIZE;
-                bufferevent_write(bev, (char *)&recv_item[i], KV_ITEM_SIZE);
+//                bufferevent_write(bev, (char *)&recv_item[i], KV_ITEM_SIZE);
+				sent = mtcp_write(ctx->mctx, sockid, (char *)&recv_item[i], KV_ITEM_SIZE);
             }else{
 //                printf("[SERVER] search failed\n");
                 recv_item[i].len = -1;
-                bufferevent_write(bev, (char *)&recv_item[i], KV_ITEM_SIZE);
+//                bufferevent_write(bev, (char *)&recv_item[i], KV_ITEM_SIZE);
+				sent = mtcp_write(ctx->mctx, sockid, (char *)&recv_item[i], KV_ITEM_SIZE);
             }
         }
     }
-*/
+
 #ifdef __EVAL_FRAM__
     struct timeval end;
     gettimeofday(&end, NULL);
