@@ -57,33 +57,23 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
     FILE * fp = fopen("log.txt", "a+");
 
-	int temp, len, sent;
+	int len, sent;
+	len = sent = 0;
 
-    struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
-/*
-	while(1){
-		temp = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE, 0);
-		if(temp < 0){
-			if (errno == EAGAIN) {
-				break;
-			}
-		}
-		len += temp;
-	}
-*/
+    int buf_size = KV_ITEM_SIZE;
+    struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(buf_size);
 
-	len = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE, 0);
-	
-	//printf("[SERVER] recv len: %d\n", len);
+    len = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, buf_size, 0);
+//	printf("[SERVER] recv len: %d\n", len);
 
 	int recv_num = len / KV_ITEM_SIZE;
- 
+    
 	char buff[1024];
 	sprintf(buff, "[SERVER] recv_len: %d\n", len);
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
 
-	//process request
+//process request
     int i, res, ret;
     for(i = 0;i < recv_num;i++){
         if(recv_item[i].len > 0){
@@ -364,6 +354,7 @@ void * RunServerThread(void *arg){
 						&ctx->svars[events[i].data.sockid]);
 
 			} else if (events[i].events & MTCP_EPOLLIN) {
+				printf("===== HandleReadEvent =====\n");
 				ret = HandleReadEvent(ctx, thread_id, events[i].data.sockid, 
 						&ctx->svars[events[i].data.sockid]);
 
