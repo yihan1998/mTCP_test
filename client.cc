@@ -363,9 +363,9 @@ void * send_request(void * arg){
             if((sent = write(fd, req_kv, KV_ITEM_SIZE)) < 0){
 	    		perror("[CLIENT] send failed");
 	        	exit(1);
-    	    }
-
-            printf("[CLIENT] sent len: %d\n", sent);
+    	    }else{
+                printf("[CLIENT] send len: %d\n", sent);
+            }
 
             get_count++;
 
