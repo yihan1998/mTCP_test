@@ -329,11 +329,12 @@ void * send_request(void * arg){
     }
 */
 
+    struct kv_trans_item * req_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
+
 //[Version 3.0 - mixed tests]
     for(iter = 0, key_i = 0, key_j = 0;iter < num_kv;iter++){
         if(iter < num_put_kv) {
         //PUT
-            struct kv_trans_item * req_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
             //printf("[CLIENT] put KV item %d\n", iter);
             snprintf((char *)req_kv->key, KEY_SIZE + 1, "%0llu", key_corpus[key_i]);     //set Key
 		    req_kv->len = VALUE_SIZE;
@@ -350,14 +351,12 @@ void * send_request(void * arg){
         	}else{
                 match_insert++;
             }
-            free(req_kv);
 		} else {
 		//GET
-            struct kv_trans_item * req_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
             snprintf((char *)req_kv->key, KEY_SIZE + 1, "%0llu", key_corpus[key_j]);     //set Key
 	    	req_kv->len = 0;
 		    memset((char *)req_kv->value, 0, VALUE_SIZE);
-            printf("[CLIENT] GET key: %llu, len: %d\n", key_corpus[key_j], req_kv->len);
+            printf("[CLIENT] GET key: %llu\n", key_corpus[key_j]);
 
             if(write(fd, req_kv, KV_ITEM_SIZE) < 0){
 	    		perror("[CLIENT] send failed");
@@ -394,9 +393,10 @@ void * send_request(void * arg){
             }
 */
             key_j = (key_j + 1) % num_put_kv;
-            free(req_kv);
 		}
     }
+
+    free(req_kv);
 
     if (put_count > 0){
         printf("  [Result]insert match:%llu/%llu(%.2f%%)\n", match_insert, put_count, 100.0 * match_insert / put_count);
