@@ -109,26 +109,14 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
 	//len = mtcp_recv(ctx->mctx, sockid, (char *)(recv_buf->buf_start + recv_buf->buf_write), ring_buff_free(recv_buf), 0);
     //recv_buf->buf_write = (recv_buf->buf_write + len) % recv_buf->buf_len;
-	
-	char * buffer = (char *)malloc(KV_ITEM_SIZE);
 
-	while(1){
-		recv_len = mtcp_recv(ctx->mctx, sockid, (char *)(buffer + len), KV_ITEM_SIZE - len, 0);
-    	if(recv_len == 0 || (recv_len < 0 && errno == EAGAIN)){
-			break;
-		}
-		len += recv_len;
-		sprintf(buff, "[SERVER] len: %d\n", len);
-		fwrite(buff, strlen(buff), 1, fp);
-		fflush(fp);
-	}
 // ring buffer
-/*  
+
 	while(1){
 		sprintf(buff, "[SERVER] to write len: %d, read: %d, write: %d\n", ring_buff_to_write(recv_buf), recv_buf->buf_read, recv_buf->buf_write);
 		fwrite(buff, strlen(buff), 1, fp);
 		fflush(fp);
-		recv_len = mtcp_recv(ctx->mctx, sockid, (char *)(recv_buf->buf_start + recv_buf->buf_write), ring_buff_to_write(recv_buf), 0);
+		recv_len = mtcp_recv(ctx->mctx, sockid, (char *)(recv_buf->buf_start + recv_buf->buf_write), KV_ITEM_SIZE, 0);
     	if(recv_len == 0 || (recv_len < 0 && errno == EAGAIN)){
 			break;
 		}
@@ -144,7 +132,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	sprintf(buff, "[SERVER] recv_len: %d\n", len);
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
-*/
+
 //process request
 /*
     int i, res, ret;
@@ -209,7 +197,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
         }
     }
 */
-/*
+
     int res;
     while(ring_buff_used(recv_buf) >= KV_ITEM_SIZE){
         struct kv_trans_item * recv_item = (struct kv_trans_item *)(recv_buf->buf_start + recv_buf->buf_read);
@@ -261,47 +249,6 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	fflush(fp);
 
 	fclose(fp);
-*/
-
-	int res;
-	struct kv_trans_item * recv_item = (struct kv_trans_item *)buffer;
-	if(recv_item->len > 0){
-        //printf("[SERVER] put KV item\n");
-        res = hi->insert(thread_id, (uint8_t *)recv_item->key, (uint8_t *)recv_item->value);
-        //printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
-        if (res == true){
-            //printf("[SERVER] insert success\n");
-			//sprintf(buff, "[SERVER] PUT success! key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
-			sprintf(buff, "[SERVER] PUT success! key: %.*s\n", KEY_SIZE, recv_item->key);
-			fwrite(buff, strlen(buff), 1, fp);
-			fflush(fp);
-        }else{
-			//sprintf(buff, "[SERVER] PUT failed! key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
-			sprintf(buff, "[SERVER] PUT failed! key: %.*s\n", KEY_SIZE, recv_item->key);
-			fwrite(buff, strlen(buff), 1, fp);
-			fflush(fp);
-		}
-    }else if(recv_item->len == 0){
-        res = hi->search(thread_id, (uint8_t *)recv_item->key, (uint8_t *)recv_item->value);
-        //printf("[SERVER] GET key: %.*s\n value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
-        if(res == true){
-            //printf("[SERVER] get KV item success\n");
-            recv_item->len = VALUE_SIZE;
-            sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
-			//sprintf(buff, "[SERVER] GET success! key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
-			sprintf(buff, "[SERVER] GET success! key: %.*s\n", KEY_SIZE, recv_item->key);
-			fwrite(buff, strlen(buff), 1, fp);
-			fflush(fp);
-        }else{
-            //printf("[SERVER] get KV item failed\n");
-            recv_item->len = -1;
-            sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
-			//sprintf(buff, "[SERVER] GET failed! key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
-			sprintf(buff, "[SERVER] GET failed! key: %.*s\n", KEY_SIZE, recv_item->key);
-			fwrite(buff, strlen(buff), 1, fp);
-			fflush(fp);
-        }
-    }
 	
 #ifdef __EVAL_FRAM__
     struct timeval end;
