@@ -29,9 +29,7 @@ int ring_buff_free(struct ring_buf * buffer){
 }
 
 int ring_buff_to_write(struct ring_buf * buffer){
-    if(buffer->buf_read == buffer->buf_write){
-        return buffer->buf_len - KV_ITEM_SIZE;
-    }else if(buffer->buf_write > buffer->buf_read){
+    if(buffer->buf_write >= buffer->buf_read){
 		if(buffer->buf_read == 0){
 			return buffer->buf_len - buffer->buf_write - KV_ITEM_SIZE;
 		}else{
