@@ -263,6 +263,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	fclose(fp);
 */
 
+	int res;
 	struct kv_trans_item * recv_item = (struct kv_trans_item *)buffer;
 	if(recv_item->len > 0){
         //printf("[SERVER] put KV item\n");
