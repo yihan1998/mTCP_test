@@ -141,9 +141,9 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	int recv_num = len / KV_ITEM_SIZE;
 
 	printf("[SERVER] recv_len: %d\n", len);
-	//sprintf(buff, "[SERVER] recv_len: %d\n", len);
-	//fwrite(buff, strlen(buff), 1, fp);
-	//fflush(fp);
+	sprintf(buff, "[SERVER] recv_len: %d\n", len);
+	fwrite(buff, strlen(buff), 1, fp);
+	fflush(fp);
 
 //process request
 /*
