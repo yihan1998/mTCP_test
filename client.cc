@@ -371,7 +371,7 @@ void * send_request(void * arg){
             int recv_size, tot_recv;
 
 	        tot_recv = 0;
-
+/*
             while(1){
                 recv_size = read(fd, req_kv, KV_ITEM_SIZE);
 
@@ -394,6 +394,7 @@ void * send_request(void * arg){
                     break;
                 }
             }
+*/
             key_j = (key_j + 1) % num_put_kv;
             free(req_kv);
 		}
