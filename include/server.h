@@ -70,6 +70,7 @@ struct ring_buf {
 int init_ring_buff(struct ring_buf * buffer);
 int ring_buff_free(struct ring_buf * buffer);
 int ring_buff_used(struct ring_buf * buffer);
+int ring_buff_to_write(struct ring_buf * buffer);
 
 struct server_vars {
 	int recv_len;

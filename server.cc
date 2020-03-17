@@ -22,11 +22,23 @@ int init_ring_buff(struct ring_buf * buffer){
 
 int ring_buff_free(struct ring_buf * buffer){
     if(buffer->buf_read == buffer->buf_write){
-        return buffer->buf_len;
+        return buffer->buf_len - KV_ITEM_SIZE;
+    }else{
+        return buffer->buf_len - KV_ITEM_SIZE - ring_buff_used(buffer);
+    }
+}
+
+int ring_buff_to_write(struct ring_buf * buffer){
+    if(buffer->buf_read == buffer->buf_write){
+        return buffer->buf_len - KV_ITEM_SIZE;
     }else if(buffer->buf_write > buffer->buf_read){
-		return buffer->buf_len - buffer->buf_write;
+		if(buffer->buf_read == 0){
+			return buffer->buf_len - buffer->buf_write - KV_ITEM_SIZE;
+		}else{
+			return buffer->buf_len - buffer->buf_write;
+		}
 	}else if(buffer->buf_read > buffer->buf_write){
-		return buffer->buf_read - buffer->buf_write;
+		return buffer->buf_read - buffer->buf_write - KV_ITEM_SIZE;
 	}
 }
 
@@ -101,7 +113,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     //recv_buf->buf_write = (recv_buf->buf_write + len) % recv_buf->buf_len;
 
 	while(1){
-		recv_len = mtcp_recv(ctx->mctx, sockid, (char *)(recv_buf->buf_start + recv_buf->buf_write), ring_buff_free(recv_buf), 0);
+		recv_len = mtcp_recv(ctx->mctx, sockid, (char *)(recv_buf->buf_start + recv_buf->buf_write), ring_buff_to_write(recv_buf), 0);
     	if(recv_len < 0) {
 			if (errno == EAGAIN) {
 				break;
