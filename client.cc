@@ -370,7 +370,7 @@ void * send_request(void * arg){
 	        tot_recv = 0;
 
             while(1){
-                recv_size = read(fd, res_kv, KV_ITEM_SIZE);
+                recv_size = read(fd, req_kv, KV_ITEM_SIZE);
 
                 if(recv_size == 0){
                     printf("[CLIENT] close connection\n");
@@ -380,11 +380,11 @@ void * send_request(void * arg){
                 tot_recv += recv_size;
 
                 if(tot_recv == KV_ITEM_SIZE){
-                    if(res_kv->len == VALUE_SIZE && bufcmp((char *)res_kv->value, (char *)&value_corpus[key_j * VALUE_SIZE], VALUE_SIZE)){
-                        printf("[CLIENT] GET success! key: %.*s, value: %.*s\n", KEY_SIZE, res_kv->key, VALUE_SIZE, res_kv->value);
+                    if(res_kv->len == VALUE_SIZE && bufcmp((char *)req_kv->value, (char *)&value_corpus[key_j * VALUE_SIZE], VALUE_SIZE)){
+                        printf("[CLIENT] GET success! key: %.*s, value: %.*s\n", KEY_SIZE, req_kv->key, VALUE_SIZE, req_kv->value);
                         match_search++;
                     }else{
-                        printf("[CLIENT] GET failed! key: %.*s, value: %.*s\n", KEY_SIZE, res_kv->key, VALUE_SIZE, res_kv->value);
+                        printf("[CLIENT] GET failed! key: %.*s, value: %.*s\n", KEY_SIZE, req_kv->key, VALUE_SIZE, req_kv->value);
                     }
                     break;
                 }
