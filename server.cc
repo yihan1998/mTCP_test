@@ -115,7 +115,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		fwrite(buff, strlen(buff), 1, fp);
 		fflush(fp);
 		recv_len = mtcp_recv(ctx->mctx, sockid, (char *)(recv_buf->buf_start + recv_buf->buf_write), ring_buff_to_write(recv_buf), 0);
-    	if(recv_len == 0) {
+    	if(recv_len == 0 || (recv_len < 0 && errno == EAGAIN)){
 			break;
 		}
 		len += recv_len;
