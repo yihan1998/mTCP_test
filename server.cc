@@ -238,6 +238,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 				fflush(fp);
             }
         }
+		memset(recv_buf->buf_start + recv_buf->buf_read, 0, KV_ITEM_SIZE);
         recv_buf->buf_read = (recv_buf->buf_read + KV_ITEM_SIZE) % recv_buf->buf_len;
     }
 	
