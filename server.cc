@@ -128,7 +128,11 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
 	int recv_num = len / KV_ITEM_SIZE;
 
-	sprintf(buff, "[SERVER] recv_len: %d\n", len);
+	struct timeval time1;
+    gettimeofday(&time1, NULL);
+	long time = (long)time1.tv_sec * 1000000 + (long)time1.tv_usec;
+
+	sprintf(buff, "[SERVER] time: %ld, recv_len: %d\n", time, len);
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
 
