@@ -23,9 +23,11 @@ int init_ring_buff(struct ring_buf * buffer){
 int ring_buff_free(struct ring_buf * buffer){
     if(buffer->buf_read == buffer->buf_write){
         return buffer->buf_len - KV_ITEM_SIZE;
-    }else{
-        return buffer->buf_len - KV_ITEM_SIZE - ring_buff_used(buffer);
-    }
+    }else if(buffer->buf_write > buffer->buf_read){
+		return buffer->buf_len - buffer->buf_write;
+	}else if(buffer->buf_read > buffer->buf_write){
+		return buffer->buf_read - buffer->buf_write;
+	}
 }
 
 int ring_buff_used(struct ring_buf * buffer){
@@ -88,16 +90,24 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     sent = mtcp_write(ctx->mctx, sockid, buf, len);
 */
 
-	int len, sent;
-	sent = 0;
+	int len, sent, recv_len;
+	len = 0;
 
 	struct ring_buf * recv_buf = sv->recv_buf;
 
 //    struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
 
-	len = mtcp_recv(ctx->mctx, sockid, (char *)(recv_buf->buf_start + recv_buf->buf_write), ring_buff_free(recv_buf), 0);
+	//len = mtcp_recv(ctx->mctx, sockid, (char *)(recv_buf->buf_start + recv_buf->buf_write), ring_buff_free(recv_buf), 0);
+    //recv_buf->buf_write = (recv_buf->buf_write + len) % recv_buf->buf_len;
 
-    recv_buf->buf_write = (recv_buf->buf_write + len) % recv_buf->buf_len;
+	while(1){
+		recv_len = mtcp_recv(ctx->mctx, sockid, (char *)(recv_buf->buf_start + recv_buf->buf_write), ring_buff_free(recv_buf), 0);
+    	len += recv_len;
+		recv_buf->buf_write = (recv_buf->buf_write + recv_len) % recv_buf->buf_len;
+		if(recv_len == 0){
+			break;
+		}
+	}
 
 	int recv_num = len / KV_ITEM_SIZE;
 
