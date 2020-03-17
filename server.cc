@@ -98,7 +98,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
     recv_buf->buf_write = (recv_buf->buf_write + len) % recv_buf->buf_len;
 
-	int recv_num = tot_len / KV_ITEM_SIZE;
+	int recv_num = len / KV_ITEM_SIZE;
 
 	sprintf(buff, "[SERVER] recv_len: %d\n", len);
 	fwrite(buff, strlen(buff), 1, fp);
