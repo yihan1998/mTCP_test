@@ -257,7 +257,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	read_time += (int)(end_time - start_time);
 #endif
 
-    return 1;
+    return len;
 }
 
 int AcceptConnection(struct thread_context *ctx, int listener){
