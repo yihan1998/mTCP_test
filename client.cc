@@ -389,10 +389,7 @@ void * send_request(void * arg){
                         match_search++;
                     }else{
                         //printf("[CLIENT] GET failed! key: %.*s, value: %.*s\n", KEY_SIZE, req_kv->key, VALUE_SIZE, req_kv->value);
-                        struct timeval time1;
-                        gettimeofday(&time1, NULL);
-	                    long time = (long)time1.tv_sec * 1000000 + (long)time1.tv_usec;
-                        printf("[CLIENT] GET failed! time: %ld, key: %.*s\n", time, KEY_SIZE, req_kv->key);
+                        printf("[CLIENT] GET failed! key: %.*s\n", KEY_SIZE, req_kv->key);
                     }
                     break;
                 }
