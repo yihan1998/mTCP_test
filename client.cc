@@ -192,9 +192,6 @@ void * send_request(void * arg){
 #elif defined(__TEST_KV__)
 //    printf("===== start real work ======\n");
     int i, iter, key_i, key_j;
-    
-    struct kv_trans_item * req_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
-    struct kv_trans_item * res_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
 
     struct timeval time1, time2;
     gettimeofday(&time1, NULL);
@@ -336,6 +333,7 @@ void * send_request(void * arg){
     for(iter = 0, key_i = 0, key_j = 0;iter < num_kv;iter++){
         if(iter < num_put_kv) {
         //PUT
+            struct kv_trans_item * req_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
             //printf("[CLIENT] put KV item %d\n", iter);
             snprintf((char *)req_kv->key, KEY_SIZE + 1, "%0llu", key_corpus[key_i]);     //set Key
 		    req_kv->len = VALUE_SIZE;
@@ -351,9 +349,11 @@ void * send_request(void * arg){
         	}else{
                 match_insert++;
             }
+            free(req_kv);
 		} else {
 		//GET
-//            printf("[CLIENT] get KV item\n");
+            //printf("[CLIENT] get KV item\n");
+            struct kv_trans_item * req_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
             snprintf((char *)req_kv->key, KEY_SIZE + 1, "%0llu", key_corpus[key_j]);     //set Key
 	    	req_kv->len = 0;
 		    memset((char *)req_kv->value, 0, VALUE_SIZE);
@@ -390,6 +390,7 @@ void * send_request(void * arg){
                 }
             }
             key_j = (key_j + 1) % num_put_kv;
+            free(req_kv);
 		}
     }
 
