@@ -380,7 +380,7 @@ void * send_request(void * arg){
                 tot_recv += recv_size;
 
                 if(tot_recv == KV_ITEM_SIZE){
-                    if(res_kv->len == VALUE_SIZE && bufcmp((char *)req_kv->value, (char *)&value_corpus[key_j * VALUE_SIZE], VALUE_SIZE)){
+                    if(res_kv->len == VALUE_SIZE && bufcmp((char *)res_kv->value, (char *)&value_corpus[key_j * VALUE_SIZE], VALUE_SIZE)){
                         printf("[CLIENT] GET success! key: %.*s, value: %.*s\n", KEY_SIZE, res_kv->key, VALUE_SIZE, res_kv->value);
                         match_search++;
                     }else{
