@@ -4,6 +4,7 @@
 #include <mtcp_api.h>
 #include <mtcp_epoll.h>
 
+#include <rte_common.h>
 #include "mtcp.h"
 #include "cpu.h"
 #include "http_parsing.h"
