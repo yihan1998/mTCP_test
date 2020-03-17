@@ -79,6 +79,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	FILE * fp = fopen("log.txt", "a+");
 
 	char buff[1024];
+	printf("===== HandleReadEvent =====\n");
 	sprintf(buff, "===== HandleReadEvent =====\n");
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
@@ -120,26 +121,29 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		recv_len = mtcp_read(ctx->mctx, sockid, (char *)(recv_buf->buf_start + recv_buf->buf_write), recv_buf->buf_len - recv_buf->buf_write);
 		
 		if(recv_len < 0 && errno == EAGAIN){
-			sprintf(buff, "[SERVER] recv_len < 0 && errno == EAGAIN\n");
-			fwrite(buff, strlen(buff), 1, fp);
-			fflush(fp);
+			//sprintf(buff, "[SERVER] recv_len < 0 && errno == EAGAIN\n");
+			printf("[SERVER] recv_len < 0 && errno == EAGAIN\n");
+			//fwrite(buff, strlen(buff), 1, fp);
+			//fflush(fp);
 			break;
 		}
 		len += recv_len;
 		recv_buf->buf_write = (recv_buf->buf_write + recv_len) % recv_buf->buf_len;
 		if(len == 0){
-			sprintf(buff, "[SERVER] recv len == 0\n");
-			fwrite(buff, strlen(buff), 1, fp);
-			fflush(fp);
+			printf("[SERVER] recv len == 0\n");
+			//sprintf(buff, "[SERVER] recv len == 0\n");
+			//fwrite(buff, strlen(buff), 1, fp);
+			//fflush(fp);
 			break;
 		}
 	}
 
 	int recv_num = len / KV_ITEM_SIZE;
 
-	sprintf(buff, "[SERVER] recv_len: %d\n", len);
-	fwrite(buff, strlen(buff), 1, fp);
-	fflush(fp);
+	printf("[SERVER] recv_len: %d\n", len);
+	//sprintf(buff, "[SERVER] recv_len: %d\n", len);
+	//fwrite(buff, strlen(buff), 1, fp);
+	//fflush(fp);
 
 //process request
 /*
