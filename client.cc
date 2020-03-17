@@ -22,9 +22,10 @@ void gen_corpus(LL * key_corpus, uint8_t * value_corpus){
 }
 
 int bufcmp(char * a, char * b, int buf_len){
-    int i = 0;
+    int i;
     for(i = 0;i < buf_len;i++){
         if(a[i] != b[i]){
+            printf("[bufcmp] diff bitween %c and %c, i = %d\n", a[i], b[i], i);
             break;
         }
     }
@@ -54,7 +55,7 @@ int connect_server(char * server_ip, int port){
         return -1;
     }
 
-//    evutil_make_socket_nonblocking(sockfd);
+    //evutil_make_socket_nonblocking(sockfd);
 
     return sockfd;
 
@@ -64,7 +65,6 @@ void * send_request(void * arg){
     struct send_info * info = (struct send_info *)arg;
 
     int fd = *(info->sockfd);
-
     struct hikv_arg * hikv_args = info->hikv_thread_arg;
 
     size_t pm_size = hikv_args->pm_size;
@@ -116,7 +116,7 @@ void * send_request(void * arg){
         gettimeofday(&record_start[request_cnt], NULL);
 #endif
 
-//send request
+        //send request
         send_size = fread(send_buf, 1, buf_size, send_fp);
 
         if(write(fd, send_buf, send_size) < 0){
@@ -124,7 +124,7 @@ void * send_request(void * arg){
 	    	exit(1);
     	}
 
-//receive reply
+        //receive reply
         int temp = 0;
         while(1){
             recv_size = read(fd, recv_buf, buf_size);
@@ -190,14 +190,16 @@ void * send_request(void * arg){
 
     fclose(send_fp);
 #elif defined(__TEST_KV__)
-//    printf("===== start real work ======\n");
+    //printf("===== start real work ======\n");
     int i, iter, key_i, key_j;
+    
+    struct kv_trans_item * req_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
+    struct kv_trans_item * res_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
 
     struct timeval time1, time2;
     gettimeofday(&time1, NULL);
 /* [Version 1.0 - seperated tasks 1]
-//PUT
-
+    //PUT
     for(iter = 0;iter < 3;iter++){
         if(rand() % 100 <= PUT_PERCENT || iter < NUM_KEYS){
             snprintf((char *)req_kv->key, KEY_SIZE + 1, "%0llu", key_corpus[key_i]);     //set Key
@@ -218,7 +220,7 @@ void * send_request(void * arg){
 	    	exit(1);
     	}
 
-//GET
+    //GET
 
         int temp = 0;
         
@@ -266,7 +268,7 @@ void * send_request(void * arg){
     uint64_t match_delete = 0;
 
 /*[Version 2.0 - seperated tasks 2]
-//PUT
+    //PUT
     for(iter = 0;iter < num_put_kv;iter++){
         memset((char *)req_kv->key, 0, KEY_SIZE);
         memset((char *)req_kv->value, 0, VALUE_SIZE);
@@ -286,7 +288,7 @@ void * send_request(void * arg){
         }
     }
 
-//GET
+    //GET
     
     for(iter = 0, key_i = 0;iter < num_get_kv;iter++){
         snprintf((char *)req_kv->key, KEY_SIZE + 1, "%0llu", key_corpus[key_i]);     //set Key
@@ -353,11 +355,11 @@ void * send_request(void * arg){
             free(req_kv);
 		} else {
 		//GET
+            //printf("[CLIENT] get KV item\n");
             struct kv_trans_item * req_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
             snprintf((char *)req_kv->key, KEY_SIZE + 1, "%0llu", key_corpus[key_j]);     //set Key
 	    	req_kv->len = 0;
 		    memset((char *)req_kv->value, 0, VALUE_SIZE);
-            printf("[CLIENT] GET key: %llu\n", key_corpus[key_j]);
 
             if(write(fd, req_kv, KV_ITEM_SIZE) < 0){
 	    		perror("[CLIENT] send failed");
@@ -371,7 +373,7 @@ void * send_request(void * arg){
 	        tot_recv = 0;
 
             while(1){
-                recv_size = read(fd, (char *)(req_kv + tot_recv), KV_ITEM_SIZE - tot_recv);
+                recv_size = read(fd, req_kv, KV_ITEM_SIZE);
 
                 if(recv_size == 0){
                     printf("[CLIENT] close connection\n");
@@ -392,7 +394,6 @@ void * send_request(void * arg){
                     break;
                 }
             }
-
             key_j = (key_j + 1) % num_put_kv;
             free(req_kv);
 		}
