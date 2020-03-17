@@ -363,6 +363,7 @@ void * send_request(void * arg){
 	    		perror("[CLIENT] send failed");
 	        	exit(1);
     	    }
+            printf("[CLIENT] GET request send success\n");
 
             get_count++;
 
