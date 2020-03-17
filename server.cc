@@ -194,13 +194,16 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
                 //printf("[SERVER] get KV item success\n");
                 recv_item->len = VALUE_SIZE;
                 sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
-				sprintf(buff, "[SERVER] get key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+				sprintf(buff, "[SERVER] GET success! key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
 				fwrite(buff, strlen(buff), 1, fp);
 				fflush(fp);
             }else{
                 //printf("[SERVER] get KV item failed\n");
                 recv_item->len = -1;
                 sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
+				sprintf(buff, "[SERVER] GET failed! key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+				fwrite(buff, strlen(buff), 1, fp);
+				fflush(fp);
             }
         }
         recv_buf->buf_read = (recv_buf->buf_read + KV_ITEM_SIZE) % recv_buf->buf_len;
