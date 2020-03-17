@@ -111,28 +111,26 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     //recv_buf->buf_write = (recv_buf->buf_write + len) % recv_buf->buf_len;
 
 // ring buffer
-
 	while(1){
+/*
 		sprintf(buff, "[SERVER] to write len: %d, read: %d, write: %d\n", ring_buff_to_write(recv_buf), recv_buf->buf_read, recv_buf->buf_write);
 		fwrite(buff, strlen(buff), 1, fp);
 		fflush(fp);
-		recv_len = mtcp_recv(ctx->mctx, sockid, (char *)(recv_buf->buf_start + recv_buf->buf_write), ring_buff_to_write(recv_buf), 0);
-    	if(recv_len == 0 || (recv_len < 0 && errno == EAGAIN)){
+*/
+		recv_len = mtcp_read(ctx->mctx, sockid, (char *)(recv_buf->buf_start + recv_buf->buf_write), ring_buff_to_write(recv_buf));
+    	if(recv_len < 0 && errno == EAGAIN){
 			break;
 		}
 		len += recv_len;
 		recv_buf->buf_write = (recv_buf->buf_write + recv_len) % recv_buf->buf_len;
-		fwrite(buff, strlen(buff), 1, fp);
-		fflush(fp);
+		if(len == 0){
+			break;
+		}
 	}
 
 	int recv_num = len / KV_ITEM_SIZE;
 
-	struct timeval time1;
-    gettimeofday(&time1, NULL);
-	long time = (long)time1.tv_sec * 1000000 + (long)time1.tv_usec;
-
-	sprintf(buff, "[SERVER] time: %ld, recv_len: %d\n", time, len);
+	sprintf(buff, "[SERVER] recv_len: %d\n", len);
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
 
