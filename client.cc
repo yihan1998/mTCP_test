@@ -353,11 +353,11 @@ void * send_request(void * arg){
             free(req_kv);
 		} else {
 		//GET
-            //printf("[CLIENT] get KV item\n");
             struct kv_trans_item * req_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
             snprintf((char *)req_kv->key, KEY_SIZE + 1, "%0llu", key_corpus[key_j]);     //set Key
 	    	req_kv->len = 0;
 		    memset((char *)req_kv->value, 0, VALUE_SIZE);
+            printf("[CLIENT] GET key: %llu, len: %d\n", key_corpus[key_j], req_kv->len);
 
             if(write(fd, req_kv, KV_ITEM_SIZE) < 0){
 	    		perror("[CLIENT] send failed");
