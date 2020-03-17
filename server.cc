@@ -172,6 +172,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     int res;
     while(ring_buff_used(recv_buf) >= KV_ITEM_SIZE){
         struct kv_trans_item * recv_item = (struct kv_trans_item *)(recv_buf->buf_start + recv_buf->buf_read);
+        printf("[SERVER] recv item len: %d\n", recv_item->len);
         if(recv_item->len > 0){
             //printf("[SERVER] put KV item\n");
             res = hi->insert(thread_id, (uint8_t *)recv_item->key, (uint8_t *)recv_item->value);
