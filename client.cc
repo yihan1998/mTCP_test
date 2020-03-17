@@ -359,13 +359,10 @@ void * send_request(void * arg){
 	    	req_kv->len = 0;
 		    memset((char *)req_kv->value, 0, VALUE_SIZE);
 
-            int sent;
-            if((sent = write(fd, req_kv, KV_ITEM_SIZE)) < 0){
+            if(write(fd, req_kv, KV_ITEM_SIZE) < 0){
 	    		perror("[CLIENT] send failed");
 	        	exit(1);
-    	    }else{
-                printf("[CLIENT] send len: %d\n", sent);
-            }
+    	    }
 
             get_count++;
 
