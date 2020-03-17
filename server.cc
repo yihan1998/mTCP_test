@@ -63,14 +63,14 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 }
 
 int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struct server_vars *sv){
-
+/*
 	FILE * fp = fopen("log.txt", "a+");
 
 	char buff[1024];
 	sprintf(buff, "===== HandleReadEvent =====\n");
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
-
+*/
 #ifdef __EVAL_FRAM__
     struct timeval start;
     gettimeofday(&start, NULL);
@@ -89,6 +89,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 */
 
 	int len, sent;
+	sent = 0;
 
 	struct ring_buf * recv_buf = sv->recv_buf;
 
@@ -99,11 +100,11 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     recv_buf->buf_write = (recv_buf->buf_write + len) % recv_buf->buf_len;
 
 	int recv_num = len / KV_ITEM_SIZE;
-
+/*
 	sprintf(buff, "[SERVER] recv_len: %d\n", len);
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
-
+*/
 //process request
 /*
     int i, res, ret;
@@ -176,23 +177,23 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
             res = hi->insert(thread_id, (uint8_t *)recv_item->key, (uint8_t *)recv_item->value);
             //printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
             if (res == true){
-                printf("[SERVER] insert success\n");
-				sprintf(buff, "[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
-				fwrite(buff, strlen(buff), 1, fp);
-				fflush(fp);
+                //printf("[SERVER] insert success\n");
+				//sprintf(buff, "[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+				//fwrite(buff, strlen(buff), 1, fp);
+				//fflush(fp);
             }
         }else if(recv_item->len == 0){
             res = hi->search(thread_id, (uint8_t *)recv_item->key, (uint8_t *)recv_item->value);
             //printf("[SERVER] GET key: %.*s\n value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
             if(res == true){
-                printf("[SERVER] get KV item success\n");
+                //printf("[SERVER] get KV item success\n");
                 recv_item->len = VALUE_SIZE;
                 sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
-				sprintf(buff, "[SERVER] get key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
-				fwrite(buff, strlen(buff), 1, fp);
-				fflush(fp);
+				//sprintf(buff, "[SERVER] get key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+				//fwrite(buff, strlen(buff), 1, fp);
+				//fflush(fp);
             }else{
-                printf("[SERVER] get KV item failed\n");
+                //printf("[SERVER] get KV item failed\n");
                 recv_item->len = -1;
                 sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
             }
@@ -200,12 +201,13 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
         recv_buf->buf_read = (recv_buf->buf_read + KV_ITEM_SIZE) % recv_buf->buf_len;
         //printf("[SERVER] read: %d, write: %d, remain len: %d\n", recv_buf->buf_read, recv_buf->buf_write, ring_buff_used(recv_buf));
     }
+/*	
 	sprintf(buff, "[SERVER] read: %d, write: %d, remain len: %d\n", recv_buf->buf_read, recv_buf->buf_write, ring_buff_used(recv_buf));
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
 
 	fclose(fp);
-
+*/
 #ifdef __EVAL_FRAM__
     struct timeval end;
     gettimeofday(&end, NULL);
@@ -217,7 +219,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	read_time += (int)(end_time - start_time);
 #endif
 
-    return 1;
+    return len;
 }
 
 int AcceptConnection(struct thread_context *ctx, int listener){
