@@ -359,11 +359,13 @@ void * send_request(void * arg){
 	    	req_kv->len = 0;
 		    memset((char *)req_kv->value, 0, VALUE_SIZE);
 
-            if(write(fd, req_kv, KV_ITEM_SIZE) < 0){
+            int sent;
+            if((sent = write(fd, req_kv, KV_ITEM_SIZE)) < 0){
 	    		perror("[CLIENT] send failed");
 	        	exit(1);
     	    }
-            printf("[CLIENT] GET request send success\n");
+
+            printf("[CLIENT] sent len: %d\n");
 
             get_count++;
 
@@ -372,7 +374,7 @@ void * send_request(void * arg){
 	        tot_recv = 0;
 
             while(1){
-                recv_size = read(fd, req_kv, KV_ITEM_SIZE);
+                recv_size = read(fd, (char *)(req_kv + tot_recv), KV_ITEM_SIZE - tot_recv);
 
                 if(recv_size == 0){
                     printf("[CLIENT] close connection\n");
