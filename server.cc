@@ -178,10 +178,14 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
             //printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
             if (res == true){
                 //printf("[SERVER] insert success\n");
-				sprintf(buff, "[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+				sprintf(buff, "[SERVER] PUT success! key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
 				fwrite(buff, strlen(buff), 1, fp);
 				fflush(fp);
-            }
+            }else{
+				sprintf(buff, "[SERVER] PUT failed! key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+				fwrite(buff, strlen(buff), 1, fp);
+				fflush(fp);
+			}
         }else if(recv_item->len == 0){
             res = hi->search(thread_id, (uint8_t *)recv_item->key, (uint8_t *)recv_item->value);
             //printf("[SERVER] GET key: %.*s\n value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
