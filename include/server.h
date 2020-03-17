@@ -56,6 +56,21 @@ struct thread_context {
 	struct server_vars *svars;
 };
 
+//ring buffer
+struct ring_buf {
+    char * buf_start;
+    char * buf_end;
+    int buf_read;
+    int buf_write;
+    int buf_len;
+};
+
+#define RING_BUF_SIZE sizeof(struct ring_buf)
+
+int init_ring_buff(struct ring_buf * buffer);
+int ring_buff_free(struct ring_buf * buffer);
+int ring_buff_used(struct ring_buf * buffer);
+
 struct server_vars {
 	int recv_len;
 	int request_len;
@@ -66,9 +81,7 @@ struct server_vars {
 
 	int total_time;
 
-    char * temp_buff;
-    int temp_flag;
-    int temp_len;
+    struct ring_buf * recv_buf;
 };
 
 static int num_cores;

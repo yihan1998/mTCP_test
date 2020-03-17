@@ -12,6 +12,30 @@ int read_time = 0;
 int read_cnt = 0;
 #endif
 
+int init_ring_buff(struct ring_buf * buffer){
+    buffer->buf_len = BUF_SIZE / KV_ITEM_SIZE * KV_ITEM_SIZE;
+    buffer->buf_start = (char *)malloc(buffer->buf_len);
+    buffer->buf_end = buffer->buf_start;
+    buffer->buf_read = buffer->buf_write = 0;
+    return 1;
+}
+
+int ring_buff_free(struct ring_buf * buffer){
+    if(buffer->buf_read == buffer->buf_write){
+        return buffer->buf_len - KV_ITEM_SIZE;
+    }else{
+        return buffer->buf_len - KV_ITEM_SIZE - ring_buff_used(buffer);
+    }
+}
+
+int ring_buff_used(struct ring_buf * buffer){
+    if(buffer->buf_read == buffer->buf_write){
+        return 0;
+    }else{
+        return (buffer->buf_write + buffer->buf_len - buffer->buf_read) % buffer->buf_len;
+    }
+}
+
 void CleanServerVariable(struct server_vars *sv){
 	sv->recv_len = 0;
 	sv->request_len = 0;
@@ -21,9 +45,8 @@ void CleanServerVariable(struct server_vars *sv){
 	sv->rspheader_sent = 0;
 	sv->keep_alive = 0;
 	sv->total_time = 0;
-	sv->temp_buff = (char *)malloc(KV_ITEM_SIZE);
-	sv->temp_flag = 0;
-	sv->temp_len = 0;
+    sv->recv_buf = (struct ring_buf *)malloc(RING_BUF_SIZE);
+    init_ring_buff(sv->recv_buf);
 }
 
 void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
@@ -65,32 +88,21 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     sent = mtcp_write(ctx->mctx, sockid, buf, len);
 */
 
-	int len, sent, tot_len;
+	int len, sent;
 
-    struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
+	struct ring_buf * recv_buf = sv->recv_buf;
 
-	if(sv->temp_flag){
-		memcpy(recv_item, sv->temp_buff, sv->temp_len);
-		len = mtcp_recv(ctx->mctx, sockid, (char *)(recv_item + sv->temp_len), KV_ITEM_SIZE - sv->temp_len, 0);
-		tot_len = sv->temp_len + len;
-		sv->temp_flag = 0;
-		sv->temp_len = 0;
-	}else{
-	    len = mtcp_recv(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE, 0);
-		tot_len = len;
-	}
+//    struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
+
+	len = mtcp_recv(ctx->mctx, sockid, (char *)(recv_buf->buf_start + recv_buf->buf_write), ring_buff_free(recv_buf), 0);
+
+    recv_buf->buf_write = (recv_buf->buf_write + len) % recv_buf->buf_len;
 
 	int recv_num = tot_len / KV_ITEM_SIZE;
 
-	sprintf(buff, "[SERVER] recv_len: %d, total len: %d\n", len, tot_len);
+	sprintf(buff, "[SERVER] recv_len: %d\n", len);
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
-
-	if(tot_len < KV_ITEM_SIZE){
-		memcpy(sv->temp_buff, recv_item, tot_len);
-		sv->temp_flag = 1;
-		sv->temp_len = tot_len;
-	}
 
 //process request
 /*
@@ -125,6 +137,10 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
 	fclose(fp);
 */
+/*
+	sprintf(buff, "[SERVER] recv item len: %d\n", recv_item->len);
+	fwrite(buff, strlen(buff), 1, fp);
+	fflush(fp);
 	int res, ret;
     if(recv_item->len > 0){
         //printf("[SERVER] put KV item\n");
@@ -151,6 +167,42 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 			sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
         }
     }
+*/
+    int res;
+    while(ring_buff_used(recv_buf) >= KV_ITEM_SIZE){
+        struct kv_trans_item * recv_item = (struct kv_trans_item *)(recv_buf->buf_start + recv_buf->buf_read);
+        if(recv_item->len > 0){
+            //printf("[SERVER] put KV item\n");
+            res = hi->insert(thread_id, (uint8_t *)recv_item->key, (uint8_t *)recv_item->value);
+            //printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+            if (res == true){
+                printf("[SERVER] insert success\n");
+				sprintf(buff, "[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+				fwrite(buff, strlen(buff), 1, fp);
+				fflush(fp);
+            }
+        }else if(recv_item->len == 0){
+            res = hi->search(thread_id, (uint8_t *)recv_item->key, (uint8_t *)recv_item->value);
+            //printf("[SERVER] GET key: %.*s\n value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+            if(res == true){
+                printf("[SERVER] get KV item success\n");
+                recv_item->len = VALUE_SIZE;
+                sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
+				sprintf(buff, "[SERVER] get key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+				fwrite(buff, strlen(buff), 1, fp);
+				fflush(fp);
+            }else{
+                printf("[SERVER] get KV item failed\n");
+                recv_item->len = -1;
+                sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
+            }
+        }
+        recv_buf->buf_read = (recv_buf->buf_read + KV_ITEM_SIZE) % recv_buf->buf_len;
+        //printf("[SERVER] read: %d, write: %d, remain len: %d\n", recv_buf->buf_read, recv_buf->buf_write, ring_buff_used(recv_buf));
+    }
+	sprintf(buff, "[SERVER] read: %d, write: %d, remain len: %d\n", recv_buf->buf_read, recv_buf->buf_write, ring_buff_used(recv_buf));
+	fwrite(buff, strlen(buff), 1, fp);
+	fflush(fp);
 
 	fclose(fp);
 
