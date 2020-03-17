@@ -365,7 +365,7 @@ void * send_request(void * arg){
 	        	exit(1);
     	    }
 
-            printf("[CLIENT] sent len: %d\n");
+            printf("[CLIENT] sent len: %d\n", sent);
 
             get_count++;
 
