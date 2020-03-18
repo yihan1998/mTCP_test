@@ -82,7 +82,7 @@ struct server_vars {
 
 	int total_time;
 
-    struct ring_buf * recv_buf;
+//    struct ring_buf * recv_buf;
 };
 
 static int num_cores;

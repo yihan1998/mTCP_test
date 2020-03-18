@@ -410,11 +410,11 @@ void * send_request(void * arg){
                 if(tot_recv == KV_ITEM_SIZE){
                     if(req_kv->len == VALUE_SIZE && bufcmp((char *)req_kv->value, (char *)&value_corpus[key_j * VALUE_SIZE], VALUE_SIZE)){
                         //printf("[CLIENT] GET success! key: %.*s, value: %.*s\n", KEY_SIZE, req_kv->key, VALUE_SIZE, req_kv->value);
-                        printf("[CLIENT] GET success! key: %.*s\n", KEY_SIZE, req_kv->key);
+                        //printf("[CLIENT] GET success! key: %.*s\n", KEY_SIZE, req_kv->key);
                         match_search++;
                     }else{
                         //printf("[CLIENT] GET failed! key: %.*s, value: %.*s\n", KEY_SIZE, req_kv->key, VALUE_SIZE, req_kv->value);
-                        printf("[CLIENT] GET failed! key: %.*s\n", KEY_SIZE, req_kv->key);
+                        //printf("[CLIENT] GET failed! key: %.*s\n", KEY_SIZE, req_kv->key);
                     }
                     break;
                 }
