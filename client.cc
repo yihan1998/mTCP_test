@@ -196,8 +196,6 @@ void * send_request(void * arg){
     struct kv_trans_item * req_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
     struct kv_trans_item * res_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
 
-    struct timeval time1, time2;
-    gettimeofday(&time1, NULL);
 /* [Version 1.0 - seperated tasks 1]
     //PUT
     for(iter = 0;iter < 3;iter++){
