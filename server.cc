@@ -251,6 +251,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	fflush(fp);
 */
 
+	int res;
     if(recv_item->len > 0){
         //printf("[SERVER] put KV item\n");
         res = hi->insert(thread_id, (uint8_t *)recv_item->key, (uint8_t *)recv_item->value);
