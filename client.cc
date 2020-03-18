@@ -421,7 +421,6 @@ void * send_request(void * arg){
             }
             key_j = (key_j + 1) % num_put_kv;
             free(req_kv);
-            sleep(5);
 		}
     }
 
