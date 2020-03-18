@@ -75,14 +75,14 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 }
 
 int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struct server_vars *sv){
-
+/*
 	FILE * fp = fopen("log.txt", "a+");
 
 	char buff[1024];
 	sprintf(buff, "===== HandleReadEvent =====\n");
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
-
+*/
 #ifdef __EVAL_FRAM__
     struct timeval start;
     gettimeofday(&start, NULL);
@@ -124,11 +124,11 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		}
 	}
 */
-
+/*
 	sprintf(buff, "[SERVER] recv_len: %d\n", len);
 	fwrite(buff, strlen(buff), 1, fp);
 	fflush(fp);
-
+*/
 //process request
 /*
     int i, res, ret;
@@ -259,16 +259,20 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 			//sprintf(buff, "[SERVER] PUT success! key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
             recv_item->len = VALUE_SIZE;
 			sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
+		/*
 			sprintf(buff, "[SERVER] PUT success! key: %.*s\n", KEY_SIZE, recv_item->key);
 			fwrite(buff, strlen(buff), 1, fp);
 			fflush(fp);
+		*/
         }else{
 			//sprintf(buff, "[SERVER] PUT failed! key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
             recv_item->len = -1;
 			sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
+		/*
 			sprintf(buff, "[SERVER] PUT failed! key: %.*s\n", KEY_SIZE, recv_item->key);
 			fwrite(buff, strlen(buff), 1, fp);
 			fflush(fp);
+		*/
 		}
     }else if(recv_item->len == 0){
         res = hi->search(thread_id, (uint8_t *)recv_item->key, (uint8_t *)recv_item->value);
@@ -278,21 +282,25 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
             recv_item->len = VALUE_SIZE;
             sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
 			//sprintf(buff, "[SERVER] GET success! key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+		/*
 			sprintf(buff, "[SERVER] GET success! key: %.*s\n", KEY_SIZE, recv_item->key);
 			fwrite(buff, strlen(buff), 1, fp);
 			fflush(fp);
-        }else{
+        */
+		}else{
             //printf("[SERVER] get KV item failed\n");
             recv_item->len = -1;
             sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
 			//sprintf(buff, "[SERVER] GET failed! key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+		/*
 			sprintf(buff, "[SERVER] GET failed! key: %.*s\n", KEY_SIZE, recv_item->key);
 			fwrite(buff, strlen(buff), 1, fp);
 			fflush(fp);
-        }
+        */
+		}
     }
 
-	fclose(fp);
+	//fclose(fp);
 	
 #ifdef __EVAL_FRAM__
     struct timeval end;
@@ -730,6 +738,7 @@ int main(int argc, char **argv){
 	hikv_args->scan_all = 0;
 
 	int i;
+    int client_num = 1;
 
     for (i = 0; i < argc; i++){
         long long unsigned n;
@@ -777,6 +786,10 @@ int main(int argc, char **argv){
             hikv_args->scan_range = n;
         }else if(sscanf(argv[i], "--num_scan_all=%llu%c", &n, &junk) == 1){
             hikv_args->scan_all = n;
+        }else if(sscanf(argv[i], "--num_client=%llu%c", &n, &junk) == 1){
+            client_num = n;
+            hikv_thread_arg.num_put_kv *= n;
+            hikv_thread_arg.num_get_kv *= n;            
         }else if(i > 0){
             printf("error (%s)!\n", argv[i]);
         }
