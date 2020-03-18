@@ -29,7 +29,7 @@ HIKV_SRC	= ./Hikv/obj/threadpool.cc ./Hikv/obj/btree.cc ./Hikv/mem/pm_alloc.cc .
 HIKV_OBJ	= threadpool.o btree.o pm_alloc.o city.o pflush.o ntstore.o 
 
 # util library and header
-INC = -I./include/  $(HIKV_INC) ${MTCP_INC} ${UTIL_INC} -I${UTIL_FLD}/include 
+INC = -I./include/ ${UTIL_INC} $(HIKV_INC) ${MTCP_INC} -I${UTIL_FLD}/include 
 LIBS = $(HIKV_LIB) ${MTCP_LIB} -lpthread -ljemalloc -ltbb -lpmem
 
 # psio-specific variables
