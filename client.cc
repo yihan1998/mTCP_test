@@ -192,9 +192,6 @@ void * send_request(void * arg){
 #elif defined(__TEST_KV__)
     //printf("===== start real work ======\n");
     int i, iter, key_i, key_j;
-    
-    struct kv_trans_item * req_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
-    struct kv_trans_item * res_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
 
 /* [Version 1.0 - seperated tasks 1]
     //PUT
@@ -422,7 +419,7 @@ void * send_request(void * arg){
 		}
     }
 
-    printf(">>[TEST%d]\n", thread_id);
+    printf(">>[TEST] test end\n");
     if (put_count > 0){
         printf("  [Result]insert match:%llu/%llu(%.2f%%)\n", match_insert, put_count, 100.0 * match_insert / put_count);
     }
