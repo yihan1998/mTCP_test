@@ -349,8 +349,33 @@ void * send_request(void * arg){
             if(write(fd, req_kv, KV_ITEM_SIZE) < 0){
 	    		perror("[CLIENT] send failed");
 	        	exit(1);
-        	}else{
-                match_insert++;
+        	}
+
+            int recv_size, tot_recv;
+
+	        tot_recv = 0;
+
+            while(1){
+                recv_size = read(fd, req_kv, KV_ITEM_SIZE);
+
+                if(recv_size == 0){
+                    printf("[CLIENT] close connection\n");
+                    close(fd);
+                }
+
+                tot_recv += recv_size;
+
+                if(tot_recv == KV_ITEM_SIZE){
+                    if(req_kv->len == VALUE_SIZE){
+                        //printf("[CLIENT] GET success! key: %.*s, value: %.*s\n", KEY_SIZE, req_kv->key, VALUE_SIZE, req_kv->value);
+                        printf("[CLIENT] PUT success! key: %.*s\n", KEY_SIZE, req_kv->key);
+                        match_insert++;
+                    }else{
+                        //printf("[CLIENT] GET failed! key: %.*s, value: %.*s\n", KEY_SIZE, req_kv->key, VALUE_SIZE, req_kv->value);
+                        printf("[CLIENT] PUT failed! key: %.*s\n", KEY_SIZE, req_kv->key);
+                    }
+                    break;
+                }
             }
             free(req_kv);
 		} else {

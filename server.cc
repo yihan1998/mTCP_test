@@ -118,16 +118,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		fflush(fp);
 */
 		recv_len = mtcp_read(ctx->mctx, sockid, (char *)(recv_buf->buf_start + recv_buf->buf_write), recv_buf->buf_len - recv_buf->buf_write);
-    	
-		mtcp_manager_t mtcp = GetMTCPManager(ctx);
-		socket_map_t socket = &mtcp->smap[sockid];
-		tcp_stream * cur_stream = socket->stream;
-		struct tcp_recv_vars * rcvvar = cur_stream->rcvvar;
-		int remain_len = rcvvar->rcvbuf->merged_len;
-		sprintf(buff, "[SERVER] remain len: %d\n", remain_len);
-		fwrite(buff, strlen(buff), 1, fp);
-		fflush(fp);
-		
+
 		if(recv_len < 0 && errno == EAGAIN){
 			break;
 		}
@@ -222,11 +213,15 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
             if (res == true){
                 //printf("[SERVER] insert success\n");
 				//sprintf(buff, "[SERVER] PUT success! key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+                recv_item->len = VALUE_SIZE;
+				sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
 				sprintf(buff, "[SERVER] PUT success! key: %.*s\n", KEY_SIZE, recv_item->key);
 				fwrite(buff, strlen(buff), 1, fp);
 				fflush(fp);
             }else{
 				//sprintf(buff, "[SERVER] PUT failed! key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+                recv_item->len = -1;
+				sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
 				sprintf(buff, "[SERVER] PUT failed! key: %.*s\n", KEY_SIZE, recv_item->key);
 				fwrite(buff, strlen(buff), 1, fp);
 				fflush(fp);
