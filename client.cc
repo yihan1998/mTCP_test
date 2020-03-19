@@ -1,7 +1,7 @@
 #include "client.h"
 
 // Generate keys and values for client number cn
-void gen_key_corpus(LL * key_corpus, int num_put, int thread_id){
+void gen_key_corpus(LL * key_corpus, int num_put){
 	int key_i;
 	LL temp;
     
@@ -78,7 +78,6 @@ void * send_request(void * arg){
 
     int fd = *(info->sockfd);
     struct hikv_arg * hikv_args = info->hikv_thread_arg;
-    int thread_id = info->thread_id;
 
     size_t pm_size = hikv_args->pm_size;
     uint64_t num_server_thread = hikv_args->num_server_thread;
@@ -95,7 +94,7 @@ void * send_request(void * arg){
     //initial Key
     LL * key_corpus = (LL *)malloc(num_put_kv * sizeof(LL));
     
-    gen_key_corpus(key_corpus, num_put_kv, thread_id);
+    gen_key_corpus(key_corpus, num_put_kv);
 
 #ifdef __TEST_FILE__
     char send_buf[buf_size];
@@ -589,7 +588,6 @@ void * client_thread(void * argv){
     info->send_byte = &send_byte;
     info->recv_byte = &recv_byte;
     info->hikv_thread_arg = &server->hikv_thread_arg;
-    info->thread_id = server->thread_id;
 
     send_request(info);
 
@@ -664,7 +662,6 @@ int main(int argc, char * argv[]){
     gen_value_corpus(value_corpus, hikv_thread_arg.num_put_kv);
 
     for(i = 0;i < client_thread_num;i++){
-        cl_thread_arg[i].thread_id = i;
         cl_thread_arg[i].ip_addr = server_ip;
         cl_thread_arg[i].port = server_port;
 //        arg.buf_size = atoi(argv[4]);

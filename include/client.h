@@ -41,7 +41,6 @@ struct send_info {
 //    pthread_mutex_t * recv_lock;
     int * recv_byte;
     struct hikv_arg * hikv_thread_arg;
-    int thread_id;
 };
 
 #define SEND_INFO_SIZE sizeof(struct send_info)
@@ -58,7 +57,7 @@ void response_process(int sock, short event, void * arg);
 
 uint8_t * value_corpus;
 
-void gen_key_corpus(LL * key_corpus, int num_put, int thread_id);
+void gen_key_corpus(LL * key_corpus, int num_put);
 void gen_value_corpus(uint8_t * value_corpus, int num_put);
 
 int bufcmp(char * a, char * b, int buf_len);
