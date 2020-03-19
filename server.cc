@@ -789,7 +789,7 @@ int main(int argc, char **argv){
         }else if(sscanf(argv[i], "--num_client=%llu%c", &n, &junk) == 1){
             client_num = n;
             hikv_args->num_put_kv *= n;
-            hikv_args->num_get_kv *= n;            
+            hikv_args->num_get_kv *= n;      
         }else if(i > 0){
             printf("error (%s)!\n", argv[i]);
         }
@@ -800,6 +800,8 @@ int main(int argc, char **argv){
     uint64_t num_backend_thread = hikv_args->num_backend_thread;
     uint64_t num_warm_kv = hikv_args->num_warm_kv;
     uint64_t num_put_kv = hikv_args->num_put_kv;
+
+	printf(">> num_put: %d, num_get: %d\n", hikv_args->num_put_kv, hikv_args->num_get_kv);
 
 	/* initialize mtcp */
 	if (conf_file == NULL) {
