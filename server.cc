@@ -801,8 +801,6 @@ int main(int argc, char **argv){
     uint64_t num_warm_kv = hikv_args->num_warm_kv;
     uint64_t num_put_kv = hikv_args->num_put_kv;
 
-	printf(">> num_put: %d, num_get: %d\n", hikv_args->num_put_kv, hikv_args->num_get_kv);
-
 	/* initialize mtcp */
 	if (conf_file == NULL) {
 		TRACE_CONFIG("You forgot to pass the mTCP startup config file!\n");
