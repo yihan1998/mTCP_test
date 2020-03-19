@@ -82,5 +82,5 @@ struct client_arg {
     struct hikv_arg hikv_thread_arg;
 };
 
-static pthread_t cl_thread[MAX_CPUS];
-static struct client_arg cl_thread_arg[MAX_CPUS];
+static pthread_t cl_thread[110];
+static struct client_arg cl_thread_arg[110];

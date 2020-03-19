@@ -1,21 +1,31 @@
 #include "client.h"
 
 // Generate keys and values for client number cn
-void gen_corpus(LL * key_corpus, uint8_t * value_corpus){
+void gen_key_corpus(LL * key_corpus, int num_put, int thread_id){
 	int key_i;
 	LL temp;
+    
+    struct timeval time1;
+    gettimeofday(&time1, NULL);
 
-	for(key_i = 0; key_i < NUM_KEYS; key_i ++) {
-		LL rand1 = (LL) lrand48();
-		LL rand2 = (LL) lrand48();
+    srand(time1.tv_sec ^ time1.tv_usec);
+
+	for(key_i = 0; key_i < num_put; key_i ++) {
+		LL rand1 = (LL) rand();
+		LL rand2 = (LL) rand();
 		key_corpus[key_i] = (rand1 << 32) ^ rand2;
 		if((char) key_corpus[key_i] == 0) {
 			key_i --;
 		}
 	}
 
+    return;
+}
+
+void gen_value_corpus(uint8_t * value_corpus, int num_put){
+
     FILE * fp = fopen("client-input.dat", "rb");
-    fread(value_corpus, 1, NUM_KEYS * VALUE_SIZE, fp);
+    fread(value_corpus, 1, num_put * VALUE_SIZE, fp);
     fclose(fp);
 
     return;
@@ -62,10 +72,13 @@ int connect_server(char * server_ip, int port){
 }
 
 void * send_request(void * arg){
+//    printf(">> start sending request\n");
+    
     struct send_info * info = (struct send_info *)arg;
 
     int fd = *(info->sockfd);
     struct hikv_arg * hikv_args = info->hikv_thread_arg;
+    int thread_id = info->thread_id;
 
     size_t pm_size = hikv_args->pm_size;
     uint64_t num_server_thread = hikv_args->num_server_thread;
@@ -80,10 +93,9 @@ void * send_request(void * arg){
     uint64_t seed = hikv_args->seed;
 
     //initial Key
-    LL * key_corpus = (LL *)malloc(NUM_KEYS * sizeof(LL));
-    uint8_t * value_corpus = (uint8_t *)malloc(NUM_KEYS * VALUE_SIZE);
+    LL * key_corpus = (LL *)malloc(num_put_kv * sizeof(LL));
     
-    gen_corpus(key_corpus, value_corpus);
+    gen_key_corpus(key_corpus, num_put_kv, thread_id);
 
 #ifdef __TEST_FILE__
     char send_buf[buf_size];
@@ -192,7 +204,12 @@ void * send_request(void * arg){
 #elif defined(__TEST_KV__)
     //printf("===== start real work ======\n");
     int i, iter, key_i, key_j;
+    
+    struct kv_trans_item * req_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
+    struct kv_trans_item * res_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
 
+    struct timeval time1, time2;
+    gettimeofday(&time1, NULL);
 /* [Version 1.0 - seperated tasks 1]
     //PUT
     for(iter = 0;iter < 3;iter++){
@@ -330,12 +347,16 @@ void * send_request(void * arg){
     for(iter = 0, key_i = 0, key_j = 0;iter < num_kv;iter++){
         if(iter < num_put_kv) {
         //PUT
+            //printf(">> PUT request\n");
             struct kv_trans_item * req_kv = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
             //printf("[CLIENT] put KV item %d\n", iter);
             snprintf((char *)req_kv->key, KEY_SIZE + 1, "%0llu", key_corpus[key_i]);     //set Key
 		    req_kv->len = VALUE_SIZE;
+            //printf("[CLIENT] PUT copy value\n");
+            //printf(">> value_corpus: %p, value: %.*s\n", &value_corpus[key_i * VALUE_SIZE], VALUE_SIZE, &value_corpus[key_i * VALUE_SIZE]);
     		memcpy((char *)req_kv->value, (char *)&value_corpus[key_i * VALUE_SIZE], VALUE_SIZE);   //set Value
-            //printf("[CLIENT] PUT key: %llu, value: %.*s\n", key_corpus[key_i], VALUE_SIZE, req_kv->value);
+            //printf(">> req_kv->value: %p, value: %.*s\n", req_kv->value, VALUE_SIZE, req_kv->value);
+    		//printf("[CLIENT] PUT key: %llu, value: %.*s\n", key_corpus[key_i], VALUE_SIZE, req_kv->value);
             //printf("[CLIENT] PUT key: %llu\n", key_corpus[key_i]);
 		    key_i = (key_i + 1) % num_put_kv;
 
@@ -345,6 +366,8 @@ void * send_request(void * arg){
 	    		perror("[CLIENT] send failed");
 	        	exit(1);
         	}
+
+            //printf("[CLIENT] send success\n");
 
             int recv_size, tot_recv;
 
@@ -373,6 +396,7 @@ void * send_request(void * arg){
                 }
             }
             free(req_kv);
+            //printf(">> PUT end\n");
 		} else {
 		//GET
             //printf("[CLIENT] get KV item\n");
@@ -565,6 +589,7 @@ void * client_thread(void * argv){
     info->send_byte = &send_byte;
     info->recv_byte = &recv_byte;
     info->hikv_thread_arg = &server->hikv_thread_arg;
+    info->thread_id = server->thread_id;
 
     send_request(info);
 
@@ -635,7 +660,11 @@ int main(int argc, char * argv[]){
         }
     }
 
+    value_corpus = (uint8_t *)malloc(hikv_thread_arg.num_put_kv * VALUE_SIZE);
+    gen_value_corpus(value_corpus, hikv_thread_arg.num_put_kv);
+
     for(i = 0;i < client_thread_num;i++){
+        cl_thread_arg[i].thread_id = i;
         cl_thread_arg[i].ip_addr = server_ip;
         cl_thread_arg[i].port = server_port;
 //        arg.buf_size = atoi(argv[4]);
