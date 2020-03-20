@@ -62,7 +62,7 @@ void CleanServerVariable(struct server_vars *sv){
 }
 
 void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
-#ifdef __REAL_TIME_STATS__
+#ifdef __REAL_TIME__
 	gettimeofday(&end_all, NULL);
 #endif
 
@@ -101,7 +101,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 */
 
 	int len, sent, recv_len;
-	len = 0;
+	len = sent = 0;
 
 //	struct ring_buf * recv_buf = sv->recv_buf;
 
@@ -313,7 +313,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	read_time += (int)(end_time - start_time);
 #endif
 
-    return len;
+    return sent;
 }
 
 int AcceptConnection(struct thread_context *ctx, int listener){
@@ -474,7 +474,7 @@ void * RunServerThread(void *arg){
 	int i, ret;
 	int do_accept;
 
-#ifdef __REAL_TIME_STATS__
+#ifdef __REAL_TIME__
 	struct timeval start;
 	int start_flag = 0;
 
@@ -554,7 +554,7 @@ void * RunServerThread(void *arg){
 				ret = HandleReadEvent(ctx, thread_id, events[i].data.sockid, 
 						&ctx->svars[events[i].data.sockid]);
 
-#ifdef __REAL_TIME_STATS__
+#ifdef __REAL_TIME__
 				request_cnt++;
 				byte_sent += ret;
 #endif
@@ -583,7 +583,7 @@ void * RunServerThread(void *arg){
 				if (ret < 0)
 					break;
 			}
-#ifdef __REAL_TIME_STATS__
+#ifdef __REAL_TIME__
 		    if(!start_flag){
         		gettimeofday(&start, NULL);
         		start_flag = 1;
@@ -624,7 +624,7 @@ void * RunServerThread(void *arg){
     fclose(fp);	
 #endif
 
-#ifdef __REAL_TIME_STATS__
+#ifdef __REAL_TIME__
 
     double start_time = (double)start.tv_sec + ((double)start.tv_usec/(double)1000000);
     double end_time = (double)end_all.tv_sec + ((double)end_all.tv_usec/(double)1000000);

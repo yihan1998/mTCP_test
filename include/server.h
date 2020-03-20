@@ -18,7 +18,7 @@
 #include "btree.h"
 #include "hikv.h"
 
-//#define __REAL_TIME_STATS__
+#define __REAL_TIME__
 
 //#define __EVAL_FRAM__
 
