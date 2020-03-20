@@ -484,11 +484,13 @@ void * RunServerThread(void *arg){
 	int do_accept;
 
 #ifdef __REAL_TIME__
-	struct timeval start;
-	int start_flag = 0;
+    pthread_mutex_init(&record_lock, NULL);
+    request_cnt = byte_sent = 0;
 
-	int request_cnt = 0;
-	int byte_sent = 0;
+    pthread_mutex_init(&start_lock, NULL);
+    start_flag = 0;
+
+    pthread_mutex_init(&end_lock, NULL);
 #endif
 
 #ifdef __EVAL_FRAM__
