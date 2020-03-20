@@ -76,6 +76,7 @@ struct server_arg {
 
 //Client args
 struct client_arg {
+    int thread_id;
     char * ip_addr;
     int port;
 //    int buf_size;
