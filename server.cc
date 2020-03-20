@@ -634,8 +634,8 @@ void * RunServerThread(void *arg){
 
 #ifdef __REAL_TIME__
 
-    double start_time = (double)start.tv_sec + ((double)start.tv_usec/(double)1000000);
-    double end_time = (double)end_all.tv_sec + ((double)end_all.tv_usec/(double)1000000);
+    double start_time = (double)g_start.tv_sec + ((double)g_start.tv_usec/(double)1000000);
+    double end_time = (double)g_end.tv_sec + ((double)g_end.tv_usec/(double)1000000);
 
 	printf("start: %lf, end: %lf, request cnt: %d, byte sent: %d\n", start_time, end_time, request_cnt, byte_sent);
 
