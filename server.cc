@@ -63,8 +63,9 @@ void CleanServerVariable(struct server_vars *sv){
 
 void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
 #ifdef __REAL_TIME__
-	printf(">> Close connection\n");
-	gettimeofday(&end_all, NULL);
+	pthread_mutex_lock(&end_lock);
+    gettimeofday(&g_end, NULL);
+    pthread_mutex_unlock(&end_lock);
 #endif
 
 #ifdef __EVAL_FRAM__
@@ -302,7 +303,14 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     }
 
 	//fclose(fp);
-	
+
+#ifdef __REAL_TIME__
+    pthread_mutex_lock(&record_lock);
+    request_cnt++;
+    byte_sent += sent;
+    pthread_mutex_unlock(&record_lock);
+#endif
+
 #ifdef __EVAL_FRAM__
     struct timeval end;
     gettimeofday(&end, NULL);
@@ -555,11 +563,6 @@ void * RunServerThread(void *arg){
 				ret = HandleReadEvent(ctx, thread_id, events[i].data.sockid, 
 						&ctx->svars[events[i].data.sockid]);
 
-#ifdef __REAL_TIME__
-				request_cnt++;
-				byte_sent += KV_ITEM_SIZE;
-#endif
-
 				if (ret == 0) {
 					/* connection closed by remote host */
 					CloseConnection(ctx, events[i].data.sockid, 
@@ -585,10 +588,12 @@ void * RunServerThread(void *arg){
 					break;
 			}
 #ifdef __REAL_TIME__
+		    pthread_mutex_lock(&start_lock);
 		    if(!start_flag){
-        		gettimeofday(&start, NULL);
-        		start_flag = 1;
+        		gettimeofday(&g_start, NULL);
+		        start_flag = 1;
     		}
+    		pthread_mutex_unlock(&start_lock);
 #endif
 		}
 #ifdef __EVAL_FRAM__

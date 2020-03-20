@@ -20,6 +20,19 @@
 
 #define __REAL_TIME__
 
+#ifdef __REAL_TIME__
+pthread_mutex_t record_lock;
+int request_cnt;
+int byte_sent;
+
+pthread_mutex_t start_lock;
+struct timeval g_start;
+int start_flag;
+
+pthread_mutex_t end_lock;
+struct timeval g_end;
+#endif
+
 //#define __EVAL_FRAM__
 
 #define BUF_SIZE 4096
