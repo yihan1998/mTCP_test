@@ -443,6 +443,8 @@ void * send_request(void * arg){
 		}
     }
 
+    close(fd);
+
     printf(">>[TEST] test end\n");
     if (put_count > 0){
         printf("  [Result]insert match:%llu/%llu(%.2f%%)\n", match_insert, put_count, 100.0 * match_insert / put_count);
