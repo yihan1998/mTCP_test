@@ -629,6 +629,8 @@ void * RunServerThread(void *arg){
     double start_time = (double)start.tv_sec + ((double)start.tv_usec/(double)1000000);
     double end_time = (double)end_all.tv_sec + ((double)end_all.tv_usec/(double)1000000);
 
+	printf("request cnt: %d, byte sent: %d\n", request_cnt, byte_sent);
+
 	double elapsed = end_time - start_time;
 
 	FILE * fp = fopen("throughput.txt", "a+");
