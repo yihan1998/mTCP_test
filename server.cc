@@ -557,7 +557,7 @@ void * RunServerThread(void *arg){
 
 #ifdef __REAL_TIME__
 				request_cnt++;
-				byte_sent += ret;
+				byte_sent += KV_ITEM_SIZE;
 #endif
 
 				if (ret == 0) {
