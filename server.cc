@@ -63,6 +63,7 @@ void CleanServerVariable(struct server_vars *sv){
 
 void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
 #ifdef __REAL_TIME__
+	printf(">> Close connection\n");
 	gettimeofday(&end_all, NULL);
 #endif
 
@@ -629,7 +630,7 @@ void * RunServerThread(void *arg){
     double start_time = (double)start.tv_sec + ((double)start.tv_usec/(double)1000000);
     double end_time = (double)end_all.tv_sec + ((double)end_all.tv_usec/(double)1000000);
 
-	printf("request cnt: %d, byte sent: %d\n", request_cnt, byte_sent);
+	printf("start: %lf, end: %lf, request cnt: %d, byte sent: %d\n", start_time, end_time, request_cnt, byte_sent);
 
 	double elapsed = end_time - start_time;
 
