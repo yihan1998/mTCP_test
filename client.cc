@@ -343,6 +343,16 @@ void * send_request(void * arg){
     }
 */
 
+#ifdef __EV_RTT__
+    struct timeval record_start[250000], record_end[250000];
+
+    int request_cnt;
+    request_cnt = 0;
+    
+    FILE * fp = fopen("rtt.txt", "a+");
+    fseek(fp, 0, SEEK_END);
+#endif
+
 //[Version 3.0 - mixed tests]
     for(iter = 0, key_i = 0, key_j = 0;iter < num_kv;iter++){
         if(iter < num_put_kv) {
@@ -362,6 +372,10 @@ void * send_request(void * arg){
 
             put_count++;
 
+#ifdef __EV_RTT__
+            gettimeofday(&record_start[request_cnt], NULL);
+#endif
+
             if(write(fd, req_kv, KV_ITEM_SIZE) < 0){
 	    		perror("[CLIENT] send failed");
 	        	exit(1);
@@ -375,6 +389,17 @@ void * send_request(void * arg){
 
             while(1){
                 recv_size = read(fd, req_kv, KV_ITEM_SIZE);
+
+#ifdef __EV_RTT__
+                gettimeofday(&record_end[request_cnt], NULL);
+
+                if(record_end[request_cnt].tv_sec - record_start[0].tv_sec > 10){
+                    printf("[CLIENT] request complete\n");
+                    break;
+                }
+
+                request_cnt++;
+#endif
 
                 if(recv_size == 0){
                     printf("[CLIENT] close connection\n");
@@ -405,6 +430,10 @@ void * send_request(void * arg){
 	    	req_kv->len = 0;
 		    memset((char *)req_kv->value, 0, VALUE_SIZE);
 
+#ifdef __EV_RTT__
+            gettimeofday(&record_start[request_cnt], NULL);
+#endif
+
             if(write(fd, req_kv, KV_ITEM_SIZE) < 0){
 	    		perror("[CLIENT] send failed");
 	        	exit(1);
@@ -418,6 +447,17 @@ void * send_request(void * arg){
 
             while(1){
                 recv_size = read(fd, req_kv, KV_ITEM_SIZE);
+
+#ifdef __EV_RTT__
+                gettimeofday(&record_end[request_cnt], NULL);
+
+                if(record_end[request_cnt].tv_sec - record_start[0].tv_sec > 10){
+                    printf("[CLIENT] request complete\n");
+                    break;
+                }
+
+                request_cnt++;
+#endif
 
                 if(recv_size == 0){
                     printf("[CLIENT] close connection\n");
@@ -442,6 +482,28 @@ void * send_request(void * arg){
             free(req_kv);
 		}
     }
+
+#ifdef __EV_RTT__
+    int j;
+    for(j = 0;j <= request_cnt;j++){
+        long start_time = (long)record_start[j].tv_sec * 1000000 + (long)record_start[j].tv_usec;
+        long end_time = (long)record_end[j].tv_sec * 1000000 + (long)record_end[j].tv_usec;
+
+        char buff[1024];
+
+        sprintf(buff, "%ld\n", end_time - start_time);
+        
+        pthread_mutex_lock(&rtt_lock);
+
+        fwrite(buff, strlen(buff), 1, fp);
+        fflush(fp);
+
+        pthread_mutex_unlock(&rtt_lock);
+    }
+
+    fclose(fp);
+
+#endif
 
     close(fd);
 
