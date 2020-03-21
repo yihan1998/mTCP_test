@@ -68,6 +68,30 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
     pthread_mutex_unlock(&end_lock);
 #endif
 
+#ifdef __EVAL_READ__
+    FILE * fp = fopen("read_cb.txt", "a+");
+    fseek(fp, 0, SEEK_END);
+
+    int j;
+    for(j = 0;j < request_cnt;j++){
+        long start_time = (long)record_start[j].tv_sec * 1000000 + (long)record_start[j].tv_usec;
+        long end_time = (long)record_end[j].tv_sec * 1000000 + (long)record_end[j].tv_usec;
+
+        char buff[1024];
+
+        sprintf(buff, "%ld\n", end_time - start_time);
+        
+        pthread_mutex_lock(&read_cb_lock);
+
+        fwrite(buff, strlen(buff), 1, fp);
+        fflush(fp);
+
+        pthread_mutex_unlock(&read_cb_lock);
+    }
+
+    fclose(fp);
+#endif
+
 #ifdef __EVAL_FRAM__
 	trans_start_flag = 0;
 #endif
@@ -88,6 +112,10 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 #ifdef __EVAL_FRAM__
     struct timeval start;
     gettimeofday(&start, NULL);
+#endif
+
+#ifdef __EVAL_READ__
+    gettimeofday(&record_start[request_cnt], NULL);
 #endif
 /*
 	char buf[BUF_SIZE];
@@ -311,6 +339,13 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     pthread_mutex_unlock(&record_lock);
 #endif
 
+#ifdef __EVAL_READ__
+    gettimeofday(&record_end[request_cnt], NULL);
+    pthread_mutex_lock(&read_cb_lock);
+    request_cnt++;
+    pthread_mutex_unlock(&read_cb_lock);
+#endif
+
 #ifdef __EVAL_FRAM__
     struct timeval end;
     gettimeofday(&end, NULL);
@@ -491,6 +526,11 @@ void * RunServerThread(void *arg){
     start_flag = 0;
 
     pthread_mutex_init(&end_lock, NULL);
+#endif
+
+#ifdef __EVAL_READ__
+    pthread_mutex_init(&read_cb_lock, NULL);
+    request_cnt = 0;
 #endif
 
 #ifdef __EVAL_FRAM__

@@ -18,7 +18,7 @@
 #include "btree.h"
 #include "hikv.h"
 
-#define __REAL_TIME__
+//#define __REAL_TIME__
 
 #ifdef __REAL_TIME__
 pthread_mutex_t record_lock;
@@ -31,6 +31,15 @@ int start_flag;
 
 pthread_mutex_t end_lock;
 struct timeval g_end;
+#endif
+
+#define __EVAL_READ__
+
+#ifdef __EVAL_READ__
+struct timeval record_start[2000000], record_end[2000000];
+pthread_mutex_t read_cb_lock;
+int request_cnt;
+int total_time;
 #endif
 
 //#define __EVAL_FRAM__
