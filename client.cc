@@ -485,7 +485,7 @@ void * send_request(void * arg){
 
 #ifdef __EV_RTT__
     int j;
-    for(j = 0;j <= request_cnt;j++){
+    for(j = 0;j < request_cnt;j++){
         long start_time = (long)record_start[j].tv_sec * 1000000 + (long)record_start[j].tv_usec;
         long end_time = (long)record_end[j].tv_sec * 1000000 + (long)record_end[j].tv_usec;
 
