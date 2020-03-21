@@ -115,7 +115,9 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 #endif
 
 #ifdef __EVAL_READ__
+	pthread_mutex_lock(&read_cb_lock);
     gettimeofday(&record_start[request_cnt], NULL);
+	pthread_mutex_unlock(&read_cb_lock);
 #endif
 /*
 	char buf[BUF_SIZE];
@@ -340,8 +342,8 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 #endif
 
 #ifdef __EVAL_READ__
+	pthread_mutex_lock(&read_cb_lock);
     gettimeofday(&record_end[request_cnt], NULL);
-    pthread_mutex_lock(&read_cb_lock);
     request_cnt++;
     pthread_mutex_unlock(&read_cb_lock);
 #endif
