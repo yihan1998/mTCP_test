@@ -392,12 +392,6 @@ void * send_request(void * arg){
 
 #ifdef __EV_RTT__
                 gettimeofday(&record_end[request_cnt], NULL);
-
-                if(record_end[request_cnt].tv_sec - record_start[0].tv_sec > 10){
-                    printf("[CLIENT] request complete\n");
-                    break;
-                }
-
                 request_cnt++;
 #endif
 
@@ -450,12 +444,6 @@ void * send_request(void * arg){
 
 #ifdef __EV_RTT__
                 gettimeofday(&record_end[request_cnt], NULL);
-
-                if(record_end[request_cnt].tv_sec - record_start[0].tv_sec > 10){
-                    printf("[CLIENT] request complete\n");
-                    break;
-                }
-
                 request_cnt++;
 #endif
 
