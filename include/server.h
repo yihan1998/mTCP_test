@@ -33,16 +33,7 @@ pthread_mutex_t end_lock;
 struct timeval g_end;
 #endif
 
-#define __EVAL_READ__
-
-#ifdef __EVAL_READ__
-struct timeval record_start[2000000], record_end[2000000];
-pthread_mutex_t read_cb_lock;
-int request_cnt;
-int total_time;
-#endif
-
-//#define __EVAL_FRAM__
+#define __EVAL_FRAM__
 
 #define BUF_SIZE 4096
 
