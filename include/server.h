@@ -37,11 +37,16 @@ struct timeval g_end;
 
 #ifdef __EVAL_KV__
 pthread_mutex_t record_lock;
-int byte_sent;
+int put_cnt;
+int get_cnt;
 
 pthread_mutex_t start_lock;
 struct timeval g_start;
 int start_flag;
+
+pthread_mutex_t put_end_lock;
+struct timeval put_end;
+int put_end_flag;
 
 pthread_mutex_t end_lock;
 struct timeval g_end;
