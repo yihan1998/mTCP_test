@@ -68,6 +68,12 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
     pthread_mutex_unlock(&end_lock);
 #endif
 
+#ifdef __EVAL_KV__
+        pthread_mutex_lock(&end_lock);
+        gettimeofday(&g_end, NULL);
+        pthread_mutex_unlock(&end_lock);
+#endif
+
 #ifdef __EVAL_FRAM__
 	trans_start_flag = 0;
 #endif
@@ -276,6 +282,11 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 			fflush(fp);
 		*/
 		}
+		#ifdef __EVAL_KV__
+	        pthread_mutex_lock(&record_lock);
+    	    put_cnt++;
+        	pthread_mutex_unlock(&record_lock);
+    	#endif
     }else if(recv_item->len == 0){
         res = hi->search(thread_id, (uint8_t *)recv_item->key, (uint8_t *)recv_item->value);
         //printf("[SERVER] GET key: %.*s\n value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
@@ -289,6 +300,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 			fwrite(buff, strlen(buff), 1, fp);
 			fflush(fp);
         */
+	    
 		}else{
             //printf("[SERVER] get KV item failed\n");
             recv_item->len = -1;
@@ -300,6 +312,11 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 			fflush(fp);
         */
 		}
+		#ifdef __EVAL_KV__
+	        pthread_mutex_lock(&record_lock);
+    	    get_cnt++;
+        	pthread_mutex_unlock(&record_lock);
+	    #endif
     }
 
 	//fclose(fp);
@@ -493,6 +510,19 @@ void * RunServerThread(void *arg){
     pthread_mutex_init(&end_lock, NULL);
 #endif
 
+#ifdef __EVAL_KV__
+    pthread_mutex_init(&record_lock, NULL);
+    put_cnt = get_cnt = 0;
+
+    pthread_mutex_init(&start_lock, NULL);
+    start_flag = 0;
+
+    pthread_mutex_init(&put_end_lock, NULL);
+    put_end_flag = 0;
+
+    pthread_mutex_init(&end_lock, NULL);
+#endif
+
 #ifdef __EVAL_FRAM__
 	int cycle_cnt, handle_time, cycle_time;
 	cycle_cnt = handle_time = cycle_time = 0;
@@ -597,6 +627,15 @@ void * RunServerThread(void *arg){
     		}
     		pthread_mutex_unlock(&start_lock);
 #endif
+
+#ifdef __EVAL_KV__
+		    pthread_mutex_lock(&start_lock);
+		    if(!start_flag){
+    		    gettimeofday(&g_start, NULL);
+		        start_flag = 1;
+    		}
+			pthread_mutex_unlock(&start_lock);
+#endif
 		}
 #ifdef __EVAL_FRAM__
 		struct timeval end;
@@ -646,6 +685,27 @@ void * RunServerThread(void *arg){
 
     sprintf(buff, "rps %.4f throughput %.4f\n", 
             ((double)request_cnt)/elapsed, ((double)byte_sent)/elapsed);
+    
+    fwrite(buff, strlen(buff), 1, fp);
+
+    fclose(fp);
+#endif
+
+#ifdef __EVAL_KV__
+    double start_time = (double)g_start.tv_sec + ((double)g_start.tv_usec/(double)1000000);
+    double put_end_time = (double)put_end.tv_sec + ((double)put_end.tv_usec/(double)1000000);
+    double end_time = (double)g_end.tv_sec + ((double)g_end.tv_usec/(double)1000000);
+
+    double put_exe_time = put_end_time - start_time;
+	double get_exe_time = end_time - put_end_time;
+
+	FILE * fp = fopen("kv_throughput.txt", "a+");
+    fseek(fp, 0, SEEK_END);
+
+    char buff[1024];
+
+    sprintf(buff, "put_iops %.4f get_iops %.4f\n", 
+                    ((double)put_cnt)/put_exe_time, ((double)get_cnt)/get_exe_time);
     
     fwrite(buff, strlen(buff), 1, fp);
 
@@ -733,7 +793,7 @@ int main(int argc, char **argv){
 
 	struct hikv_arg * hikv_args = (struct hikv_arg *)malloc(HIKV_ARG_SIZE);
 
-	hikv_args->pm_size = 2;
+	hikv_args->pm_size = 10;
 	hikv_args->num_server_thread = 1;
 	hikv_args->num_backend_thread = 1;
 	hikv_args->num_warm_kv = 0;
