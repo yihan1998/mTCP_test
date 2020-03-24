@@ -919,7 +919,7 @@ int main(int argc, char **argv){
 
 	char pmem[128] = "/home/pmem0/pm";
     char pmem_meta[128] = "/home/pmem0/pmMETA";
-    hi = new hikv(client_num * pm_size * 1024 * 1024 * 1024, num_server_thread, num_backend_thread, num_server_thread * (num_put_kv + num_warm_kv), pmem, pmem_meta);
+    hi = new hikv(200 * 1024 * 1024 * 1024, num_server_thread, num_backend_thread, num_server_thread * (num_put_kv + num_warm_kv), pmem, pmem_meta);
 
 	for (i = ((process_cpu == -1) ? 0 : process_cpu); i < core_limit; i++) {
 		cores[i] = i;
