@@ -29,6 +29,8 @@
 
 #define PUT_PERCENT 50			// Percentage of PUT operations
 
+#define REPLY_SIZE 50
+
 #define NUM_KEYS M_1			// 51 * M_4 ~ 200 M keys
 #define NUM_KEYS_ M_1_
 

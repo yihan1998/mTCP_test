@@ -387,33 +387,30 @@ void * send_request(void * arg){
 
 	        tot_recv = 0;
 
-            while(1){
-                recv_size = read(fd, req_kv, KV_ITEM_SIZE);
+            char * reply = (char *)malloc(REPLY_SIZE);
+            memset(reply, 0, REPLY_SIZE);
+
+            recv_size = read(fd, reply, REPLY_SIZE);
 
 #ifdef __EV_RTT__
                 gettimeofday(&record_end[request_cnt], NULL);
                 request_cnt++;
 #endif
 
-                if(recv_size == 0){
-                    printf("[CLIENT] close connection\n");
-                    close(fd);
-                }
-
-                tot_recv += recv_size;
-
-                if(tot_recv == KV_ITEM_SIZE){
-                    if(req_kv->len == VALUE_SIZE){
-                        //printf("[CLIENT] GET success! key: %.*s, value: %.*s\n", KEY_SIZE, req_kv->key, VALUE_SIZE, req_kv->value);
-                        //printf("[CLIENT] PUT success! key: %.*s\n", KEY_SIZE, req_kv->key);
-                        match_insert++;
-                    }else{
-                        //printf("[CLIENT] GET failed! key: %.*s, value: %.*s\n", KEY_SIZE, req_kv->key, VALUE_SIZE, req_kv->value);
-                        //printf("[CLIENT] PUT failed! key: %.*s\n", KEY_SIZE, req_kv->key);
-                    }
-                    break;
-                }
+            if(recv_size == 0){
+                printf("[CLIENT] close connection\n");
+                close(fd);
             }
+
+            if(strcmp("put success", reply) == 0){
+                //printf("put success\n");
+                match_insert++;
+            }else if(strcmp("put failed", reply) == 0){
+                //printf("put failed\n");
+            }else{
+                //printf("unknown result\n");
+            }
+            
             free(req_kv);
             //printf(">> PUT end\n");
 		} else {
