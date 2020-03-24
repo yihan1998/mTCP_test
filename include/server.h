@@ -33,7 +33,7 @@ pthread_mutex_t end_lock;
 struct timeval g_end;
 #endif
 
-#define __EVAL_KV__
+//#define __EVAL_KV__
 
 #ifdef __EVAL_KV__
 pthread_mutex_t record_lock;
