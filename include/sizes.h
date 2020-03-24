@@ -13,6 +13,9 @@
 #define K_128 131072
 #define K_128_ 131071
 
+#define K_256 262144
+#define K_256_ 262143
+
 #define K_512 524288
 #define K_512_ 524287
 
