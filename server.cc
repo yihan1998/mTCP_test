@@ -309,7 +309,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
         res = hi->search(thread_id, (uint8_t *)recv_item->key, (uint8_t *)recv_item->value);
         //printf("[SERVER] GET key: %.*s\n value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
         if(res == true){
-            //printf("[SERVER] get KV item success\n");
+            printf("[SERVER] get KV item success\n");
             recv_item->len = VALUE_SIZE;
             sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
 			//sprintf(buff, "[SERVER] GET success! key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
