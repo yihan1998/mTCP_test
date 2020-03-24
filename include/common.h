@@ -36,7 +36,7 @@
 
 #define SWAP(a,b) do{a^=b;b^=a;a^=b;}while(0)
 
-#define VALUE_SIZE 1024
+#define VALUE_SIZE 256
 #define KEY_SIZE 64
 
 // The key-value struct in network connection
