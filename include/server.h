@@ -18,6 +18,16 @@
 #include "btree.h"
 #include "hikv.h"
 
+#define __EVAL_READ__
+
+#ifdef __EVAL_READ__
+pthread_mutex_t read_cb_lock;
+int read_cnt;
+int read_time;
+int write_cnt;
+int write_time;
+#endif
+
 //#define __REAL_TIME__
 
 #ifdef __REAL_TIME__
@@ -33,7 +43,7 @@ pthread_mutex_t end_lock;
 struct timeval g_end;
 #endif
 
-#define __EVAL_KV__
+//#define __EVAL_KV__
 
 #ifdef __EVAL_KV__
 pthread_mutex_t record_lock;

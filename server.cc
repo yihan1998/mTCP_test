@@ -115,7 +115,25 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
     struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
 
+#ifdef __EVAL_READ__
+    struct timeval read_start;
+    gettimeofday(&read_start, NULL);
+#endif
+
 	len = mtcp_recv(ctx->mctx, sockid, (char *)(recv_item), KV_ITEM_SIZE, 0);
+
+#ifdef __EVAL_READ__
+    struct timeval read_end;
+    gettimeofday(&read_end, NULL);
+
+    int start_time = read_start.tv_sec * 1000000 + read_start.tv_usec;
+    int end_time = read_end.tv_sec * 1000000 + read_end.tv_usec;
+
+    pthread_mutex_lock(&read_cb_lock);
+    read_cnt++;
+    read_time += (end_time - start_time);
+    pthread_mutex_unlock(&read_cb_lock);
+#endif
 
 // ring buffer
 /*
@@ -311,7 +329,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
         if(res == true){
             //printf("[SERVER] get KV item success\n");
             recv_item->len = VALUE_SIZE;
-            sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
+            //sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
 			//sprintf(buff, "[SERVER] GET success! key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
 		/*
 			sprintf(buff, "[SERVER] GET success! key: %.*s\n", KEY_SIZE, recv_item->key);
@@ -322,7 +340,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		}else{
             //printf("[SERVER] get KV item failed\n");
             recv_item->len = -1;
-            sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
+            //sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
 			//sprintf(buff, "[SERVER] GET failed! key: %.*s\nget value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
 		/*
 			sprintf(buff, "[SERVER] GET failed! key: %.*s\n", KEY_SIZE, recv_item->key);
@@ -330,6 +348,27 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 			fflush(fp);
         */
 		}
+
+	#ifdef __EVAL_READ__
+        struct timeval write_start;
+        gettimeofday(&write_start, NULL);
+    #endif
+
+        sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
+
+	#ifdef __EVAL_READ__
+        struct timeval write_end;
+        gettimeofday(&write_end, NULL);
+
+        int start_time = write_start.tv_sec * 1000000 + write_start.tv_usec;
+        int end_time = write_end.tv_sec * 1000000 + write_end.tv_usec;
+
+        pthread_mutex_lock(&read_cb_lock);
+        write_cnt++;
+        write_time += (end_time - start_time);
+        pthread_mutex_unlock(&read_cb_lock);
+    #endif
+	
 	#ifdef __EVAL_KV__
         pthread_mutex_lock(&record_lock);
     	get_cnt++;
@@ -518,6 +557,12 @@ void * RunServerThread(void *arg){
 	int i, ret;
 	int do_accept;
 
+#ifdef __EVAL_READ__
+    pthread_mutex_init(&read_cb_lock, NULL);
+    read_cnt = read_time = 0;
+    write_cnt = write_time = 0;
+#endif
+
 #ifdef __REAL_TIME__
     pthread_mutex_init(&record_lock, NULL);
     request_cnt = byte_sent = 0;
@@ -703,6 +748,20 @@ void * RunServerThread(void *arg){
 
     sprintf(buff, "rps %.4f throughput %.4f\n", 
             ((double)request_cnt)/elapsed, ((double)byte_sent)/elapsed);
+    
+    fwrite(buff, strlen(buff), 1, fp);
+
+    fclose(fp);
+#endif
+
+#ifdef __EVAL_READ__
+    FILE * fp = fopen("read_cb.txt", "a+");
+    fseek(fp, 0, SEEK_END);
+
+    char buff[1024];
+
+    sprintf(buff, "read %.4f write %.4f\n", 
+                ((double)read_time)/read_cnt, ((double)write_time)/write_cnt);
     
     fwrite(buff, strlen(buff), 1, fp);
 
