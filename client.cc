@@ -448,7 +448,7 @@ void * send_request(void * arg){
             if(strcmp("get failed", value) == 0){
                 //printf("put failed\n");
             }else{
-                //printf("[CLIENT] GET key: %.*s, value: %.*s\n", KEY_SIZE, key, VALUE_SIZE, value);
+                printf("[CLIENT] GET key: %.*s, value: %.*s\n", KEY_SIZE, key, VALUE_SIZE, value);
                 if(bufcmp(value, (char *)&value_corpus[key_j * VALUE_SIZE], VALUE_SIZE)){
                     //printf("[CLIENT] GET success! key: %.*s, value: %.*s\n", KEY_SIZE, req_kv->key, VALUE_SIZE, req_kv->value);
                     //printf("[CLIENT] GET success! key: %.*s\n", KEY_SIZE, req_kv->key);
