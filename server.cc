@@ -442,6 +442,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
             memcpy(reply, message, strlen(message));
             sent = mtcp_write(ctx->mctx, sockid, (char *)reply, REPLY_SIZE);
 		}
+		free(value);
 
 	#ifdef __EVAL_READ__
         struct timeval write_start;
@@ -467,6 +468,8 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     	pthread_mutex_unlock(&record_lock);
     #endif
     }
+
+	free(recv_item);
 
 	//fclose(fp);
 
