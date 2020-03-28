@@ -385,7 +385,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
         //printf("[SERVER] put KV item\n");
 		struct kv_trans_item * request = (struct kv_trans_item *)recv_item;
         res = hi->insert(thread_id, (uint8_t *)request->key, (uint8_t *)request->value);
-        printf("[SERVER] put key: %.*s\nvalue: %.*s\n", KEY_SIZE, request->key, VALUE_SIZE, request->value);
+        //printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
         if (res == true){
             //printf("[SERVER] insert success\n");
 			//sprintf(buff, "[SERVER] PUT success! key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);

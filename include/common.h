@@ -31,8 +31,8 @@
 
 #define REPLY_SIZE 50
 
-#define NUM_KEYS K_512			// 51 * M_4 ~ 200 M keys
-#define NUM_KEYS_ K_512_
+#define NUM_KEYS K_64			// 51 * M_4 ~ 200 M keys
+#define NUM_KEYS_ K_64_
 
 #define SWAP(a,b) do{a^=b;b^=a;a^=b;}while(0)
 
