@@ -965,7 +965,7 @@ int main(int argc, char **argv){
 
 	struct hikv_arg * hikv_args = (struct hikv_arg *)malloc(HIKV_ARG_SIZE);
 
-	hikv_args->pm_size = 10;
+	hikv_args->pm_size = 2;
 	hikv_args->num_server_thread = 1;
 	hikv_args->num_backend_thread = 1;
 	hikv_args->num_warm_kv = 0;
