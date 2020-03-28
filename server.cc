@@ -467,7 +467,9 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     	get_cnt++;
     	pthread_mutex_unlock(&record_lock);
     #endif
-    }
+    }else{
+		printf("[SERVER] unknown request, len: %d\n", len);
+	}
 
 	free(recv_item);
 
