@@ -113,14 +113,14 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
 //	struct ring_buf * recv_buf = sv->recv_buf;
 
-    struct kv_trans_item * recv_item = (struct kv_trans_item *)malloc(KV_ITEM_SIZE);
+    char * recv_item = (char *)malloc(KV_ITEM_SIZE);
 
 #ifdef __EVAL_READ__
     struct timeval read_start;
     gettimeofday(&read_start, NULL);
 #endif
 
-	len = mtcp_recv(ctx->mctx, sockid, (char *)(recv_item), KV_ITEM_SIZE, 0);
+	len = mtcp_recv(ctx->mctx, sockid, recv_item, KV_ITEM_SIZE, 0);
 
 #ifdef __EVAL_READ__
     struct timeval read_end;
@@ -275,6 +275,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	fflush(fp);
 */
 
+#if 0
 	int res;
     if(recv_item->len > 0){
         //printf("[SERVER] put KV item\n");
@@ -355,6 +356,97 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     #endif
 
         sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
+
+	#ifdef __EVAL_READ__
+        struct timeval write_end;
+        gettimeofday(&write_end, NULL);
+
+        int start_time = write_start.tv_sec * 1000000 + write_start.tv_usec;
+        int end_time = write_end.tv_sec * 1000000 + write_end.tv_usec;
+
+        pthread_mutex_lock(&read_cb_lock);
+        write_cnt++;
+        write_time += (end_time - start_time);
+        pthread_mutex_unlock(&read_cb_lock);
+    #endif
+	
+	#ifdef __EVAL_KV__
+        pthread_mutex_lock(&record_lock);
+    	get_cnt++;
+    	pthread_mutex_unlock(&record_lock);
+    #endif
+    }
+
+	//fclose(fp);
+#endif
+
+	int res;
+    if(len == KV_ITEM_SIZE){
+        //printf("[SERVER] put KV item\n");
+		struct kv_trans_item * request = (struct kv_trans_item *)recv_item;
+        res = hi->insert(thread_id, (uint8_t *)request->key, (uint8_t *)request->value);
+        //printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+        if (res == true){
+            //printf("[SERVER] insert success\n");
+			//sprintf(buff, "[SERVER] PUT success! key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+            //recv_item->len = VALUE_SIZE;
+			//sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
+			char * reply = (char *)malloc(REPLY_SIZE);
+            memset(reply, 0, REPLY_SIZE);
+            char message[] = "put success";
+            memcpy(reply, message, strlen(message));
+			sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
+		/*
+			sprintf(buff, "[SERVER] PUT success! key: %.*s\n", KEY_SIZE, recv_item->key);
+			fwrite(buff, strlen(buff), 1, fp);
+			fflush(fp);
+		*/
+        }else{
+			//sprintf(buff, "[SERVER] PUT failed! key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+            //recv_item->len = -1;
+			//sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
+			char * reply = (char *)malloc(REPLY_SIZE);
+            memset(reply, 0, REPLY_SIZE);
+            char message[] = "put failed";
+            memcpy(reply, message, strlen(message));
+			sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
+		/*
+			sprintf(buff, "[SERVER] PUT failed! key: %.*s\n", KEY_SIZE, recv_item->key);
+			fwrite(buff, strlen(buff), 1, fp);
+			fflush(fp);
+		*/
+		}
+	#ifdef __EVAL_KV__
+        pthread_mutex_lock(&record_lock);
+    	put_cnt++;
+    	pthread_mutex_unlock(&record_lock);
+	#endif
+    }else if(len == KEY_SIZE){
+    #ifdef __EVAL_KV__
+        pthread_mutex_lock(&put_end_lock);
+        if(!put_end_flag){
+            gettimeofday(&put_end, NULL);
+            put_end_flag = 1;
+        }
+        pthread_mutex_unlock(&put_end_lock);
+    #endif
+		char * value = (char *)malloc(BUF_SIZE);
+        res = hi->search(thread_id, (uint8_t *)recv_item, (uint8_t *)value);
+        //printf("[SERVER] GET key: %.*s\n value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+        if(res == true){
+            sent = mtcp_write(ctx->mctx, sockid, (char *)value, VALUE_SIZE);
+		}else{
+            char * reply = (char *)malloc(REPLY_SIZE);
+            memset(reply, 0, REPLY_SIZE);
+            char message[] = "get failed";
+            memcpy(reply, message, strlen(message));
+            sent = mtcp_write(ctx->mctx, sockid, (char *)reply, REPLY_SIZE);
+		}
+
+	#ifdef __EVAL_READ__
+        struct timeval write_start;
+        gettimeofday(&write_start, NULL);
+    #endif
 
 	#ifdef __EVAL_READ__
         struct timeval write_end;

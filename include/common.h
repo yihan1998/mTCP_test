@@ -41,9 +41,8 @@
 
 // The key-value struct in network connection
 struct __attribute__((__packed__)) kv_trans_item {
-	uint16_t len;
-	uint8_t value[VALUE_SIZE];
 	uint8_t key[KEY_SIZE];
+	uint8_t value[VALUE_SIZE];
 };
 
 #define KV_ITEM_SIZE sizeof(struct kv_trans_item)

@@ -18,7 +18,7 @@
 #include "btree.h"
 #include "hikv.h"
 
-#define __EVAL_READ__
+//#define __EVAL_READ__
 
 #ifdef __EVAL_READ__
 pthread_mutex_t read_cb_lock;
@@ -64,7 +64,7 @@ struct timeval g_end;
 
 //#define __EVAL_FRAM__
 
-#define BUF_SIZE 4096
+#define BUF_SIZE 1024
 
 #define MAX_FLOW_NUM  (10000)
 
