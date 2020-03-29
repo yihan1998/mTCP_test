@@ -907,6 +907,20 @@ void * RunServerThread(void *arg){
     fclose(fp);
 #endif
 
+#ifdef __EVAL_READ__
+    FILE * fp = fopen("read_cb.txt", "a+");
+    fseek(fp, 0, SEEK_END);
+
+    char buff[1024];
+
+    sprintf(buff, "read %.4f write %.4f\n", 
+                ((double)read_time)/read_cnt, ((double)write_time)/write_cnt);
+    
+    fwrite(buff, strlen(buff), 1, fp);
+
+    fclose(fp);
+#endif
+
 	/* destroy mtcp context: this will kill the mtcp thread */
 	mtcp_destroy_context(mctx);
 	pthread_exit(NULL);
@@ -916,19 +930,6 @@ void * RunServerThread(void *arg){
 
 void SignalHandler(int signum){
 	int i;
-
-#ifdef __EVAL_CB__
-    FILE * fp = fopen("callback.txt", "a+");
-    fseek(fp, 0, SEEK_END);
-
-    char buff[1024];
-
-    sprintf(buff, "%.4f\n", ((double)get_time)/get_cnt);
-    
-    fwrite(buff, strlen(buff), 1, fp);
-
-    fclose(fp);
-#endif
 
 	for (i = 0; i < core_limit; i++) {
 		if (app_thread[i] == pthread_self()) {
