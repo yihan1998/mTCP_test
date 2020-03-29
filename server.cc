@@ -68,6 +68,19 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
     pthread_mutex_unlock(&end_lock);
 #endif
 
+#ifdef __EVAL_CB__
+    FILE * fp = fopen("callback.txt", "a+");
+    fseek(fp, 0, SEEK_END);
+
+    char buff[1024];
+
+    sprintf(buff, "%.4f\n", ((double)get_time)/get_cnt);
+    
+    fwrite(buff, strlen(buff), 1, fp);
+
+    fclose(fp);
+#endif
+
 #ifdef __EVAL_KV__
         pthread_mutex_lock(&end_lock);
         gettimeofday(&g_end, NULL);
@@ -95,6 +108,12 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     struct timeval start;
     gettimeofday(&start, NULL);
 #endif
+
+#ifdef __EVAL_CB__
+    struct timeval start;
+    gettimeofday(&start, NULL);
+#endif
+
 /*
 	char buf[BUF_SIZE];
 
@@ -469,6 +488,18 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     #endif
     }
 
+    #ifdef __EVAL_CB__
+        struct timeval end;
+        gettimeofday(&end, NULL);
+        double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
+        double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
+
+        pthread_mutex_lock(&read_lock);
+        get_cnt++;
+        get_time += (int)(end_time - start_time);
+        pthread_mutex_unlock(&read_lock);
+    #endif
+
 	free(recv_item);
 
 	//fclose(fp);
@@ -684,6 +715,11 @@ void * RunServerThread(void *arg){
 #ifdef __EVAL_FRAM__
 	int cycle_cnt, handle_time, cycle_time;
 	cycle_cnt = handle_time = cycle_time = 0;
+#endif
+
+#ifdef __EVAL_CB__
+    pthread_mutex_init(&read_lock, NULL);
+    get_cnt = get_time = 0;
 #endif
 	
 	/* initialization */

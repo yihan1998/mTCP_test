@@ -28,6 +28,14 @@ int write_cnt;
 int write_time;
 #endif
 
+#define __EVAL_CB__
+
+#ifdef __EVAL_CB__
+pthread_mutex_t read_lock;
+int get_cnt;
+int get_time;
+#endif
+
 //#define __REAL_TIME__
 
 #ifdef __REAL_TIME__
@@ -43,7 +51,7 @@ pthread_mutex_t end_lock;
 struct timeval g_end;
 #endif
 
-#define __EVAL_KV__
+//#define __EVAL_KV__
 
 #ifdef __EVAL_KV__
 pthread_mutex_t record_lock;
