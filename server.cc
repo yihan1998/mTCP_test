@@ -68,19 +68,6 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
     pthread_mutex_unlock(&end_lock);
 #endif
 
-#ifdef __EVAL_CB__
-    FILE * fp = fopen("callback.txt", "a+");
-    fseek(fp, 0, SEEK_END);
-
-    char buff[1024];
-
-    sprintf(buff, "%.4f\n", ((double)get_time)/get_cnt);
-    
-    fwrite(buff, strlen(buff), 1, fp);
-
-    fclose(fp);
-#endif
-
 #ifdef __EVAL_KV__
         pthread_mutex_lock(&end_lock);
         gettimeofday(&g_end, NULL);
@@ -929,6 +916,19 @@ void * RunServerThread(void *arg){
 
 void SignalHandler(int signum){
 	int i;
+
+#ifdef __EVAL_CB__
+    FILE * fp = fopen("callback.txt", "a+");
+    fseek(fp, 0, SEEK_END);
+
+    char buff[1024];
+
+    sprintf(buff, "%.4f\n", ((double)get_time)/get_cnt);
+    
+    fwrite(buff, strlen(buff), 1, fp);
+
+    fclose(fp);
+#endif
 
 	for (i = 0; i < core_limit; i++) {
 		if (app_thread[i] == pthread_self()) {
