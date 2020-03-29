@@ -908,13 +908,12 @@ void * RunServerThread(void *arg){
 #endif
 
 #ifdef __EVAL_CB__
-    FILE * fp = fopen("read_cb.txt", "a+");
+    FILE * fp = fopen("callback.txt", "a+");
     fseek(fp, 0, SEEK_END);
 
     char buff[1024];
 
-    sprintf(buff, "read %.4f write %.4f\n", 
-                ((double)read_time)/read_cnt, ((double)write_time)/write_cnt);
+    sprintf(buff, "%.4f\n", ((double)get_time)/get_cnt);
     
     fwrite(buff, strlen(buff), 1, fp);
 
