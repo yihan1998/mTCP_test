@@ -28,7 +28,7 @@ int write_cnt;
 int write_time;
 #endif
 
-#define __EVAL_CB__
+//#define __EVAL_CB__
 
 #ifdef __EVAL_CB__
 pthread_mutex_t read_lock;
