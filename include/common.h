@@ -31,12 +31,12 @@
 
 #define REPLY_SIZE 50
 
-#define NUM_KEYS K_256			// 51 * M_4 ~ 200 M keys
-#define NUM_KEYS_ K_256_
+#define NUM_KEYS K_512			// 51 * M_4 ~ 200 M keys
+#define NUM_KEYS_ K_512_
 
 #define SWAP(a,b) do{a^=b;b^=a;a^=b;}while(0)
 
-#define VALUE_SIZE 1024
+#define VALUE_SIZE 256
 #define KEY_SIZE 64
 
 // The key-value struct in network connection
