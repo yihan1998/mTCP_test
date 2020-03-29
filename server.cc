@@ -907,7 +907,7 @@ void * RunServerThread(void *arg){
     fclose(fp);
 #endif
 
-#ifdef __EVAL_READ__
+#ifdef __EVAL_CB__
     FILE * fp = fopen("read_cb.txt", "a+");
     fseek(fp, 0, SEEK_END);
 
