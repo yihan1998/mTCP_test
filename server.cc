@@ -488,7 +488,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	
 	#ifdef __EVAL_KV__
         pthread_mutex_lock(&record_lock);
-    	get_cnt++;
+    	get_cnt += key_num;
     	pthread_mutex_unlock(&record_lock);
     #endif
     }
