@@ -392,13 +392,13 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		struct kv_trans_item * request = (struct kv_trans_item *)recv_item;
         res = hi->insert(thread_id, (uint8_t *)request->key, (uint8_t *)request->value);
         //printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
-        if (res == true){
+        char * reply = (char *)malloc(REPLY_SIZE);
+        memset(reply, 0, REPLY_SIZE);
+		if (res == true){
             //printf("[SERVER] insert success\n");
 			//sprintf(buff, "[SERVER] PUT success! key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
             //recv_item->len = VALUE_SIZE;
 			//sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
-			char * reply = (char *)malloc(REPLY_SIZE);
-            memset(reply, 0, REPLY_SIZE);
             char message[] = "put success";
             memcpy(reply, message, strlen(message));
 			sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
@@ -411,8 +411,6 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 			//sprintf(buff, "[SERVER] PUT failed! key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
             //recv_item->len = -1;
 			//sent = mtcp_write(ctx->mctx, sockid, (char *)recv_item, KV_ITEM_SIZE);
-			char * reply = (char *)malloc(REPLY_SIZE);
-            memset(reply, 0, REPLY_SIZE);
             char message[] = "put failed";
             memcpy(reply, message, strlen(message));
 			sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
@@ -422,12 +420,13 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 			fflush(fp);
 		*/
 		}
+		free(reply);
 	#ifdef __EVAL_KV__
         pthread_mutex_lock(&record_lock);
     	put_cnt++;
     	pthread_mutex_unlock(&record_lock);
 	#endif
-    }else if(len == KEY_SIZE){
+    }else{
     #ifdef __EVAL_KV__
         pthread_mutex_lock(&put_end_lock);
         if(!put_end_flag){
@@ -436,9 +435,27 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
         }
         pthread_mutex_unlock(&put_end_lock);
     #endif
-		char * value = (char *)malloc(BUF_SIZE);
-        res = hi->search(thread_id, (uint8_t *)recv_item, (uint8_t *)value);
-        //printf("[SERVER] GET key: %.*s\n value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+
+		int key_num = len / KEY_SIZE;
+		char * value = (char *)malloc(key_num * VALUE_LENGTH);
+
+        int i;
+		for(i = 0;i < key_num;i++){
+            //printf(" >> GET key: %.*s\n", KEY_SIZE, recv_item + i * KEY_SIZE);
+            //char * buff = (char *)malloc(1024);
+			res = hi->search(thread_id, (uint8_t *)(recv_item + i * KEY_SIZE), (uint8_t *)(value + i * VALUE_LENGTH));
+            if(res == true){
+                //memcpy(value + i * VALUE_LENGTH, buff, VALUE_LENGTH);
+            }else{
+                //printf(" >> GET failed\n");
+	            memset(value + i * VALUE_LENGTH, 0, VALUE_LENGTH);
+    	        char message[] = "get failed";
+        	    memcpy(value + i * VALUE_LENGTH, message, strlen(message));
+			}
+		}
+
+		sent = mtcp_write(ctx->mctx, sockid, (char *)value, key_num * VALUE_LENGTH);		
+	/*
         if(res == true){
             sent = mtcp_write(ctx->mctx, sockid, (char *)value, VALUE_SIZE);
 		}else{
@@ -448,6 +465,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
             memcpy(reply, message, strlen(message));
             sent = mtcp_write(ctx->mctx, sockid, (char *)reply, REPLY_SIZE);
 		}
+	*/
 		free(value);
 
 	#ifdef __EVAL_READ__
