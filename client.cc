@@ -353,7 +353,7 @@ void * send_request(void * arg){
     fseek(fp, 0, SEEK_END);
 #endif
 
-/*//[Version 3.0 - mixed tests]
+//[Version 3.0 - mixed tests]
     for(iter = 0, key_i = 0, key_j = 0;iter < num_kv;iter++){
         if(iter < num_put_kv) {
         //PUT
@@ -462,8 +462,8 @@ void * send_request(void * arg){
             free(value);
 		}
     }
-*/
 
+/*
 //[Version 4.0 - 256B batched key] 
     for(iter = 0, key_i = 0, key_j = 0;iter < num_kv;){
         if(iter < num_put_kv) {
@@ -582,7 +582,7 @@ void * send_request(void * arg){
             free(value);
 		}
     }
-
+*/
 #ifdef __EV_RTT__
     int j;
     for(j = 0;j < request_cnt;j++){
