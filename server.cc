@@ -435,7 +435,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
         }
         pthread_mutex_unlock(&put_end_lock);
     #endif
-/*
+
 		int key_num = len / KEY_SIZE;
 		char * value = (char *)malloc(key_num * VALUE_LENGTH);
 
@@ -455,7 +455,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		}
 
 		sent = mtcp_write(ctx->mctx, sockid, (char *)value, key_num * VALUE_LENGTH);
-*/		
+	/*
 		char * value = (char *)malloc(VALUE_LENGTH);
 		res = hi->search(thread_id, (uint8_t *)recv_item, (uint8_t *)value);
     
@@ -468,7 +468,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
             memcpy(reply, message, strlen(message));
             sent = mtcp_write(ctx->mctx, sockid, (char *)reply, REPLY_SIZE);
 		}
-	
+	*/
 		free(value);
 
 	#ifdef __EVAL_READ__
