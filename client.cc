@@ -484,10 +484,6 @@ void * send_request(void * arg){
 
             put_count++;
 
-        #ifdef __EV_RTT__
-            gettimeofday(&record_start[request_cnt], NULL);
-        #endif
-
             if(write(fd, req_kv, KV_ITEM_SIZE) < 0){
 	    		perror("[CLIENT] send failed");
 	        	exit(1);
@@ -503,11 +499,6 @@ void * send_request(void * arg){
             memset(reply, 0, REPLY_SIZE);
 
             recv_size = read(fd, reply, REPLY_SIZE);
-
-            #ifdef __EV_RTT__
-                gettimeofday(&record_end[request_cnt], NULL);
-                request_cnt++;
-            #endif
 
             if(recv_size == 0){
                 printf("[CLIENT] close connection\n");
