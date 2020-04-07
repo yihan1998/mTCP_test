@@ -36,7 +36,7 @@
 
 #define SWAP(a,b) do{a^=b;b^=a;a^=b;}while(0)
 
-#define VALUE_SIZE 256
+#define VALUE_SIZE 2048
 #define KEY_SIZE 64
 
 #define BATCHED_KEY
