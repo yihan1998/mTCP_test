@@ -344,7 +344,8 @@ void * send_request(void * arg){
 */
 
 #ifdef __EV_RTT__
-    struct timeval record_start[250000], record_end[250000];
+    long * rtt_time = (long *)malloc(sizeof(long) * NUM_KEYS / 4);
+    struct timeval get_start, get_end;
 
     int request_cnt;
     request_cnt = 0;
@@ -352,7 +353,7 @@ void * send_request(void * arg){
     FILE * fp = fopen("rtt.txt", "a+");
     fseek(fp, 0, SEEK_END);
 #endif
-
+#ifndef BATCHED_KEY
 //[Version 3.0 - mixed tests]
     for(iter = 0, key_i = 0, key_j = 0;iter < num_kv;iter++){
         if(iter < num_put_kv) {
@@ -463,8 +464,8 @@ void * send_request(void * arg){
 		}
     }
 
+#else
 
-/*
 //[Version 4.0 - 256B batched key] 
     for(iter = 0, key_i = 0, key_j = 0;iter < num_kv;){
         if(iter < num_put_kv) {
@@ -535,7 +536,7 @@ void * send_request(void * arg){
             }
 
         #ifdef __EV_RTT__
-            gettimeofday(&record_start[request_cnt], NULL);
+            gettimeofday(&get_start, NULL);
         #endif
 
             if(write(fd, key, send_num * KEY_SIZE) < 0){
@@ -552,7 +553,10 @@ void * send_request(void * arg){
 	        recv_size = read(fd, value, send_num * VALUE_SIZE);
 
             #ifdef __EV_RTT__
-                gettimeofday(&record_end[request_cnt], NULL);
+                gettimeofday(&get_end, NULL);
+                long start_time = (long)get_start.tv_sec * 1000000 + (long)get_start.tv_usec;
+                long end_time = (long)get_end.tv_sec * 1000000 + (long)get_end.tv_usec;
+                rtt_time[request_cnt] = end_time - start_time;
                 request_cnt++;
             #endif
 
@@ -583,9 +587,8 @@ void * send_request(void * arg){
             free(value);
 		}
     }
-*/
-
-
+#endif
+/*
 //[Version 5.0 - 1KB batched key] 
     for(iter = 0, key_i = 0, key_j = 0;iter < num_kv;){
         if(iter < num_put_kv) {
@@ -706,15 +709,13 @@ void * send_request(void * arg){
     }
 
 
+*/
 #ifdef __EV_RTT__
     int j;
     for(j = 0;j < request_cnt;j++){
-        long start_time = (long)record_start[j].tv_sec * 1000000 + (long)record_start[j].tv_usec;
-        long end_time = (long)record_end[j].tv_sec * 1000000 + (long)record_end[j].tv_usec;
-
         char buff[1024];
 
-        sprintf(buff, "%ld\n", end_time - start_time);
+        sprintf(buff, "%ld\n", rtt_time[j]);
         
         pthread_mutex_lock(&rtt_lock);
 

@@ -2,7 +2,7 @@
 
 //#define RECEIVE_DEBUG
 
-//#define __EV_RTT__
+#define __EV_RTT__
 
 //#define __TEST_FILE__
 #define __TEST_KV__
