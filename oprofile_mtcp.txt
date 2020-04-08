@@ -1,0 +1,268 @@
+CPU: Intel Skylake microarchitecture, speed 2.701e+06 MHz (estimated)
+Counted cpu_clk_unhalted events () with a unit mask of 0x00 (Core cycles when at least one thread on the physical core is not in halt state) count 2100000
+samples  %        image name               app name                 symbol name
+201885   39.7168  server                   server                   thread_pool_task_handler(void*)
+50640     9.9624  [vdso] (tgid:60366 range:0x7ffe045be000-0x7ffe045c0000) server                   [vdso] (tgid:60366 range:0x7ffe045be000-0x7ffe045c0000)
+34000     6.6888  server                   server                   MTCPRunThread
+27420     5.3943  libc-2.17.so             libc-2.17.so             __memcmp_sse4_1
+24598     4.8392  libpthread-2.17.so       libpthread-2.17.so       pthread_mutex_lock
+15981     3.1439  libpthread-2.17.so       libpthread-2.17.so       pthread_mutex_unlock
+15566     3.0623  server                   server                   page::linear_search(entry_key_t)
+14982     2.9474  server                   server                   task_queue::add_task(int, int, void**)
+12088     2.3781  server                   server                   i40e_recv_pkts_vec_avx2
+10573     2.0800  server                   server                   dpdk_send_pkts
+10273     2.0210  server                   server                   dpdk_recv_pkts
+10117     1.9903  server                   server                   btree::btree_insert(int, entry_key_t&, char*)
+8669      1.7055  server                   server                   HandleReadEvent(thread_context*, int, int, server_vars*)
+6828      1.3433  server                   server                   dpdk_dev_ioctl
+6761      1.3301  server                   server                   StreamDequeue
+5920      1.1646  server                   server                   page::store(int, btree*, char*, entry_key_t, char*, bool, bool, page*) [clone .constprop.15]
+5254      1.0336  server                   server                   tbb::strict_ppl::internal::micro_queue<queue_task>::pop(void*, unsigned long, tbb::strict_ppl::internal::concurrent_queue_base_v3<queue_task>&)
+4795      0.9433  server                   server                   CheckRtmTimeout
+2660      0.5233  server                   server                   CheckTimewaitExpire
+2574      0.5064  server                   server                   i40e_xmit_pkts
+2469      0.4857  libc-2.17.so             libc-2.17.so             __memcpy_ssse3_back
+1930      0.3797  libpthread-2.17.so       libpthread-2.17.so       pthread_spin_lock
+1803      0.3547  server                   server                   SendTCPPacket
+1545      0.3039  server                   server                   ProcessACK
+1260      0.2479  libtbbmalloc.so.2        libtbbmalloc.so.2        rml::internal::Block::freePublicObject(rml::internal::FreeObject*)
+1185      0.2331  server                   server                   HashFlow
+1130      0.2223  server                   server                   ProcessTCPPacket
+1111      0.2186  server                   server                   ProcessPacket
+1102      0.2168  libtbbmalloc.so.2        libtbbmalloc.so.2        rml::internal::Block::privatizePublicFreeList(bool)
+1008      0.1983  server                   server                   mtcp_epoll_wait
+1003      0.1973  server                   server                   CityHash64(char const*, unsigned long)
+826       0.1625  no-vmlinux               no-vmlinux               /no-vmlinux
+751       0.1477  libpthread-2.17.so       libpthread-2.17.so       pthread_cond_wait@@GLIBC_2.3.2
+707       0.1391  libjemalloc.so.2         libjemalloc.so.2         malloc
+707       0.1391  server                   server                   EthernetOutput
+705       0.1387  server                   server                   common_ring_sp_enqueue
+701       0.1379  libpthread-2.17.so       libpthread-2.17.so       pthread_cond_signal@@GLIBC_2.3.2
+693       0.1363  server                   server                   common_ring_sc_dequeue
+635       0.1249  server                   server                   mtcp_recv
+629       0.1237  server                   server                   IPOutput
+627       0.1233  server                   server                   dpdk_select
+500       0.0984  server                   server                   dpdk_get_wptr
+479       0.0942  libjemalloc.so.2         libjemalloc.so.2         free
+477       0.0938  server                   server                   mtcp_write
+467       0.0919  server                   server                   btree::btree_insert_internal(int, char*, entry_key_t&, char*, unsigned int)
+423       0.0832  server                   server                   CityHash64WithSeed(char const*, unsigned long, unsigned long)
+408       0.0803  server                   server                   AddtoSendList
+407       0.0801  server                   server                   UpdateTimeoutList
+391       0.0769  server                   server                   FlushTCPSendingBuffer
+387       0.0761  server                   server                   RunServerThread(void*)
+372       0.0732  libc-2.17.so             libc-2.17.so             __memset_sse2
+368       0.0724  server                   server                   WriteTCPACKList
+365       0.0718  server                   server                   ParseSACKOption
+348       0.0685  server                   server                   RBFragEnqueue
+345       0.0679  server                   server                   StreamHTSearch
+339       0.0667  libpthread-2.17.so       libpthread-2.17.so       __lll_lock_wait
+326       0.0641  libtbbmalloc.so.2        libtbbmalloc.so.2        rml::internal::internalPoolMalloc(rml::internal::MemoryPool*, unsigned long)
+321       0.0632  libpthread-2.17.so       libpthread-2.17.so       pthread_mutex_trylock
+321       0.0632  server                   server                   nvmem_memcpy(char*, char const*, unsigned long)
+316       0.0622  server                   server                   RBPut
+296       0.0582  server                   server                   RBRemove
+277       0.0545  server                   server                   btree::getNewPage(int, unsigned int)
+260       0.0511  server                   server                   GetDestinationHWaddr
+259       0.0510  libjemalloc.so.2         libjemalloc.so.2         je_base_alloc_extent
+235       0.0462  server                   server                   EnqueueACK
+223       0.0439  server                   server                   EqualFlow
+218       0.0429  server                   server                   SBPut
+213       0.0419  libpthread-2.17.so       libpthread-2.17.so       __lll_unlock_wake
+212       0.0417  server                   server                   WriteTCPDataList
+210       0.0413  libpthread-2.17.so       libpthread-2.17.so       _L_unlock_738
+196       0.0386  server                   server                   AddEpollEvent
+194       0.0382  libpthread-2.17.so       libpthread-2.17.so       __pthread_mutex_cond_lock
+176       0.0346  libpthread-2.17.so       libpthread-2.17.so       __pthread_disable_asynccancel
+171       0.0336  server                   server                   AddtoRTOList
+163       0.0321  server                   server                   ProcessIPv4Packet
+158       0.0311  libjemalloc.so.2         libjemalloc.so.2         je_extent_heap_remove_first
+153       0.0301  server                   server                   page::insert_key(entry_key_t, char*, int*, bool, bool)
+150       0.0295  server                   server                   ParseTCPTimestamp
+150       0.0295  server                   server                   StreamEnqueue
+141       0.0277  server                   server                   UpdateRetransmissionTimer
+136       0.0268  libjemalloc.so.2         libjemalloc.so.2         je_arena_tcache_fill_small
+134       0.0264  libjemalloc.so.2         libjemalloc.so.2         arena_bin_malloc_hard
+129       0.0254  server                   server                   SBRemove
+119       0.0234  server                   server                   dpdk_get_rptr
+116       0.0228  libpthread-2.17.so       libpthread-2.17.so       __pthread_mutex_unlock_usercnt
+108       0.0212  libpthread-2.17.so       libpthread-2.17.so       __pthread_enable_asynccancel
+98        0.0193  libpthread-2.17.so       libpthread-2.17.so       pthread_spin_init
+96        0.0189  libjemalloc.so.2         libjemalloc.so.2         extent_split_impl.isra.68
+93        0.0183  libpthread-2.17.so       libpthread-2.17.so       _L_cond_lock_847
+92        0.0181  libjemalloc.so.2         libjemalloc.so.2         extent_recycle.isra.90
+85        0.0167  libtbbmalloc.so.2        libtbbmalloc.so.2        rml::internal::internalPoolFree(rml::internal::MemoryPool*, void*, unsigned long) [clone .constprop.42]
+84        0.0165  server                   server                   RBFragDequeue
+73        0.0144  server                   server                   SeqIsSacked
+64        0.0126  libpthread-2.17.so       libpthread-2.17.so       pthread_getspecific
+61        0.0120  server                   server                   GetMTCPManager
+57        0.0112  server                   server                   tbb::strict_ppl::internal::concurrent_queue_base_v3<queue_task>::allocate_page()
+54        0.0106  libtbbmalloc.so.2        libtbbmalloc.so.2        rml::internal::allocateAligned(rml::internal::MemoryPool*, unsigned long, unsigned long)
+49        0.0096  libglib-2.0.so.0.4600.2  libglib-2.0.so.0.4600.2  /usr/lib64/libglib-2.0.so.0.4600.2
+47        0.0092  libtbb.so.2              libtbb.so.2              tbb::internal::NFS_Allocate(unsigned long, unsigned long, void*)
+46        0.0090  libtbbmalloc.so.2        libtbbmalloc.so.2        scalable_aligned_malloc
+42        0.0083  libtbbmalloc.so.2        libtbbmalloc.so.2        rml::internal::Bin::getPrivatizedFreeListBlock()
+41        0.0081  oprofiled                oprofiled                /usr/bin/oprofiled
+38        0.0075  server                   server                   tbb::strict_ppl::internal::concurrent_queue_base_v3<queue_task>::deallocate_page(tbb::strict_ppl::internal::concurrent_queue_rep_base::page*)
+36        0.0071  server                   server                   RaiseReadEvent
+29        0.0057  libjemalloc.so.2         libjemalloc.so.2         extents_remove_locked.isra.77
+28        0.0055  libc-2.17.so             libc-2.17.so             __memmove_ssse3_back
+26        0.0051  server                   server                   i40e_read_stats_registers
+25        0.0049  libgobject-2.0.so.0.4600.2 libgobject-2.0.so.0.4600.2 /usr/lib64/libgobject-2.0.so.0.4600.2
+22        0.0043  libc-2.17.so             libc-2.17.so             malloc
+22        0.0043  libjemalloc.so.2         libjemalloc.so.2         extent_rtree_leaf_elms_lookup
+22        0.0043  libjemalloc.so.2         libjemalloc.so.2         extents_insert_locked.isra.76
+22        0.0043  libstdc++.so.6.0.19      libstdc++.so.6.0.19      /usr/lib64/libstdc++.so.6.0.19
+21        0.0041  libc-2.17.so             libc-2.17.so             sched_yield
+21        0.0041  libgnome-shell.so        libgnome-shell.so        /usr/lib64/gnome-shell/libgnome-shell.so
+20        0.0039  dbus-daemon              dbus-daemon              /usr/bin/dbus-daemon
+20        0.0039  libc-2.17.so             libc-2.17.so             _int_malloc
+20        0.0039  libtbbmalloc.so.2        libtbbmalloc.so.2        rml::internal::Bin::addPublicFreeListBlock(rml::internal::Block*)
+18        0.0035  libtbbmalloc.so.2        libtbbmalloc.so.2        unsigned int rml::internal::getIndexOrObjectSize<true>(unsigned int)
+18        0.0035  server                   server                   i40e_dev_stats_reset
+18        0.0035  server                   server                   rte_delay_us_block
+17        0.0033  libjemalloc.so.2         libjemalloc.so.2         je_extent_heap_first
+16        0.0031  libjemalloc.so.2         libjemalloc.so.2         extent_size_quantize_ceil
+16        0.0031  libjemalloc.so.2         libjemalloc.so.2         je_malloc_default
+16        0.0031  server                   server                   tbb::strict_ppl::concurrent_queue<queue_task, tbb::cache_aligned_allocator<queue_task> >::allocate_block(unsigned long)
+15        0.0030  libc-2.17.so             libc-2.17.so             _int_free
+15        0.0030  libtbbmalloc.so.2        libtbbmalloc.so.2        bool rml::internal::isLargeObject<(rml::internal::MemoryOrigin)0>(void*) [clone .part.38]
+13        0.0026  libtbbmalloc.so.2        libtbbmalloc.so.2        scalable_aligned_free
+12        0.0024  bash                     bash                     /usr/bin/bash
+12        0.0024  libc-2.17.so             libc-2.17.so             re_compile_internal
+12        0.0024  libdbus-1.so.3.7.4       libdbus-1.so.3.7.4       /usr/lib64/libdbus-1.so.3.7.4
+12        0.0024  libjemalloc.so.2         libjemalloc.so.2         je_extent_alloc
+12        0.0024  libjemalloc.so.2         libjemalloc.so.2         je_tcache_event_hard
+11        0.0022  libc-2.17.so             libc-2.17.so             __strcmp_sse42
+10        0.0020  libjemalloc.so.2         libjemalloc.so.2         base_extent_bump_alloc_post
+10        0.0020  libjemalloc.so.2         libjemalloc.so.2         extent_interior_register
+10        0.0020  libjemalloc.so.2         libjemalloc.so.2         extent_split_interior.isra.69
+9         0.0018  libjemalloc.so.2         libjemalloc.so.2         je_extent_heap_remove
+8         0.0016  libcrypto.so.1.0.2k      libcrypto.so.1.0.2k      /usr/lib64/libcrypto.so.1.0.2k
+8         0.0016  libm-2.17.so             libm-2.17.so             __ceil_sse41
+8         0.0016  libpthread-2.17.so       libpthread-2.17.so       pthread_self
+8         0.0016  libtbbmalloc.so.2        libtbbmalloc.so.2        rml::internal::Block::adjustPositionInBin(rml::internal::Bin*)
+7         0.0014  ld-2.17.so               ld-2.17.so               do_lookup_x
+7         0.0014  libc-2.17.so             libc-2.17.so             __gconv_transform_utf8_internal
+7         0.0014  libjemalloc.so.2         libjemalloc.so.2         je_bitmap_init
+7         0.0014  libjemalloc.so.2         libjemalloc.so.2         je_extent_alloc_wrapper
+7         0.0014  server                   server                   i40e_update_vsi_stats
+6         0.0012  libc-2.17.so             libc-2.17.so             __GI_____strtoull_l_internal
+6         0.0012  libjemalloc.so.2         libjemalloc.so.2         arena_choose
+6         0.0012  libjemalloc.so.2         libjemalloc.so.2         je_free_default
+6         0.0012  libtbb.so.2              libtbb.so.2              tbb::internal::NFS_Free(void*)
+6         0.0012  systemd-journald         systemd-journald         /usr/lib/systemd/systemd-journald
+5        9.8e-04  anon (tgid:3621 range:0x7f259f701000-0x7f259f71a000) gnome-shell              anon (tgid:3621 range:0x7f259f701000-0x7f259f71a000)
+5        9.8e-04  libgio-2.0.so.0.4600.2   libgio-2.0.so.0.4600.2   /usr/lib64/libgio-2.0.so.0.4600.2
+5        9.8e-04  libjemalloc.so.2         libjemalloc.so.2         __popcountdi2
+5        9.8e-04  libjemalloc.so.2         libjemalloc.so.2         je_tcache_alloc_small_hard
+5        9.8e-04  libjemalloc.so.2         libjemalloc.so.2         sz_size2index_compute
+5        9.8e-04  server                   server                   ARPTimer
+5        9.8e-04  server                   server                   CheckConnectionTimeout
+5        9.8e-04  server                   server                   tbb::strict_ppl::concurrent_queue<queue_task, tbb::cache_aligned_allocator<queue_task> >::deallocate_block(void*, unsigned long)
+4        7.9e-04  anon (tgid:3621 range:0x7f259f73a000-0x7f259f751000) gnome-shell              anon (tgid:3621 range:0x7f259f73a000-0x7f259f751000)
+4        7.9e-04  ld-2.17.so               ld-2.17.so               _dl_lookup_symbol_x
+4        7.9e-04  ld-2.17.so               ld-2.17.so               _dl_relocate_object
+4        7.9e-04  ld-2.17.so               ld-2.17.so               check_match.9524
+4        7.9e-04  libavahi-common.so.3.5.3 libavahi-common.so.3.5.3 /usr/lib64/libavahi-common.so.3.5.3
+4        7.9e-04  libc-2.17.so             libc-2.17.so             free_dfa_content
+4        7.9e-04  libc-2.17.so             libc-2.17.so             malloc_consolidate
+4        7.9e-04  libdns-export.so.100.1.1 libdns-export.so.100.1.1 /usr/lib64/libdns-export.so.100.1.1
+4        7.9e-04  libjemalloc.so.2         libjemalloc.so.2         arena_maybe_decay
+4        7.9e-04  libjemalloc.so.2         libjemalloc.so.2         je_extent_heap_insert
+4        7.9e-04  swrast_dri.so            swrast_dri.so            /usr/lib64/dri/swrast_dri.so
+3        5.9e-04  irqbalance               irqbalance               /usr/sbin/irqbalance
+3        5.9e-04  libavahi-core.so.7.0.2   libavahi-core.so.7.0.2   /usr/lib64/libavahi-core.so.7.0.2
+3        5.9e-04  libc-2.17.so             libc-2.17.so             __GI_____strtoll_l_internal
+3        5.9e-04  libc-2.17.so             libc-2.17.so             __strlen_sse2_pminub
+3        5.9e-04  libc-2.17.so             libc-2.17.so             _int_realloc
+3        5.9e-04  libc-2.17.so             libc-2.17.so             peek_token
+3        5.9e-04  libc-2.17.so             libc-2.17.so             re_dfa_add_node
+3        5.9e-04  libmozjs-24.so           libmozjs-24.so           /usr/lib64/libmozjs-24.so
+3        5.9e-04  libpython2.7.so.1.0      libpython2.7.so.1.0      /usr/lib64/libpython2.7.so.1.0
+3        5.9e-04  server                   server                   common_ring_mp_enqueue
+2        3.9e-04  [vdso] (tgid:1887 range:0x7ffe13d97000-0x7ffe13d99000) python2.7                [vdso] (tgid:1887 range:0x7ffe13d97000-0x7ffe13d99000)
+2        3.9e-04  anon (tgid:3621 range:0x7f259f71a000-0x7f259f73a000) gnome-shell              anon (tgid:3621 range:0x7f259f71a000-0x7f259f73a000)
+2        3.9e-04  cp                       cp                       /usr/bin/cp
+2        3.9e-04  ld-2.17.so               ld-2.17.so               memset
+2        3.9e-04  libc-2.17.so             libc-2.17.so             _IO_un_link
+2        3.9e-04  libc-2.17.so             libc-2.17.so             __libc_disable_asynccancel
+2        3.9e-04  libc-2.17.so             libc-2.17.so             _dl_addr
+2        3.9e-04  libc-2.17.so             libc-2.17.so             calc_eclosure_iter
+2        3.9e-04  libc-2.17.so             libc-2.17.so             fgetc
+2        3.9e-04  libc-2.17.so             libc-2.17.so             free
+2        3.9e-04  libc-2.17.so             libc-2.17.so             link_nfa_nodes
+2        3.9e-04  libc-2.17.so             libc-2.17.so             parse_expression
+2        3.9e-04  libc-2.17.so             libc-2.17.so             re_search_internal
+2        3.9e-04  libc-2.17.so             libc-2.17.so             realloc
+2        3.9e-04  libisc-export.so.95.2.1  libisc-export.so.95.2.1  /usr/lib64/libisc-export.so.95.2.1
+2        3.9e-04  libjemalloc.so.2         libjemalloc.so.2         je_base_extent_hooks_get
+2        3.9e-04  libkrb5.so.3.3           libkrb5.so.3.3           /usr/lib64/libkrb5.so.3.3
+2        3.9e-04  libsystemd.so.0.6.0      libsystemd.so.0.6.0      /usr/lib64/libsystemd.so.0.6.0
+2        3.9e-04  ophelp                   ophelp                   /usr/bin/ophelp
+2        3.9e-04  rngd                     rngd                     /usr/sbin/rngd
+2        3.9e-04  server                   server                   rte_mempool_free_memchunks
+1        2.0e-04  NetworkManager           NetworkManager           /usr/sbin/NetworkManager
+1        2.0e-04  [vdso] (tgid:802 range:0x7ffc2e3c0000-0x7ffc2e3c2000) systemd-journald         [vdso] (tgid:802 range:0x7ffc2e3c0000-0x7ffc2e3c2000)
+1        2.0e-04  anon (tgid:3621 range:0x7f25ded3f000-0x7f25ded4f000) gnome-shell              anon (tgid:3621 range:0x7f25ded3f000-0x7f25ded4f000)
+1        2.0e-04  avahi-daemon             avahi-daemon             /usr/sbin/avahi-daemon
+1        2.0e-04  ld-2.17.so               ld-2.17.so               _dl_cache_libcmp
+1        2.0e-04  ld-2.17.so               ld-2.17.so               _dl_fixup
+1        2.0e-04  ld-2.17.so               ld-2.17.so               _dl_map_object
+1        2.0e-04  ld-2.17.so               ld-2.17.so               _dl_map_object_from_fd
+1        2.0e-04  ld-2.17.so               ld-2.17.so               _dl_runtime_resolve_xsavec
+1        2.0e-04  ld-2.17.so               ld-2.17.so               _dl_setup_hash
+1        2.0e-04  ld-2.17.so               ld-2.17.so               _dl_unload_cache
+1        2.0e-04  ld-2.17.so               ld-2.17.so               bcmp
+1        2.0e-04  libatasmart.so.4.0.5     libatasmart.so.4.0.5     /usr/lib64/libatasmart.so.4.0.5
+1        2.0e-04  libatspi.so.0.0.1        libatspi.so.0.0.1        /usr/lib64/libatspi.so.0.0.1
+1        2.0e-04  libc-2.17.so             libc-2.17.so             _IO_old_init
+1        2.0e-04  libc-2.17.so             libc-2.17.so             _IO_vfscanf
+1        2.0e-04  libc-2.17.so             libc-2.17.so             __GI___printf_fp_l
+1        2.0e-04  libc-2.17.so             libc-2.17.so             __dcigettext
+1        2.0e-04  libc-2.17.so             libc-2.17.so             __gconv_lookup_cache
+1        2.0e-04  libc-2.17.so             libc-2.17.so             __memcpy_sse2
+1        2.0e-04  libc-2.17.so             libc-2.17.so             __rawmemchr_sse2
+1        2.0e-04  libc-2.17.so             libc-2.17.so             __read_nocancel
+1        2.0e-04  libc-2.17.so             libc-2.17.so             __select_nocancel
+1        2.0e-04  libc-2.17.so             libc-2.17.so             __strcasecmp_l_avx
+1        2.0e-04  libc-2.17.so             libc-2.17.so             __strchr_sse42
+1        2.0e-04  libc-2.17.so             libc-2.17.so             __strncpy_sse2_unaligned
+1        2.0e-04  libc-2.17.so             libc-2.17.so             __strnlen_sse2
+1        2.0e-04  libc-2.17.so             libc-2.17.so             build_trtable
+1        2.0e-04  libc-2.17.so             libc-2.17.so             calloc
+1        2.0e-04  libc-2.17.so             libc-2.17.so             init_cacheinfo
+1        2.0e-04  libc-2.17.so             libc-2.17.so             mbrtoc32
+1        2.0e-04  libc-2.17.so             libc-2.17.so             parse_branch
+1        2.0e-04  libc-2.17.so             libc-2.17.so             pthread_mutex_unlock
+1        2.0e-04  libc-2.17.so             libc-2.17.so             ptmalloc_init.part.7
+1        2.0e-04  libc-2.17.so             libc-2.17.so             qsort
+1        2.0e-04  libc-2.17.so             libc-2.17.so             re_node_set_merge
+1        2.0e-04  libc-2.17.so             libc-2.17.so             readdir
+1        2.0e-04  libc-2.17.so             libc-2.17.so             sigemptyset
+1        2.0e-04  libc-2.17.so             libc-2.17.so             strchrnul
+1        2.0e-04  libc-2.17.so             libc-2.17.so             vfprintf
+1        2.0e-04  libclutter-1.0.so.0.2000.0 libclutter-1.0.so.0.2000.0 /usr/lib64/libclutter-1.0.so.0.2000.0
+1        2.0e-04  libcogl.so.20.2.0        libcogl.so.20.2.0        /usr/lib64/libcogl.so.20.2.0
+1        2.0e-04  libdl-2.17.so            libdl-2.17.so            _dlerror_run
+1        2.0e-04  libgirepository-1.0.so.1.0.0 libgirepository-1.0.so.1.0.0 /usr/lib64/libgirepository-1.0.so.1.0.0
+1        2.0e-04  libjemalloc.so.2         libjemalloc.so.2         extent_split_default
+1        2.0e-04  libjemalloc.so.2         libjemalloc.so.2         je_extents_alloc
+1        2.0e-04  libjemalloc.so.2         libjemalloc.so.2         je_nstime_init
+1        2.0e-04  libjemalloc.so.2         libjemalloc.so.2         je_tcache_bin_flush_small
+1        2.0e-04  libpcsclite.so.1.0.0     libpcsclite.so.1.0.0     /usr/lib64/libpcsclite.so.1.0.0
+1        2.0e-04  libprocps.so.4.0.0       libprocps.so.4.0.0       /usr/lib64/libprocps.so.4.0.0
+1        2.0e-04  libpthread-2.17.so       libpthread-2.17.so       pthread_mutex_init
+1        2.0e-04  libpthread-2.17.so       libpthread-2.17.so       pthread_rwlock_unlock
+1        2.0e-04  libselinux.so.1          libselinux.so.1          /usr/lib64/libselinux.so.1
+1        2.0e-04  libtbbmalloc.so.2        libtbbmalloc.so.2        rml::internal::Bin::moveBlockToFront(rml::internal::Block*)
+1        2.0e-04  libtbbmalloc.so.2        libtbbmalloc.so.2        rml::internal::MapMemory(unsigned long, rml::internal::PageType)
+1        2.0e-04  pcscd                    pcscd                    /usr/sbin/pcscd
+1        2.0e-04  pickup                   pickup                   /usr/libexec/postfix/pickup
+1        2.0e-04  server                   server                   ListenerHTSearch
+1        2.0e-04  server                   server                   eal_parse_sysfs_value
+1        2.0e-04  server                   server                   i40e_clear_hw
+1        2.0e-04  server                   server                   i40e_read_rx_ctl
+1        2.0e-04  server                   server                   rte_pktmbuf_init
+1        2.0e-04  sshd                     sshd                     /usr/sbin/sshd
+1        2.0e-04  timemodule.so            timemodule.so            /usr/lib64/python2.7/lib-dynload/timemodule.so
