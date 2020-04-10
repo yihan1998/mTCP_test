@@ -451,9 +451,6 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
             if(res == true){
                 printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, buff);
             	//memcpy(value + i * VALUE_LENGTH, buff, VALUE_LENGTH);
-				memset(value + i * VALUE_LENGTH, 0, VALUE_LENGTH);
-    	        char message[] = "get success";
-        	    memcpy(value + i * VALUE_LENGTH, message, strlen(message));
             }else{
                 printf(" >> GET failed\n");
 	            memset(value + i * VALUE_LENGTH, 0, VALUE_LENGTH);
