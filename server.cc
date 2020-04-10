@@ -449,8 +449,11 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 			char buff[VALUE_LENGTH];
 			res = hi->search(thread_id, (uint8_t *)(recv_item + i * KEY_SIZE), (uint8_t *)buff);
             if(res == true){
-                printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, value + i * VALUE_LENGTH);
-            	memcpy(value + i * VALUE_LENGTH, buff, 100);
+                printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, buff);
+            	//memcpy(value + i * VALUE_LENGTH, buff, VALUE_LENGTH);
+				memset(value + i * VALUE_LENGTH, 0, VALUE_LENGTH);
+    	        char message[] = "get success";
+        	    memcpy(value + i * VALUE_LENGTH, message, strlen(message));
             }else{
                 printf(" >> GET failed\n");
 	            memset(value + i * VALUE_LENGTH, 0, VALUE_LENGTH);
