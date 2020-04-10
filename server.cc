@@ -443,7 +443,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		int key_num = len / KEY_SIZE;
 		char * value = (char *)malloc(key_num * VALUE_LENGTH);
 
-		printf(" >> GET len: %d\n", len);
+		printf(" >> GET len: %d, key num: %d\n", len, key_num);
 
         int i;
 		for(i = 0;i < key_num;i++){
