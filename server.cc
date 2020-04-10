@@ -128,6 +128,10 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
 	len = mtcp_recv(ctx->mctx, sockid, recv_item, BUF_SIZE, 0);
 
+	if(len == 0){
+		return len;
+	}
+
 #ifdef __EVAL_READ__
     struct timeval read_end;
     gettimeofday(&read_end, NULL);
