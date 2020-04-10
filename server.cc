@@ -442,7 +442,6 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	
 		int key_num = len / KEY_SIZE;
 		char * value = (char *)malloc(key_num * VALUE_LENGTH);
-		memset(value, 0, key_num * VALUE_LENGTH);
 
         int i;
 		for(i = 0;i < key_num;i++){
@@ -464,8 +463,8 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 			}
 		*/
 			memset(value + i * VALUE_LENGTH, 0, VALUE_LENGTH);
-    	    char message[] = "get failed";
-            memcpy(value + i * VALUE_LENGTH, message, strlen(message));
+    	    //char message[] = "get failed";
+            //memcpy(value + i * VALUE_LENGTH, message, strlen(message));
 		}
 
 		sent = mtcp_write(ctx->mctx, sockid, (char *)value, key_num * VALUE_LENGTH);
