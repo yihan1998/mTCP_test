@@ -558,8 +558,6 @@ void * send_request(void * arg){
 
             int recv_num = recv_size / VALUE_SIZE;
 
-            printf(" >> recv len: %d\n", recv_size);
-
             int i;
             for(i = 0;i < recv_num;i++){
                 printf("[CLIENT] value: %.*s\n", VALUE_SIZE, value + i * VALUE_SIZE);
