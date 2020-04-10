@@ -465,7 +465,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
             memcpy(value + i * VALUE_LENGTH, buff, VALUE_LENGTH);
 		}
 
-		//sent = mtcp_write(ctx->mctx, sockid, (char *)value, key_num * VALUE_LENGTH);
+		sent = mtcp_write(ctx->mctx, sockid, value, key_num * VALUE_LENGTH);
 
 		free(value);
 	
