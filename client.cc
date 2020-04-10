@@ -543,8 +543,6 @@ void * send_request(void * arg){
 
 	        recv_size = read(fd, value, send_num * VALUE_SIZE);
 
-            printf(" >> recv size: %d\n", recv_size);
-
             #ifdef __EV_RTT__
                 gettimeofday(&get_end, NULL);
                 long start_time = (long)get_start.tv_sec * 1000000 + (long)get_start.tv_usec;
@@ -572,6 +570,8 @@ void * send_request(void * arg){
                     match_search++;
                 }
             }
+
+            printf(" >> %.*s\n", recv_size, value);
 
             key_j = (key_j + send_num) % num_get_kv;
             iter += send_num;
