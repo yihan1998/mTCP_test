@@ -478,7 +478,7 @@ void * send_request(void * arg){
             //printf(">> value_corpus: %p, value: %.*s\n", &value_corpus[key_i * VALUE_SIZE], VALUE_SIZE, &value_corpus[key_i * VALUE_SIZE]);
     		memcpy((char *)req_kv->value, (char *)&value_corpus[key_i * VALUE_SIZE], VALUE_SIZE);   //set Value
             //printf(">> req_kv->value: %p, value: %.*s\n", req_kv->value, VALUE_SIZE, req_kv->value);
-    		//printf("[CLIENT] PUT key: %llu, value: %.*s\n", key_corpus[key_i], VALUE_SIZE, req_kv->value);
+    		printf("[CLIENT] PUT key: %llu, value: %.*s\n", key_corpus[key_i], VALUE_SIZE, req_kv->value);
             //printf("[CLIENT] PUT key: %llu\n", key_corpus[key_i]);
 		    key_i = (key_i + 1) % num_put_kv;
 
@@ -506,10 +506,10 @@ void * send_request(void * arg){
             }
 
             if(strcmp("put success", reply) == 0){
-                //printf("put success\n");
+                printf("put success\n");
                 match_insert++;
             }else if(strcmp("put failed", reply) == 0){
-                //printf("put failed\n");
+                printf("put failed\n");
             }else{
                 //printf("unknown result\n");
             }
