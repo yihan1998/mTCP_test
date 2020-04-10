@@ -506,10 +506,10 @@ void * send_request(void * arg){
             }
 
             if(strcmp("put success", reply) == 0){
-                printf("put success\n");
+                //printf("put success\n");
                 match_insert++;
             }else if(strcmp("put failed", reply) == 0){
-                printf("put failed\n");
+                //printf("put failed\n");
             }else{
                 //printf("unknown result\n");
             }
@@ -539,9 +539,11 @@ void * send_request(void * arg){
 
             int recv_size;
 
-            char * value = (char *)malloc(send_num * VALUE_SIZE + 20);
+            char * value = (char *)malloc(send_num * VALUE_SIZE);
 
-	        recv_size = read(fd, value, send_num * VALUE_SIZE + 20);
+	        recv_size = read(fd, value, send_num * VALUE_SIZE);
+
+            printf(" >> recv size: %d\n", recv_size);
 
             #ifdef __EV_RTT__
                 gettimeofday(&get_end, NULL);
