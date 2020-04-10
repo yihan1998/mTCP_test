@@ -446,11 +446,10 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
         int i;
 		for(i = 0;i < key_num;i++){
             printf(" >> GET key: %.*s\n", KEY_SIZE, recv_item + i * KEY_SIZE);
-			char buff[VALUE_LENGTH];
-			res = hi->search(thread_id, (uint8_t *)(recv_item + i * KEY_SIZE), (uint8_t *)buff);
+			res = hi->search(thread_id, (uint8_t *)(recv_item + i * KEY_SIZE), (uint8_t *)(value + i * VALUE_LENGTH, buff));
             if(res == true){
                 printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, value + i * VALUE_LENGTH);
-            	memcpy(value + i * VALUE_LENGTH, buff, VALUE_LENGTH);
+            	//memcpy(value + i * VALUE_LENGTH, buff, VALUE_LENGTH);
             }else{
                 printf(" >> GET failed\n");
 	            memset(value + i * VALUE_LENGTH, 0, VALUE_LENGTH);
@@ -460,6 +459,8 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		}
 
 		sent = mtcp_write(ctx->mctx, sockid, (char *)value, key_num * VALUE_LENGTH);
+
+		free(value);
 	
 	/*
 		char * value = (char *)malloc(VALUE_LENGTH);
