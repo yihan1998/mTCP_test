@@ -72,7 +72,7 @@ struct timeval g_end;
 
 //#define __EVAL_FRAM__
 
-#define BUF_SIZE 1024
+#define BUF_SIZE 4096
 
 #define MAX_FLOW_NUM  (10000)
 

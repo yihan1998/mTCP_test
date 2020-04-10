@@ -119,14 +119,14 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
 //	struct ring_buf * recv_buf = sv->recv_buf;
 
-    char * recv_item = (char *)malloc(KV_ITEM_SIZE);
+    char * recv_item = (char *)malloc(BUF_SIZE);
 
 #ifdef __EVAL_READ__
     struct timeval read_start;
     gettimeofday(&read_start, NULL);
 #endif
 
-	len = mtcp_recv(ctx->mctx, sockid, recv_item, KV_ITEM_SIZE, 0);
+	len = mtcp_recv(ctx->mctx, sockid, recv_item, BUF_SIZE, 0);
 
 #ifdef __EVAL_READ__
     struct timeval read_end;
@@ -439,7 +439,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		int key_num = len / KEY_SIZE;
 		char * value = (char *)malloc(key_num * VALUE_LENGTH);
 
-		printf(" >> GET num: %d\n", key_num);
+		printf(" >> GET len: %d\n", len);
 
         int i;
 		for(i = 0;i < key_num;i++){
