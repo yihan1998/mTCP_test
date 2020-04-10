@@ -478,7 +478,7 @@ void * send_request(void * arg){
             //printf(">> value_corpus: %p, value: %.*s\n", &value_corpus[key_i * VALUE_SIZE], VALUE_SIZE, &value_corpus[key_i * VALUE_SIZE]);
     		memcpy((char *)req_kv->value, (char *)&value_corpus[key_i * VALUE_SIZE], VALUE_SIZE);   //set Value
             //printf(">> req_kv->value: %p, value: %.*s\n", req_kv->value, VALUE_SIZE, req_kv->value);
-    		//printf("[CLIENT] PUT key: %llu, value: %.*s\n", key_corpus[key_i], VALUE_SIZE, req_kv->value);
+    		printf("[CLIENT] PUT key: %llu, value: %.*s\n", key_corpus[key_i], VALUE_SIZE, req_kv->value);
             //printf("[CLIENT] PUT key: %llu\n", key_corpus[key_i]);
 		    key_i = (key_i + 1) % num_put_kv;
 
@@ -538,10 +538,19 @@ void * send_request(void * arg){
             get_count += send_num;
 
             int recv_size;
+            int recv_num = 0;
 
             char * value = (char *)malloc(send_num * VALUE_SIZE);
 
-	        recv_size = read(fd, value, send_num * VALUE_SIZE);
+            while(recv_num < send_num){
+                recv_size = read(fd, value + recv_num * VALUE_SIZE, (send_num - recv_num) * VALUE_SIZE);
+                if(recv_size == 0){
+                    printf("[CLIENT] close connection\n");
+                    close(fd);
+                }else{
+                    recv_num += recv_size / VALUE_SIZE;
+                }
+            }
 
             #ifdef __EV_RTT__
                 gettimeofday(&get_end, NULL);
@@ -551,16 +560,11 @@ void * send_request(void * arg){
                 request_cnt++;
             #endif
 
-            if(recv_size == 0){
-                printf("[CLIENT] close connection\n");
-                close(fd);
-            }
-
-            int recv_num = recv_size / VALUE_SIZE;
+            printf("==========\n >> recv num: %d\n", recv_num);
 
             int i;
             for(i = 0;i < recv_num;i++){
-                //printf("[CLIENT] value: %.*s\n", VALUE_SIZE, value + i * VALUE_SIZE);
+                printf("[CLIENT] key: %lld, value: %.*s\n", key_corpus[key_j + i], VALUE_SIZE, value + i * VALUE_SIZE);
                 if(strcmp("get failed", value + i * VALUE_SIZE) == 0){
                     //printf(" >> GET failed\n");
                 }else if(bufcmp(value + i * VALUE_SIZE, (char *)value_corpus + (key_j + i) * VALUE_SIZE, VALUE_SIZE)){
