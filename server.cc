@@ -450,7 +450,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 			res = hi->search(thread_id, (uint8_t *)(recv_item + i * KEY_SIZE), (uint8_t *)buff);
             if(res == true){
                 printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, buff);
-				if(i < key_num - 1){
+				if(i < 4){
 					memcpy(value + i * VALUE_LENGTH, buff, VALUE_LENGTH);
 				}
             }else{
