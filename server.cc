@@ -463,8 +463,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 			}
 		*/
 			memset(value + i * VALUE_LENGTH, 0, VALUE_LENGTH);
-    	    //char message[] = "get failed";
-            //memcpy(value + i * VALUE_LENGTH, message, strlen(message));
+            memcpy(value + i * VALUE_LENGTH, recv_item + i * KEY_SIZE, KEY_SIZE);
 		}
 
 		sent = mtcp_write(ctx->mctx, sockid, (char *)value, key_num * VALUE_LENGTH);
