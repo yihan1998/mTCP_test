@@ -538,17 +538,17 @@ void * send_request(void * arg){
             get_count += send_num;
 
             int recv_size;
-            int recv_num = 0;
+            int tot_recv = 0;
 
             char * value = (char *)malloc(send_num * VALUE_SIZE);
 
-            while(recv_num < send_num){
-                recv_size = read(fd, value + recv_num * VALUE_SIZE, (send_num - recv_num) * VALUE_SIZE);
+            while(tot_recv < send_num * VALUE_SIZE){
+                recv_size = read(fd, value + tot_recv, send_num * VALUE_SIZE - tot_recv);
                 if(recv_size == 0){
                     printf("[CLIENT] close connection\n");
                     close(fd);
                 }else{
-                    recv_num += recv_size / VALUE_SIZE;
+                    tot_recv += recv_size;
                 }
             }
 
@@ -559,6 +559,8 @@ void * send_request(void * arg){
                 rtt_time[request_cnt] = end_time - start_time;
                 request_cnt++;
             #endif
+
+            int recv_num = tot_recv / VALUE_SIZE;
 
             int i;
             for(i = 0;i < recv_num;i++){
