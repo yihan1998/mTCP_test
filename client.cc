@@ -519,10 +519,10 @@ void * send_request(void * arg){
             iter++;
 		} else {
 		//GET
-            char * key = (char *)malloc(4 * KEY_SIZE);
+            char * key = (char *)malloc(NUM_BATCH * KEY_SIZE);
 
             int send_num;
-            for(send_num = 0; (key_j + send_num < num_get_kv) && (send_num < 4);send_num++){
+            for(send_num = 0; (key_j + send_num < num_get_kv) && (send_num < NUM_BATCH);send_num++){
                 snprintf(key + send_num * KEY_SIZE, KEY_SIZE + 1, "%0llu", key_corpus[key_j + send_num]);     //set Key
             }
 

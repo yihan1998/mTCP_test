@@ -41,6 +41,10 @@
 
 #define BATCHED_KEY
 
+#ifdef BATCHED_KEY
+#define NUM_BATCH 4
+#endif
+
 // The key-value struct in network connection
 struct __attribute__((__packed__)) kv_trans_item {
 	uint8_t key[KEY_SIZE];

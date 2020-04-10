@@ -81,7 +81,7 @@ INC += -I$(LIBCCP)
 endif
 
 CLI_INC = -Iinclude 
-CLI_LIB = -L/usr/local/lib/ -lpthread 
+CLI_LIB = -L/usr/local/lib/ -lpthread -ljemalloc -ltbb -lpmem
 
 server.o: server.cc $(HIKV_SRC)
 	$(MSG) "   CC $<"
