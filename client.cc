@@ -539,9 +539,9 @@ void * send_request(void * arg){
 
             int recv_size;
 
-            char * value = (char *)malloc(send_num * VALUE_SIZE);
+            char * value = (char *)malloc(send_num * VALUE_SIZE + 20);
 
-	        recv_size = read(fd, value, send_num * VALUE_SIZE);
+	        recv_size = read(fd, value, send_num * VALUE_SIZE + 20);
 
             #ifdef __EV_RTT__
                 gettimeofday(&get_end, NULL);
