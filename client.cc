@@ -534,6 +534,8 @@ void * send_request(void * arg){
 	    		perror("[CLIENT] send failed");
 	        	exit(1);
     	    }
+            
+            printf(" >> send num: %d\n", send_num);
 
             get_count += send_num;
 
