@@ -132,8 +132,6 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		return len;
 	}
 
-	printf(" >> recv len: %d\n", len);
-
 #ifdef __EVAL_READ__
     struct timeval read_end;
     gettimeofday(&read_end, NULL);
