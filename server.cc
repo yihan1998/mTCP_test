@@ -132,8 +132,6 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		return len;
 	}
 
-	printf(" >> recv len: %d\n", len);
-
 #ifdef __EVAL_READ__
     struct timeval read_end;
     gettimeofday(&read_end, NULL);
@@ -445,16 +443,14 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		int key_num = len / KEY_SIZE;
 		char * value = (char *)malloc(key_num * VALUE_LENGTH);
 
-		printf(" >> recv key num: %d\n", key_num);
-
         int i;
 		for(i = 0;i < key_num;i++){
-            printf(" >> GET key: %.*s\n", KEY_SIZE, recv_item + i * KEY_SIZE);
+            //printf(" >> GET key: %.*s\n", KEY_SIZE, recv_item + i * KEY_SIZE);
 			res = hi->search(thread_id, (uint8_t *)(recv_item + i * KEY_SIZE), (uint8_t *)(value + i * VALUE_LENGTH));
             if(res == true){
-                printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, recv_item + i * KEY_SIZE);
+                //printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, recv_item + i * KEY_SIZE);
             }else{
-                printf(" >> GET failed\n");
+                //printf(" >> GET failed\n");
 	            memset(value + i * VALUE_LENGTH, 0, VALUE_LENGTH);
     	        char message[] = "get failed";
         	    memcpy(value + i * VALUE_LENGTH, message, strlen(message));
