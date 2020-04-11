@@ -550,6 +550,7 @@ void * send_request(void * arg){
                 }else{
                     tot_recv += recv_size;
                 }
+                printf(" >> recv num: %d\n", recv_num);
             }
 
             #ifdef __EV_RTT__
@@ -561,8 +562,6 @@ void * send_request(void * arg){
             #endif
 
             int recv_num = tot_recv / VALUE_SIZE;
-
-            printf(" >> recv num: %d\n", recv_num);
 
             int i;
             for(i = 0;i < recv_num;i++){
