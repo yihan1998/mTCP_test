@@ -461,6 +461,8 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
 		sent = mtcp_write(ctx->mctx, sockid, value, key_num * VALUE_LENGTH);
 
+		printf(" >> send success\n");
+
 		free(value);
 	
 	/*
