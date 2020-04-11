@@ -445,12 +445,12 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
         int i;
 		for(i = 0;i < key_num;i++){
-            //printf(" >> GET key: %.*s\n", KEY_SIZE, recv_item + i * KEY_SIZE);
+            printf(" >> GET key: %.*s\n", KEY_SIZE, recv_item + i * KEY_SIZE);
 			res = hi->search(thread_id, (uint8_t *)(recv_item + i * KEY_SIZE), (uint8_t *)(value + i * VALUE_LENGTH));
             if(res == true){
-                //printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, buff);
+                printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, buff);
             }else{
-                //printf(" >> GET failed\n");
+                printf(" >> GET failed\n");
 	            memset(value + i * VALUE_LENGTH, 0, VALUE_LENGTH);
     	        char message[] = "get failed";
         	    memcpy(value + i * VALUE_LENGTH, message, strlen(message));
