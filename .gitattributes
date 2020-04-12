@@ -1,0 +1,4 @@
+.tar filter=lfs diff=lfs merge=lfs -text
+.tgz filter=lfs diff=lfs merge=lfs -text
+MLNX_OFED_LINUX-5.0-2.1.8.0-rhel6.3-x86_64.tgz filter=lfs diff=lfs merge=lfs -text
+MLNX_OFED_LINUX-5.0-2.1.8.0-rhel7.3-x86_64.tgz filter=lfs diff=lfs merge=lfs -text
