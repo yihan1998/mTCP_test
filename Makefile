@@ -84,12 +84,10 @@ CLI_INC = -Iinclude
 CLI_LIB = -L/usr/local/lib/ -L ./third-party/jemalloc-4.2.1/lib -L ./third-party/tbb -lpthread -ljemalloc -ltbb -lpmem
 
 server.o: server.cc $(HIKV_SRC)
-	$(MSG) "   CC $<"
-	$(HIDE) ${CC} -c $^ ${CFLAGS} ${INC}
+	${CC} -c $^ ${CFLAGS} ${INC}
 
 server: 
-	$(MSG) "   LD $<"
-	$(HIDE) ${CC} $(HIKV_OBJ) server.o ${MTCP_FLD}/lib/libmtcp.a $< ${LIBS} ${UTIL_OBJ} -o $@
+	${CC} $(HIKV_OBJ) server.o ${MTCP_FLD}/lib/libmtcp.a $< ${LIBS} ${UTIL_OBJ} -o $@
 
 server_all:
 	make server.o && make server
