@@ -141,7 +141,7 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 	}
     
 	SBUF_LOCK(&sndvar->write_lock);
-	SendProcess(mtcp, cur_stream);
+	SendProcess(mtcp, socket);
 	SBUF_UNLOCK(&sndvar->write_lock);
 
 	RBRemove(mtcp->rbm_rcv, rcvvar->rcvbuf, recv_len, AT_APP);
@@ -229,7 +229,8 @@ int WriteProcess(mtcp_manager_t mtcp, struct tcp_send_buffer * buf, size_t len){
 	return len;
 }
 
-int SendProcess(mtcp_manager_t mtcp, tcp_stream *cur_stream){
+int SendProcess(mtcp_manager_t mtcp, socket_map_t socket){
+	tcp_stream * cur_stream = socket->stream;
 	struct tcp_send_vars *sndvar = cur_stream->sndvar;
 	if (!(sndvar->on_sendq || sndvar->on_send_list)) {
 		SQ_LOCK(&mtcp->ctx->sendq_lock);
