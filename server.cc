@@ -27,7 +27,7 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 	}
 	
 	if (sockid < 0 || sockid >= CONFIG.max_concurrency) {
-		TRACE_API("Socket id %d out of range.\n", sockid);
+		perror("Socket id %d out of range.\n");
 		errno = EBADF;
 		return -1;
 	}
@@ -144,7 +144,7 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 	SendProcess(mtcp, cur_stream);
 	SBUF_UNLOCK(&sndvar->write_lock);
 
-	RBRemove(mtcp->rbm_rcv, rcvvar->rcvbuf, copylen, AT_APP);
+	RBRemove(mtcp->rbm_rcv, rcvvar->rcvbuf, recv_len, AT_APP);
 	rcvvar->rcv_wnd = rcvvar->rcvbuf->size - rcvvar->rcvbuf->merged_len;
 
 	/* Advertise newly freed receive buffer */
