@@ -17,6 +17,7 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 	socket_map_t socket;
 	tcp_stream *cur_stream;
 	struct tcp_recv_vars *rcvvar;
+	struct tcp_send_vars *sndvar;
 	int event_remaining;
 	int ret;
 	
@@ -33,17 +34,13 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 	
 	socket = &mtcp->smap[sockid];
     if (socket->socktype == MTCP_SOCK_UNUSED) {
-		TRACE_API("Invalid socket id: %d\n", sockid);
+		perror("Invalid socket id\n");
 		errno = EBADF;
 		return -1;
 	}
 	
-	if (socket->socktype == MTCP_SOCK_PIPE) {
-		return PipeRead(mctx, sockid, buf, len);
-	}
-	
 	if (socket->socktype != MTCP_SOCK_STREAM) {
-		TRACE_API("Not an end socket. id: %d\n", sockid);
+		perror("Not an end socket\n");
 		errno = ENOTSOCK;
 		return -1;
 	}
@@ -58,6 +55,7 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 	}
 
 	rcvvar = cur_stream->rcvvar;
+	sndvar = cur_stream->sndvar;
 	
 	/* if CLOSE_WAIT, return 0 if there is no payload */
 	if (cur_stream->state == TCP_ST_CLOSE_WAIT) {
@@ -90,6 +88,8 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 
 	prev_rcv_wnd = rcvvar->rcv_wnd;
 
+	int res;
+
 	if(recv_len == KV_ITEM_SIZE){
 		struct kv_trans_item * request = (struct kv_trans_item *)(rcvvar->rcvbuf->head);
 	    res = hi->insert(thread_id, (uint8_t *)request->key, (uint8_t *)request->value);
@@ -106,7 +106,7 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 			memcpy(sndbuf->data + sndbuf->tail_off, message, strlen(message));
 			WriteProcess(mtcp, cur_stream, strlen(message));
 	    }else{
-    	    //char message[] = "put failed";
+    	    char message[] = "put failed";
         	//memcpy(reply, message, strlen(message));
 			//sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
 			memcpy(sndbuf->data + sndbuf->tail_off, message, strlen(message));
@@ -114,14 +114,13 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 		}
 		SBUF_UNLOCK(&sndvar->write_lock);
 	}else{
-		struct tcp_send_buffer * sndbuf = GetWriteBuffer(mtcp, cur_stream, MAX(VALUE_SIZE, REPLY_SIZE));
-
-		int key_num = len / KEY_SIZE;
-		char * value = (char *)malloc(key_num * VALUE_LENGTH);
+		int key_num = recv_len / KEY_SIZE;
+		char * recv_item = (char *)rcvvar->rcvbuf->head;
 
 	    int i;
 		for(i = 0;i < key_num;i++){
         	//printf(" >> GET key: %.*s\n", KEY_SIZE, recv_item + i * KEY_SIZE);
+			struct tcp_send_buffer * sndbuf = GetWriteBuffer(mtcp, cur_stream, VALUE_SIZE);
 			res = hi->search(thread_id, (uint8_t *)(recv_item + i * KEY_SIZE), (uint8_t *)(sndbuf->data + sndbuf->tail_off));
     	    SBUF_LOCK(&sndvar->write_lock);
 			if(res == true){
@@ -136,6 +135,10 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 			SBUF_UNLOCK(&sndvar->write_lock);
 		}
 	}
+    
+	SBUF_LOCK(&sndvar->write_lock);
+	SendProcess(mtcp, cur_stream);
+	SBUF_UNLOCK(&sndvar->write_lock);
 
 	RBRemove(mtcp->rbm_rcv, rcvvar->rcvbuf, copylen, AT_APP);
 	rcvvar->rcv_wnd = rcvvar->rcvbuf->size - rcvvar->rcvbuf->merged_len;
@@ -208,6 +211,20 @@ struct tcp_send_buffer * GetWriteBuffer(mtcp_manager_t mtcp, tcp_stream *cur_str
 	SBUF_UNLOCK(&sndvar->write_lock);
 
 	return sndvar->sndbuf;
+}
+
+int WriteProcess(mtcp_manager_t mtcp, struct tcp_send_buffer *buf, size_t len){
+	if (len <= 0){
+		return 0;
+	}
+
+	memcpy(buf->data + buf->tail_off, data, len);
+	buf->tail_off += len;
+
+	buf->len += len;
+	buf->cum_len += len;
+
+	return len;
 }
 
 int SendProcess(mtcp_manager_t mtcp, tcp_stream *cur_stream){
