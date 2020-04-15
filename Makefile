@@ -50,7 +50,7 @@ ifeq ($(DPDK),1)
 DPDK_MACHINE_LINKER_FLAGS=$${RTE_SDK}/$${RTE_TARGET}/lib/ldflags.txt
 DPDK_MACHINE_LDFLAGS=$(shell cat ${DPDK_MACHINE_LINKER_FLAGS})
 DPDK_INC = /root/yangyihan/mtcp/dpdk/x86_64-native-linuxapp-gcc/include
-INC += -I{DPDK_INC}
+INC += -I${DPDK_INC}
 LIBS += -g -O3 -pthread -lrt -march=native ${MTCP_FLD}/lib/libmtcp.a -lnuma -lmtcp -lpthread -lrt -ldl -lgmp -L${RTE_SDK}/${RTE_TARGET}/lib ${DPDK_MACHINE_LDFLAGS}
 endif
 
