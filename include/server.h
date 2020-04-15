@@ -51,7 +51,9 @@ pthread_mutex_t end_lock;
 struct timeval g_end;
 #endif
 
-#define __EVAL_KV__
+#define ZERO_COPY
+
+//#define __EVAL_KV__
 
 #ifdef __EVAL_KV__
 pthread_mutex_t record_lock;
@@ -96,31 +98,14 @@ struct timeval g_end;
 #define MAX_CPUS		16
 #endif
 
-#ifndef MIN
-#define MIN(v1, v2)	((v1) < (v2) ? (v1) : (v2))
-#endif
+#define MAX(a, b) ((a)>(b)?(a):(b))
+#define MIN(a, b) ((a)<(b)?(a):(b))
 
 struct thread_context {
 	mctx_t mctx;
 	int ep;
 	struct server_vars *svars;
 };
-
-//ring buffer
-struct ring_buf {
-    char * buf_start;
-    char * buf_end;
-    int buf_read;
-    int buf_write;
-    int buf_len;
-};
-
-#define RING_BUF_SIZE sizeof(struct ring_buf)
-
-int init_ring_buff(struct ring_buf * buffer);
-int ring_buff_free(struct ring_buf * buffer);
-int ring_buff_used(struct ring_buf * buffer);
-int ring_buff_to_write(struct ring_buf * buffer);
 
 struct server_vars {
 	int recv_len;
@@ -149,3 +134,7 @@ static struct hikv * hi;
 static struct hikv_arg * hikv_args;
 
 void * server_thread(void * arg);
+
+int ZeroCopyProcess(mctx_t mctx, int sockid);
+struct tcp_send_buffer * GetWriteBuffer(mtcp_manager_t mtcp, tcp_stream *cur_stream, int to_put);
+int SendProcess(mtcp_manager_t mtcp, tcp_stream *cur_stream);

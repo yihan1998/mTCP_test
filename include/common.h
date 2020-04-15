@@ -42,8 +42,10 @@
 #define BATCHED_KEY
 
 #ifdef BATCHED_KEY
-#define NUM_BATCH 8
+#define NUM_BATCH 1
 #endif
+
+#define ZERO_COPY
 
 // The key-value struct in network connection
 struct __attribute__((__packed__)) kv_trans_item {
