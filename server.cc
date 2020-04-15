@@ -95,7 +95,11 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 	    res = hi->insert(thread_id, (uint8_t *)request->key, (uint8_t *)request->value);
     	//printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
     
-		struct tcp_send_buffer * sndbuf = GetWriteBuffer(mtcp, cur_stream, REPLY_SIZE);
+		struct tcp_send_buffer * sndbuf = GetSendBuffer(mtcp, cur_stream, REPLY_SIZE);
+		if(!sndbuf){
+			perror("Get send buffer failed\n");
+			return -1;
+		}
 
 		SBUF_LOCK(&sndvar->write_lock);
 
@@ -104,13 +108,13 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
         	//memcpy(reply, message, strlen(message));
 			//sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
 			memcpy(sndbuf->data + sndbuf->tail_off, message, strlen(message));
-			WriteProcess(mtcp, cur_stream, strlen(message));
+			WriteProcess(mtcp, sndbuf, strlen(message));
 	    }else{
     	    char message[] = "put failed";
         	//memcpy(reply, message, strlen(message));
 			//sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
 			memcpy(sndbuf->data + sndbuf->tail_off, message, strlen(message));
-			WriteProcess(mtcp, cur_stream, strlen(message));
+			WriteProcess(mtcp, sndbuf, strlen(message));
 		}
 		SBUF_UNLOCK(&sndvar->write_lock);
 	}else{
@@ -120,17 +124,17 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 	    int i;
 		for(i = 0;i < key_num;i++){
         	//printf(" >> GET key: %.*s\n", KEY_SIZE, recv_item + i * KEY_SIZE);
-			struct tcp_send_buffer * sndbuf = GetWriteBuffer(mtcp, cur_stream, VALUE_SIZE);
+			struct tcp_send_buffer * sndbuf = GetSendBuffer(mtcp, cur_stream, VALUE_SIZE);
 			res = hi->search(thread_id, (uint8_t *)(recv_item + i * KEY_SIZE), (uint8_t *)(sndbuf->data + sndbuf->tail_off));
     	    SBUF_LOCK(&sndvar->write_lock);
 			if(res == true){
 	            //printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, recv_item + i * KEY_SIZE);
-				WriteProcess(mtcp, cur_stream, VALUE_SIZE);
+				WriteProcess(mtcp, sndbuf, VALUE_SIZE);
         	}else{
             	//printf(" >> GET failed\n");
 	    	    char message[] = "get failed";
     	        memcpy(sndbuf->data + sndbuf->tail_off, message, strlen(message));
-				WriteProcess(mtcp, cur_stream, strlen(message));
+				WriteProcess(mtcp, sndbuf, strlen(message));
 			}
 			SBUF_UNLOCK(&sndvar->write_lock);
 		}
@@ -183,7 +187,7 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 
 }
 
-struct tcp_send_buffer * GetWriteBuffer(mtcp_manager_t mtcp, tcp_stream *cur_stream, int to_put){
+struct tcp_send_buffer * GetSendBuffer(mtcp_manager_t mtcp, tcp_stream *cur_stream, int to_put){
 	struct tcp_send_vars * sndvar = cur_stream->sndvar;
 	int ret;
 
@@ -196,7 +200,7 @@ struct tcp_send_buffer * GetWriteBuffer(mtcp_manager_t mtcp, tcp_stream *cur_str
 			cur_stream->close_reason = TCP_NO_MEM;
 			/* notification may not required due to -1 return */
 			errno = ENOMEM;
-			return -1;
+			return NULL;
 		}
 	}
 
@@ -213,14 +217,12 @@ struct tcp_send_buffer * GetWriteBuffer(mtcp_manager_t mtcp, tcp_stream *cur_str
 	return sndvar->sndbuf;
 }
 
-int WriteProcess(mtcp_manager_t mtcp, struct tcp_send_buffer *buf, size_t len){
+int WriteProcess(mtcp_manager_t mtcp, struct tcp_send_buffer * buf, size_t len){
 	if (len <= 0){
 		return 0;
 	}
 
-	memcpy(buf->data + buf->tail_off, data, len);
 	buf->tail_off += len;
-
 	buf->len += len;
 	buf->cum_len += len;
 

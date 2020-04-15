@@ -149,5 +149,6 @@ static struct hikv_arg * hikv_args;
 void * server_thread(void * arg);
 
 int ZeroCopyProcess(mctx_t mctx, int sockid);
-struct tcp_send_buffer * GetWriteBuffer(mtcp_manager_t mtcp, tcp_stream *cur_stream, int to_put);
+struct tcp_send_buffer * GetSendBuffer(mtcp_manager_t mtcp, tcp_stream *cur_stream, int to_put);
+int WriteProcess(mtcp_manager_t mtcp, struct tcp_send_buffer * buf, size_t len);
 int SendProcess(mtcp_manager_t mtcp, tcp_stream *cur_stream);
