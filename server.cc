@@ -12,7 +12,7 @@ int read_time = 0;
 int read_cnt = 0;
 #endif
 
-int ZeroCopyProcess(mctx_t mctx, int sockid){
+int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struct server_vars *sv){
 	mtcp_manager_t mtcp;
 	socket_map_t socket;
 	tcp_stream *cur_stream;
@@ -20,7 +20,7 @@ int ZeroCopyProcess(mctx_t mctx, int sockid){
 	int event_remaining;
 	int ret;
 	
-	mtcp = GetMTCPManager(mctx);
+	mtcp = GetMTCPManager(ctx->mctx);
         if (!mtcp) {
 		return -1;
 	}
@@ -263,7 +263,6 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 	mtcp_close(ctx->mctx, sockid);
 }
 
-#ifndef ZERO_COPY
 int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struct server_vars *sv){
 #ifdef __EVAL_FRAM__
     struct timeval start;
@@ -419,11 +418,6 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
     return len;
 }
-#else
-int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struct server_vars *sv){
-	ZeroCopyProcess()
-}
-#endif
 
 int AcceptConnection(struct thread_context *ctx, int listener){
 	mctx_t mctx = ctx->mctx;
@@ -686,8 +680,13 @@ void * RunServerThread(void *arg){
 						&ctx->svars[events[i].data.sockid]);
 
 			} else if (events[i].events & MTCP_EPOLLIN) {
+				#ifndef ZERO_COPY
 				ret = HandleReadEvent(ctx, thread_id, events[i].data.sockid, 
 						&ctx->svars[events[i].data.sockid]);
+				#else
+				ret = ZeroCopyProcess(ctx, thread_id, events[i].data.sockid, 
+						&ctx->svars[events[i].data.sockid]);
+				#endif
 
 				if (ret == 0) {
 					/* connection closed by remote host */
