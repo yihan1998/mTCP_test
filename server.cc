@@ -95,7 +95,7 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 	    res = hi->insert(thread_id, (uint8_t *)request->key, (uint8_t *)request->value);
     	//printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
     
-		struct tcp_send_buffer * sndbuf = GetWriteBuffer(mtcp, cur_stream);
+		struct tcp_send_buffer * sndbuf = GetWriteBuffer(mtcp, cur_stream, REPLY_SIZE);
 
 		SBUF_LOCK(&sndvar->write_lock);
 
