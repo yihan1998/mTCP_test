@@ -13,110 +13,36 @@ int read_cnt = 0;
 #endif
 
 int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struct server_vars *sv){
-	mtcp_manager_t mtcp;
-	socket_map_t socket;
-	tcp_stream *cur_stream;
-	struct tcp_recv_vars *rcvvar;
-	struct tcp_send_vars *sndvar;
-	int event_remaining;
-	int ret;
-	
-	mtcp = GetMTCPManager(ctx->mctx);
-        if (!mtcp) {
-		return -1;
-	}
-	
-	if (sockid < 0 || sockid >= CONFIG.max_concurrency) {
-		perror("Socket id %d out of range.\n");
-		errno = EBADF;
-		return -1;
-	}
-	
-	socket = &mtcp->smap[sockid];
-    if (socket->socktype == MTCP_SOCK_UNUSED) {
-		perror("Invalid socket id\n");
-		errno = EBADF;
-		return -1;
-	}
-	
-	if (socket->socktype != MTCP_SOCK_STREAM) {
-		perror("Not an end socket\n");
-		errno = ENOTSOCK;
-		return -1;
-	}
-	
-	/* stream should be in ESTABLISHED, FIN_WAIT_1, FIN_WAIT_2, CLOSE_WAIT */
-	cur_stream = socket->stream;
-    if (!cur_stream || 
-	    !(cur_stream->state >= TCP_ST_ESTABLISHED && 
-	      cur_stream->state <= TCP_ST_CLOSE_WAIT)) {
-		errno = ENOTCONN;
-		return -1;
-	}
-
-	rcvvar = cur_stream->rcvvar;
-	sndvar = cur_stream->sndvar;
-	
-	/* if CLOSE_WAIT, return 0 if there is no payload */
-	if (cur_stream->state == TCP_ST_CLOSE_WAIT) {
-		if (!rcvvar->rcvbuf)
-			return 0;
-		
-		if (rcvvar->rcvbuf->merged_len == 0)
-			return 0;
-        }
-	
-	/* return EAGAIN if no receive buffer */
-	if (socket->opts & MTCP_NONBLOCK) {
-		if (!rcvvar->rcvbuf || rcvvar->rcvbuf->merged_len == 0) {
-			errno = EAGAIN;
-			return -1;
-		}
-	}
-	
-	SBUF_LOCK(&rcvvar->read_lock);
-
-	//get recv len
-	uint32_t prev_rcv_wnd;
 	int recv_len;
 
-	recv_len = MIN(rcvvar->rcvbuf->merged_len, BUF_SIZE);
-	if (recv_len <= 0) {
-		errno = EAGAIN;
-		return -1;
-	}
-
-	prev_rcv_wnd = rcvvar->rcv_wnd;
+	char * recv_buff = GetRecvBuffer(ctx->mctx, sockid, &recv_len);
 
 	int res;
 
 	if(recv_len == KV_ITEM_SIZE){
-		struct kv_trans_item * request = (struct kv_trans_item *)(rcvvar->rcvbuf->head);
+		struct kv_trans_item * request = (struct kv_trans_item *)recv_buff;
 	    res = hi->insert(thread_id, (uint8_t *)request->key, (uint8_t *)request->value);
     	//printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
     
-		struct tcp_send_buffer * sndbuf = GetSendBuffer(mtcp, cur_stream, REPLY_SIZE);
+		char * send_buff = GetSendBuffer(ctx->mctx, sockid, REPLY_SIZE);
 		if(!sndbuf){
 			perror("Get send buffer failed\n");
 			return -1;
 		}
-
-		SBUF_LOCK(&sndvar->write_lock);
-
+		
 		if (res == true){
     	    char message[] = "put success";
         	//memcpy(reply, message, strlen(message));
 			//sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
-			memcpy(sndbuf->data + sndbuf->tail_off, message, strlen(message));
-			WriteProcess(mtcp, sndbuf, strlen(message));
+			memcpy(send_buff, message, strlen(message));
+			WriteProcess(ctx->mctx, sockid, strlen(message));
 	    }else{
     	    char message[] = "put failed";
         	//memcpy(reply, message, strlen(message));
 			//sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
-			memcpy(sndbuf->data + sndbuf->tail_off, message, strlen(message));
-			WriteProcess(mtcp, sndbuf, strlen(message));
+			memcpy(send_buff, message, strlen(message));
+			WriteProcess(ctx->mctx, sockid, strlen(message));
 		}
-		SBUF_UNLOCK(&sndvar->write_lock);
 	}else{
 		int key_num = recv_len / KEY_SIZE;
 		char * recv_item = (char *)rcvvar->rcvbuf->head;
@@ -124,129 +50,22 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 	    int i;
 		for(i = 0;i < key_num;i++){
         	//printf(" >> GET key: %.*s\n", KEY_SIZE, recv_item + i * KEY_SIZE);
-			struct tcp_send_buffer * sndbuf = GetSendBuffer(mtcp, cur_stream, VALUE_SIZE);
-			res = hi->search(thread_id, (uint8_t *)(recv_item + i * KEY_SIZE), (uint8_t *)(sndbuf->data + sndbuf->tail_off));
-    	    SBUF_LOCK(&sndvar->write_lock);
+			char * send_buff = GetSendBuffer(ctx->mctx, sockid, VALUE_SIZE);
+			res = hi->search(thread_id, (uint8_t *)(recv_item + i * KEY_SIZE), (uint8_t *)send_buff);
 			if(res == true){
 	            //printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, recv_item + i * KEY_SIZE);
-				WriteProcess(mtcp, sndbuf, VALUE_SIZE);
+				WriteProcess(ctx->mctx, sockid, VALUE_SIZE);
         	}else{
             	//printf(" >> GET failed\n");
 	    	    char message[] = "get failed";
-    	        memcpy(sndbuf->data + sndbuf->tail_off, message, strlen(message));
-				WriteProcess(mtcp, sndbuf, strlen(message));
+    	        memcpy(send_buff, message, strlen(message));
+				WriteProcess(ctx->mctx, sockid, strlen(message));
 			}
-			SBUF_UNLOCK(&sndvar->write_lock);
 		}
 	}
     
-	SBUF_LOCK(&sndvar->write_lock);
-	SendProcess(mtcp, socket);
-	SBUF_UNLOCK(&sndvar->write_lock);
+	SendProcess(ctx->mctx, sockid, recv_len);
 
-	RBRemove(mtcp->rbm_rcv, rcvvar->rcvbuf, recv_len, AT_APP);
-	rcvvar->rcv_wnd = rcvvar->rcvbuf->size - rcvvar->rcvbuf->merged_len;
-
-	/* Advertise newly freed receive buffer */
-	if (cur_stream->need_wnd_adv) {
-		if (rcvvar->rcv_wnd > cur_stream->sndvar->eff_mss) {
-			if (!cur_stream->sndvar->on_ackq) {
-				SQ_LOCK(&mtcp->ctx->ackq_lock);
-				cur_stream->sndvar->on_ackq = TRUE;
-				StreamEnqueue(mtcp->ackq, cur_stream); /* this always success */
-				SQ_UNLOCK(&mtcp->ctx->ackq_lock);
-				cur_stream->need_wnd_adv = FALSE;
-				mtcp->wakeup_flag = TRUE;
-			}
-		}
-	}
-
-	UNUSED(prev_rcv_wnd);
-
-	event_remaining = FALSE;
-    /* if there are remaining payload, generate EPOLLIN */
-	/* (may due to insufficient user buffer) */
-	if (socket->epoll & MTCP_EPOLLIN) {
-		if (!(socket->epoll & MTCP_EPOLLET) && rcvvar->rcvbuf->merged_len > 0) {
-			event_remaining = TRUE;
-		}
-	}
-        /* if waiting for close, notify it if no remaining data */
-	if (cur_stream->state == TCP_ST_CLOSE_WAIT && 
-	    rcvvar->rcvbuf->merged_len == 0 && ret > 0) {
-		event_remaining = TRUE;
-	}
-	
-	SBUF_UNLOCK(&rcvvar->read_lock);
-	
-	if (event_remaining) {
-		if (socket->epoll) {
-			AddEpollEvent(mtcp->ep, USR_SHADOW_EVENT_QUEUE, socket, MTCP_EPOLLIN);
-		}
-	}
-
-}
-
-struct tcp_send_buffer * GetSendBuffer(mtcp_manager_t mtcp, tcp_stream *cur_stream, int to_put){
-	struct tcp_send_vars * sndvar = cur_stream->sndvar;
-	int ret;
-
-	SBUF_LOCK(&sndvar->write_lock);
-
-	/* allocate send buffer if not exist */
-	if (!sndvar->sndbuf) {
-		sndvar->sndbuf = SBInit(mtcp->rbm_snd, sndvar->iss + 1);
-		if (!sndvar->sndbuf) {
-			cur_stream->close_reason = TCP_NO_MEM;
-			/* notification may not required due to -1 return */
-			errno = ENOMEM;
-			return NULL;
-		}
-	}
-
-	if (sndvar->sndbuf->tail_off + to_put >= sndvar->sndbuf->size){
-		/* if buffer overflows, move the existing payload and merge */
-		memmove(sndvar->sndbuf->data, sndvar->sndbuf->head, sndvar->sndbuf->len);
-		sndvar->sndbuf->head = sndvar->sndbuf->data;
-		sndvar->sndbuf->head_off = 0;
-		sndvar->sndbuf->tail_off = sndvar->sndbuf->len;
-	}
-
-	SBUF_UNLOCK(&sndvar->write_lock);
-
-	return sndvar->sndbuf;
-}
-
-int WriteProcess(mtcp_manager_t mtcp, struct tcp_send_buffer * buf, size_t len){
-	if (len <= 0){
-		return 0;
-	}
-
-	buf->tail_off += len;
-	buf->len += len;
-	buf->cum_len += len;
-
-	return len;
-}
-
-int SendProcess(mtcp_manager_t mtcp, socket_map_t socket){
-	tcp_stream * cur_stream = socket->stream;
-	struct tcp_send_vars *sndvar = cur_stream->sndvar;
-	if (!(sndvar->on_sendq || sndvar->on_send_list)) {
-		SQ_LOCK(&mtcp->ctx->sendq_lock);
-		sndvar->on_sendq = TRUE;
-		StreamEnqueue(mtcp->sendq, cur_stream);		/* this always success */
-		SQ_UNLOCK(&mtcp->ctx->sendq_lock);
-		mtcp->wakeup_flag = TRUE;
-	}
-
-	/* if there are remaining sending buffer, generate write event */
-	if (sndvar->snd_wnd > 0) {
-		if ((socket->epoll & MTCP_EPOLLOUT) && !(socket->epoll & MTCP_EPOLLET)) {
-			AddEpollEvent(mtcp->ep, 
-					USR_SHADOW_EVENT_QUEUE, socket, MTCP_EPOLLOUT);
-		}
-	}
 }
 
 void CleanServerVariable(struct server_vars *sv){
