@@ -565,7 +565,7 @@ void * send_request(void * arg){
             int i;
             for(i = 0;i < recv_num;i++){
                 //printf("[CLIENT] key: %lld, value: %.*s\n", key_corpus[key_j + i], VALUE_SIZE, value + i * VALUE_SIZE);
-                if(strcmp("get failed", value + i * VALUE_SIZE) == 0){
+                if(strncmp("get failed", value + i * VALUE_SIZE, strlen("get failed")) == 0){
                     //printf(" >> GET failed\n");
                 }else if(bufcmp(value + i * VALUE_SIZE, (char *)value_corpus + (key_j + i) * VALUE_SIZE, VALUE_SIZE)){
                     //printf("[CLIENT] GET success! key: %.*s, value: %.*s\n", KEY_SIZE, req_kv->key, VALUE_SIZE, req_kv->value);
