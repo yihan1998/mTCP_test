@@ -72,7 +72,6 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 	}
     
 	int send_len = SendProcess(ctx->mctx, sockid, recv_len, to_send);
-	printf(" >> to send len: %d, send len: %d\n", to_send, send_len);
 
 }
 
