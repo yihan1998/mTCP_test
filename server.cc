@@ -61,7 +61,6 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 	    	    char message[] = "get failed";
     	        memcpy(send_buff, message, strlen(message));
 				WriteProcess(ctx->mctx, sockid, strlen(message));
-				printf(" >> GET failed! reply: %.*s\n", strlen(message), send_buff);
 			}
 		}
 	}
