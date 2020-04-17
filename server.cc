@@ -63,7 +63,7 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 				to_send += VALUE_SIZE;
         	}else{
             	//printf(" >> GET failed\n");
-	    	    char message[] = "get failed";
+	    	    char message[VALUE_SIZE] = "get failed";
     	        memcpy(send_buff, message, strlen(message));
 				WriteProcess(ctx->mctx, sockid, strlen(message));
 				to_send += VALUE_SIZE;
