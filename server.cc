@@ -59,7 +59,7 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 	    int i;
 		for(i = 0;i < key_num;i++){
 			char * send_buff = GetSendBuffer(ctx->mctx, sockid, VALUE_SIZE);
-			printf(" >> GET key: %.*s\n", KEY_SIZE, recv_buff + i * KEY_SIZE);
+			//printf(" >> GET key: %.*s\n", KEY_SIZE, recv_buff + i * KEY_SIZE);
 			res = hi->search(thread_id, (uint8_t *)(recv_buff + i * KEY_SIZE), (uint8_t *)send_buff);
 			if(res == true){
 	            //printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, send_buff);
