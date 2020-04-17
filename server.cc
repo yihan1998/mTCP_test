@@ -16,7 +16,7 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 	int recv_len;
 	char * recv_buff;
 
-	tcp_stream * cur_stream = (tcp_stream *)GetRecvBuffer(ctx->mctx, sockid, &recv_len, &recv_buff);
+	struct mtcp_var * mvar = (struct mtcp_var *)GetRecvBuffer(ctx->mctx, sockid, &recv_len, &recv_buff);
 
 	//printf(" >> recv len: %d\n", recv_len);
 
@@ -33,7 +33,7 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 	    res = hi->insert(thread_id, (uint8_t *)request->key, (uint8_t *)request->value);
     	//printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, request->key, VALUE_SIZE, request->value);
     
-		char * send_buff = GetSendBuffer(ctx->mctx, sockid, REPLY_SIZE);
+		char * send_buff = GetSendBuffer(mvar, REPLY_SIZE);
 		if(!send_buff){
 			perror("Get send buffer failed\n");
 			return -1;
@@ -44,14 +44,14 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
         	//memcpy(reply, message, strlen(message));
 			//sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
 			memcpy(send_buff, message, strlen(message));
-			WriteProcess(cur_stream, strlen(message));
+			WriteProcess(mvar, strlen(message));
 			to_send += REPLY_SIZE;
 	    }else{
     	    char message[] = "put failed";
         	//memcpy(reply, message, strlen(message));
 			//sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
 			memcpy(send_buff, message, strlen(message));
-			WriteProcess(cur_stream, strlen(message));
+			WriteProcess(mvar, strlen(message));
 			to_send += REPLY_SIZE;
 		}
 	#ifdef __EVAL_KV__
@@ -72,18 +72,18 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 
 	    int i;
 		for(i = 0;i < key_num;i++){
-			char * send_buff = GetSendBuffer(ctx->mctx, sockid, VALUE_SIZE);
+			char * send_buff = GetSendBuffer(mvar, VALUE_SIZE);
 			//printf(" >> GET key: %.*s\n", KEY_SIZE, recv_buff + i * KEY_SIZE);
 			res = hi->search(thread_id, (uint8_t *)(recv_buff + i * KEY_SIZE), (uint8_t *)send_buff);
 			if(res == true){
 	            //printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, send_buff);
-				WriteProcess(cur_stream, VALUE_SIZE);
+				WriteProcess(mvar, VALUE_SIZE);
 				to_send += VALUE_SIZE;
         	}else{
             	//printf(" >> GET failed\n");
 	    	    char message[VALUE_SIZE] = "get failed";
     	        memcpy(send_buff, message, strlen(message));
-				WriteProcess(cur_stream, VALUE_SIZE);
+				WriteProcess(mvar, VALUE_SIZE);
 				to_send += VALUE_SIZE;
 			}
 		}
@@ -94,7 +94,7 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
     #endif
 	}
     
-	int send_len = SendProcess(ctx->mctx, sockid, recv_len, to_send);
+	int send_len = SendProcess(mvar, recv_len, to_send);
 
 }
 
