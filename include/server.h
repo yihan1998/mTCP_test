@@ -66,7 +66,7 @@ struct timeval g_end;
 
 #define ZERO_COPY
 
-//#define __EVAL_KV__
+#define __EVAL_KV__
 
 #ifdef __EVAL_KV__
 pthread_mutex_t record_lock;
