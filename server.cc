@@ -17,12 +17,14 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 
 	char * recv_buff = GetRecvBuffer(ctx->mctx, sockid, &recv_len);
 
+	printf(" >> recv len: %d\n", recv_len);
+
 	int res;
 
 	if(recv_len == KV_ITEM_SIZE){
 		struct kv_trans_item * request = (struct kv_trans_item *)recv_buff;
 	    res = hi->insert(thread_id, (uint8_t *)request->key, (uint8_t *)request->value);
-    	//printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
+    	printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, request->key, VALUE_SIZE, request->value);
     
 		char * send_buff = GetSendBuffer(ctx->mctx, sockid, REPLY_SIZE);
 		if(!send_buff){
@@ -48,11 +50,11 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 
 	    int i;
 		for(i = 0;i < key_num;i++){
-        	//printf(" >> GET key: %.*s\n", KEY_SIZE, recv_item + i * KEY_SIZE);
 			char * send_buff = GetSendBuffer(ctx->mctx, sockid, VALUE_SIZE);
+			printf(" >> GET key: %.*s\n", KEY_SIZE, recv_buff + i * KEY_SIZE);
 			res = hi->search(thread_id, (uint8_t *)(recv_buff + i * KEY_SIZE), (uint8_t *)send_buff);
 			if(res == true){
-	            //printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, recv_item + i * KEY_SIZE);
+	            printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, send_buff);
 				WriteProcess(ctx->mctx, sockid, VALUE_SIZE);
         	}else{
             	//printf(" >> GET failed\n");
