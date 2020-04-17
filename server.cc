@@ -19,6 +19,10 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 
 	//printf(" >> recv len: %d\n", recv_len);
 
+	if(recv_len == 0){
+		return recv_len;
+	}
+
 	int res, to_send;
 
 	to_send = 0;
