@@ -16,7 +16,7 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 	int recv_len;
 	char * recv_buff;
 
-	tcp_stream * cur_stream = GetRecvBuffer(ctx->mctx, sockid, &recv_len, &recv_buff);
+	tcp_stream * cur_stream = (tcp_stream *)GetRecvBuffer(ctx->mctx, sockid, &recv_len, &recv_buff);
 
 	//printf(" >> recv len: %d\n", recv_len);
 
