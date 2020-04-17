@@ -534,8 +534,6 @@ void * send_request(void * arg){
 	    		perror("[CLIENT] send failed");
 	        	exit(1);
     	    }
-            
-            printf(" >> send num: %d\n", send_num);
 
             get_count += send_num;
 
@@ -552,7 +550,6 @@ void * send_request(void * arg){
                 }else{
                     tot_recv += recv_size;
                 }
-                printf(" >> recv num: %d\n", tot_recv / VALUE_SIZE);
             }
 
             #ifdef __EV_RTT__
