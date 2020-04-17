@@ -45,7 +45,7 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 			memcpy(send_buff, message, strlen(message));
 			WriteProcess(ctx->mctx, sockid, strlen(message));
 		}
-	}else{
+	}else if(recv_len == NUM_BATCH * KEY_SIZE){
 		int key_num = recv_len / KEY_SIZE;
 
 	    int i;
