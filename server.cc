@@ -53,7 +53,20 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 			WriteProcess(ctx->mctx, sockid, strlen(message));
 			to_send += REPLY_SIZE;
 		}
+	#ifdef __EVAL_KV__
+        pthread_mutex_lock(&record_lock);
+    	put_cnt++;
+    	pthread_mutex_unlock(&record_lock);
+	#endif
 	}else if(recv_len == NUM_BATCH * KEY_SIZE){
+	#ifdef __EVAL_KV__
+        pthread_mutex_lock(&put_end_lock);
+        if(!put_end_flag){
+            gettimeofday(&put_end, NULL);
+            put_end_flag = 1;
+        }
+        pthread_mutex_unlock(&put_end_lock);
+    #endif
 		int key_num = recv_len / KEY_SIZE;
 
 	    int i;
@@ -73,6 +86,11 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 				to_send += VALUE_SIZE;
 			}
 		}
+	#ifdef __EVAL_KV__
+        pthread_mutex_lock(&record_lock);
+    	get_cnt += key_num;
+    	pthread_mutex_unlock(&record_lock);
+    #endif
 	}
     
 	int send_len = SendProcess(ctx->mctx, sockid, recv_len, to_send);
