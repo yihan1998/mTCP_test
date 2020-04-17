@@ -44,14 +44,14 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
         	//memcpy(reply, message, strlen(message));
 			//sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
 			memcpy(send_buff, message, strlen(message));
-			WriteProcess(ctx->mctx, sockid, strlen(message));
+			WriteProcess(cur_stream, strlen(message));
 			to_send += REPLY_SIZE;
 	    }else{
     	    char message[] = "put failed";
         	//memcpy(reply, message, strlen(message));
 			//sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
 			memcpy(send_buff, message, strlen(message));
-			WriteProcess(ctx->mctx, sockid, strlen(message));
+			WriteProcess(cur_stream, strlen(message));
 			to_send += REPLY_SIZE;
 		}
 	#ifdef __EVAL_KV__
@@ -77,13 +77,13 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 			res = hi->search(thread_id, (uint8_t *)(recv_buff + i * KEY_SIZE), (uint8_t *)send_buff);
 			if(res == true){
 	            //printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, send_buff);
-				WriteProcess(ctx->mctx, sockid, VALUE_SIZE);
+				WriteProcess(cur_stream, VALUE_SIZE);
 				to_send += VALUE_SIZE;
         	}else{
             	//printf(" >> GET failed\n");
 	    	    char message[VALUE_SIZE] = "get failed";
     	        memcpy(send_buff, message, strlen(message));
-				WriteProcess(ctx->mctx, sockid, VALUE_SIZE);
+				WriteProcess(cur_stream, VALUE_SIZE);
 				to_send += VALUE_SIZE;
 			}
 		}
