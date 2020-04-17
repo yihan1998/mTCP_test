@@ -19,7 +19,9 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 
 	printf(" >> recv len: %d\n", recv_len);
 
-	int res;
+	int res, to_send;
+
+	to_send = 0;
 
 	if(recv_len == KV_ITEM_SIZE){
 		struct kv_trans_item * request = (struct kv_trans_item *)recv_buff;
@@ -38,12 +40,14 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 			//sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
 			memcpy(send_buff, message, strlen(message));
 			WriteProcess(ctx->mctx, sockid, strlen(message));
+			to_send += REPLY_SIZE;
 	    }else{
     	    char message[] = "put failed";
         	//memcpy(reply, message, strlen(message));
 			//sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
 			memcpy(send_buff, message, strlen(message));
 			WriteProcess(ctx->mctx, sockid, strlen(message));
+			to_send += REPLY_SIZE;
 		}
 	}else if(recv_len == NUM_BATCH * KEY_SIZE){
 		int key_num = recv_len / KEY_SIZE;
@@ -56,16 +60,19 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 			if(res == true){
 	            printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, send_buff);
 				WriteProcess(ctx->mctx, sockid, VALUE_SIZE);
+				to_send += VALUE_SIZE;
         	}else{
             	//printf(" >> GET failed\n");
 	    	    char message[] = "get failed";
     	        memcpy(send_buff, message, strlen(message));
 				WriteProcess(ctx->mctx, sockid, strlen(message));
+				to_send += VALUE_SIZE;
 			}
 		}
 	}
     
-	SendProcess(ctx->mctx, sockid, recv_len);
+	int send_len = SendProcess(ctx->mctx, sockid, recv_len, to_send);
+	printf(" >> to send len: %d, send len: %d\n", to_send, send_len);
 
 }
 
