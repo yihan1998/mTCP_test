@@ -817,6 +817,8 @@ int main(int argc, char * argv[]){
             printf("[CLIENT] server ip: %s\n", server_ip);
         }else if(sscanf(argv[i], "--server_port=%d%c", &server_port, &junk) == 1){
             printf("[CLIENT] server port: %d\n", server_port);
+        }else if(sscanf(argv[i], "--buf_size=%d%c", &n, &junk) == 1){
+            buf_size = n;
         }else if(i > 0){
             printf("error (%s)!\n", argv[i]);
         }
