@@ -31,7 +31,7 @@
 #include "btree.h"
 #include "hikv.h"
 
-//#define __EVAL_READ__
+#define __EVAL_READ__
 
 #ifdef __EVAL_READ__
 pthread_mutex_t read_cb_lock;
@@ -64,9 +64,7 @@ pthread_mutex_t end_lock;
 struct timeval g_end;
 #endif
 
-#define ZERO_COPY
-
-#define __EVAL_KV__
+//#define __EVAL_KV__
 
 #ifdef __EVAL_KV__
 pthread_mutex_t record_lock;

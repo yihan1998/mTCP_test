@@ -4,9 +4,6 @@
 
 //#define __EV_RTT__
 
-//#define __TEST_FILE__
-#define __TEST_KV__
-
 int buf_size;
 
 //pthread_mutex_t work_done_lock;
