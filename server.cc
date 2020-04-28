@@ -883,8 +883,10 @@ int main(int argc, char **argv){
 	}
 #endif
 
-    int tot_test = NUM_KEYS;
-    int put_percent = PUT_PERCENT;
+    int put_test, get_test, scan_test, scan_range;
+    scan_range = 4;
+    put_test = get_test = NUM_KEYS;
+    scan_test = NUM_KEYS - scan_range;
 
 	struct hikv_arg * hikv_args = (struct hikv_arg *)malloc(HIKV_ARG_SIZE);
 
@@ -892,11 +894,11 @@ int main(int argc, char **argv){
 	hikv_args->num_server_thread = 1;
 	hikv_args->num_backend_thread = 1;
 	hikv_args->num_warm_kv = 0;
-	hikv_args->num_put_kv = tot_test * put_percent / 100;
-	hikv_args->num_get_kv = tot_test * (100 - put_percent) / 100;
+	hikv_args->num_put_kv = put_test;
+	hikv_args->num_get_kv = get_test;
 	hikv_args->num_delete_kv = 0;
-	hikv_args->num_scan_kv = 0;
-	hikv_args->scan_range = 100;
+	hikv_args->num_scan_kv = scan_test;
+	hikv_args->scan_range = scan_range;
 	hikv_args->seed = 1234;
 	hikv_args->scan_all = 0;
 
@@ -930,16 +932,9 @@ int main(int argc, char **argv){
             hikv_args->num_backend_thread = n;
         }else if(sscanf(argv[i], "--num_warm=%llu%c", &n, &junk) == 1){
             hikv_args->num_warm_kv = n;
-        }else if(sscanf(argv[i], "--num_test=%llu%c", &n, &junk) == 1){
-            tot_test = n;
         }else if(sscanf(argv[i], "--num_put=%llu%c", &n, &junk) == 1){
             hikv_args->num_put_kv = n;
-        }else if(sscanf(argv[i], "--put_percent=%d%c", &put_percent, &junk) == 1){
-//            hikv_thread_arg.num_get_kv = hikv_thread_arg.num_put_kv * (100 - n) / n;
-//            printf("[CLIENT] [PUT]: %llu [GET]: %llu\n", hikv_thread_arg.num_put_kv, hikv_thread_arg.num_get_kv);
-			hikv_args->num_put_kv = tot_test * put_percent / 100;
-            hikv_args->num_get_kv = tot_test * (100 - put_percent) / 100; 
-		}else if(sscanf(argv[i], "--num_get=%llu%c", &n, &junk) == 1){
+        }else if(sscanf(argv[i], "--num_get=%llu%c", &n, &junk) == 1){
             hikv_args->num_get_kv = n;
         }else if(sscanf(argv[i], "--num_delete=%llu%c", &n, &junk) == 1){
             hikv_args->num_delete_kv = n;
