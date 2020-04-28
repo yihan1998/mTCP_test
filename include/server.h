@@ -70,6 +70,7 @@ struct timeval g_end;
 pthread_mutex_t record_lock;
 int put_cnt;
 int get_cnt;
+int scan_cnt;
 
 pthread_mutex_t start_lock;
 struct timeval g_start;
@@ -78,6 +79,10 @@ int start_flag;
 pthread_mutex_t put_end_lock;
 struct timeval put_end;
 int put_end_flag;
+
+pthread_mutex_t get_end_lock;
+struct timeval get_end;
+int get_end_flag;
 
 pthread_mutex_t end_lock;
 struct timeval g_end;

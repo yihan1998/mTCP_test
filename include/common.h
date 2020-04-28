@@ -45,8 +45,8 @@
 #define NUM_BATCH 1
 #endif
 
-#define __TEST_FILE__
-//#define __TEST_KV__
+//#define __TEST_FILE__
+#define __TEST_KV__
 
 //#define ZERO_COPY
 
