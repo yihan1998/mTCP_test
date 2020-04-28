@@ -109,6 +109,7 @@ void CleanServerVariable(struct server_vars *sv){
 	sv->total_time = 0;
 //    sv->recv_buf = (struct ring_buf *)malloc(RING_BUF_SIZE);
 //    init_ring_buff(sv->recv_buf);
+	sv->scan_range = 4;
 }
 
 void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
@@ -312,7 +313,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
         //printf(" >> SCAN key: %.*s, %.*s\n", KEY_SIZE, recv_item, KEY_SIZE, recv_item + KEY_SIZE);
         
         //char * scan_buff = (char *)malloc(scan_range * VALUE_LENGTH);
-        char * scan_buff = (char *)malloc(sizeof(unsigned long *) * scan_range);
+        char * scan_buff = (char *)malloc(sizeof(unsigned long *) * (sv->scan_range));
 
         int total_scan_count;
         if (memcmp(recv_item, recv_item + KEY_SIZE, KEY_SIZE) > 0){
@@ -324,10 +325,10 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
         }
         //printf(" >> SCAN total count: %d\n", total_scan_count);
 
-        char * value = (char *)malloc((scan_range - 1) * VALUE_LENGTH);
-        memset(value, 0, (scan_range - 1) * VALUE_LENGTH);
+        char * value = (char *)malloc((sv->scan_range - 1) * VALUE_LENGTH);
+        memset(value, 0, (sv->scan_range - 1) * VALUE_LENGTH);
         
-        if(total_scan_count >= scan_range){
+        if(total_scan_count >= sv->scan_range){
             goto done;
         }
 
@@ -340,7 +341,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
         }
         
 done:
-		sent = mtcp_write(ctx->mctx, sockid, value, (scan_range - 1) * VALUE_LENGTH);
+		sent = mtcp_write(ctx->mctx, sockid, value, (sv->scan_range - 1) * VALUE_LENGTH);
     
         free(scan_buff);
         free(value);

@@ -137,7 +137,7 @@ struct server_vars {
 	uint8_t keep_alive;
 
 	int total_time;
-
+	int scan_range;
 //    struct ring_buf * recv_buf;
 };
 
