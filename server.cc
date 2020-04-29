@@ -92,7 +92,7 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
     	get_cnt += key_num;
     	pthread_mutex_unlock(&record_lock);
     #endif
-	}else if(len == 2 * KEY_SIZE){
+	}else if(recv_len == 2 * KEY_SIZE){
     #ifdef __EVAL_KV__
         pthread_mutex_lock(&get_end_lock);
         if(!get_end_flag){
@@ -105,22 +105,21 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
         
         //char * scan_buff = (char *)malloc(scan_range * VALUE_LENGTH);
         char * scan_buff = (char *)malloc(sizeof(unsigned long *) * (sv->scan_range));
+		char * send_buff = GetSendBuffer(mvar, (sv->scan_range - 1) * VALUE_LENGTH);
 
         int total_scan_count;
-        if (memcmp(recv_item, recv_item + KEY_SIZE, KEY_SIZE) > 0){
+        if (memcmp(recv_buff, recv_buff + KEY_SIZE, KEY_SIZE) > 0){
             //key1 > key2
-            total_scan_count = hi->range_scan((uint8_t *)(recv_item + KEY_SIZE), (uint8_t *)recv_item, scan_buff);
+            total_scan_count = hi->range_scan((uint8_t *)(recv_buff + KEY_SIZE), (uint8_t *)recv_buff, scan_buff);
         }else{
             //key1 < key2
-            total_scan_count = hi->range_scan((uint8_t *)recv_item, (uint8_t *)(recv_item + KEY_SIZE), scan_buff);
+            total_scan_count = hi->range_scan((uint8_t *)recv_buff, (uint8_t *)(recv_buff + KEY_SIZE), scan_buff);
         }
         //printf(" >> SCAN total count: %d\n", total_scan_count);
         
         if(total_scan_count >= sv->scan_range){
             goto done;
         }
-
-		char * send_buff = GetSendBuffer(mvar, (sv->scan_range - 1) * VALUE_LENGTH);
 
         int i;
         for(i = 0;i < total_scan_count;i++){
@@ -134,7 +133,6 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
         
 done:
         free(scan_buff);
-        free(value);
     #ifdef __EVAL_KV__
         pthread_mutex_lock(&record_lock);
         scan_cnt += 1;
