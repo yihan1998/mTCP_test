@@ -126,6 +126,8 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
             unsigned long * ptr = (unsigned long *)scan_buff;
             struct kv_item * item = (struct kv_item *)ptr[i];
             memcpy(send_buff + i * VALUE_LENGTH, item->value, VALUE_LENGTH);
+			WriteProcess(mvar, VALUE_LENGTH);
+			to_send += VALUE_LENGTH;
             //printf(" >> SCAN value: %.*s\n", VALUE_LENGTH, value + i * VALUE_LENGTH);
         }
         
@@ -138,9 +140,6 @@ done:
     #endif
 	}
     
-	to_send = (sv->scan_range - 1) * VALUE_LENGTH;
-	WriteProcess(mvar, to_send);
-
 	int send_len = SendProcess(mvar, recv_len, to_send);
 
 }
