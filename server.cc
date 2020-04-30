@@ -33,7 +33,8 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
 	    res = hi->insert(thread_id, (uint8_t *)request->key, (uint8_t *)request->value);
     	//printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, request->key, VALUE_SIZE, request->value);
     
-		char * send_buff = GetSendBuffer(mvar, REPLY_SIZE);
+		to_send = REPLY_SIZE;
+		char * send_buff = GetSendBuffer(mvar, to_send);
 		if(!send_buff){
 			perror("Get send buffer failed\n");
 			return -1;
@@ -44,15 +45,15 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
         	//memcpy(reply, message, strlen(message));
 			//sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
 			memcpy(send_buff, message, strlen(message));
-			WriteProcess(mvar, strlen(message));
-			to_send += REPLY_SIZE;
+			//WriteProcess(mvar, strlen(message));
+			//to_send += REPLY_SIZE;
 	    }else{
     	    char message[] = "put failed";
         	//memcpy(reply, message, strlen(message));
 			//sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
 			memcpy(send_buff, message, strlen(message));
-			WriteProcess(mvar, strlen(message));
-			to_send += REPLY_SIZE;
+			//WriteProcess(mvar, strlen(message));
+			//to_send += REPLY_SIZE;
 		}
 	#ifdef __EVAL_KV__
         pthread_mutex_lock(&record_lock);
@@ -69,22 +70,23 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
         pthread_mutex_unlock(&put_end_lock);
     #endif
 		int key_num = recv_len / KEY_SIZE;
+		to_send = NUM_BATCH * VALUE_SIZE;
+		char * send_buff = GetSendBuffer(mvar, to_send);
 
 	    int i;
 		for(i = 0;i < key_num;i++){
-			char * send_buff = GetSendBuffer(mvar, VALUE_SIZE);
 			//printf(" >> GET key: %.*s\n", KEY_SIZE, recv_buff + i * KEY_SIZE);
-			res = hi->search(thread_id, (uint8_t *)(recv_buff + i * KEY_SIZE), (uint8_t *)send_buff);
+			res = hi->search(thread_id, (uint8_t *)(recv_buff + i * KEY_SIZE), (uint8_t *)(send_buff + i * VALUE_LENGTH));
 			if(res == true){
 	            //printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, send_buff);
-				WriteProcess(mvar, VALUE_SIZE);
-				to_send += VALUE_SIZE;
+				//WriteProcess(mvar, VALUE_SIZE);
+				//to_send += VALUE_SIZE;
         	}else{
             	//printf(" >> GET failed\n");
 	    	    char message[VALUE_SIZE] = "get failed";
-    	        memcpy(send_buff, message, strlen(message));
-				WriteProcess(mvar, VALUE_SIZE);
-				to_send += VALUE_SIZE;
+    	        memcpy(send_buff + i * VALUE_LENGTH, message, strlen(message));
+				//WriteProcess(mvar, VALUE_SIZE);
+				//to_send += VALUE_SIZE;
 			}
 		}
 	#ifdef __EVAL_KV__
@@ -105,7 +107,9 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
         
         //char * scan_buff = (char *)malloc(scan_range * VALUE_LENGTH);
         char * scan_buff = (char *)malloc(sizeof(unsigned long *) * (sv->scan_range));
-		char * send_buff = GetSendBuffer(mvar, (sv->scan_range - 1) * VALUE_LENGTH);
+
+		to_send = (sv->scan_range - 1) * VALUE_LENGTH;
+		char * send_buff = GetSendBuffer(mvar, to_send);
 
         int total_scan_count;
         if (memcmp(recv_buff, recv_buff + KEY_SIZE, KEY_SIZE) > 0){
@@ -126,8 +130,7 @@ int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struc
             unsigned long * ptr = (unsigned long *)scan_buff;
             struct kv_item * item = (struct kv_item *)ptr[i];
             memcpy(send_buff + i * VALUE_LENGTH, item->value, VALUE_LENGTH);
-			WriteProcess(mvar, VALUE_LENGTH);
-			to_send += VALUE_LENGTH;
+			//WriteProcess(mvar, VALUE_LENGTH);
             //printf(" >> SCAN value: %.*s\n", VALUE_LENGTH, value + i * VALUE_LENGTH);
         }
         
