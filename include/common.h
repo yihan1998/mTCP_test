@@ -45,10 +45,10 @@
 #define NUM_BATCH 1
 #endif
 
-//#define __TEST_FILE__
-#define __TEST_KV__
+#define __TEST_FILE__
+//#define __TEST_KV__
 
-#define ZERO_COPY
+//#define ZERO_COPY
 
 // The key-value struct in network connection
 struct __attribute__((__packed__)) kv_trans_item {
