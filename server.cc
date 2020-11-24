@@ -2,6 +2,8 @@
 
 struct timeval end_all;
 
+int client_num;
+
 void CleanServerVariable(struct server_vars *sv){
 	sv->recv_len = 0;
 	sv->request_len = 0;
@@ -291,7 +293,6 @@ int main(int argc, char **argv){
 	struct mtcp_conf mcfg;
 	int cores[MAX_CPUS];
 	int process_cpu;
-//	int i, o;
 
 	num_cores = sysconf(_SC_NPROCESSORS_ONLN);
 	core_limit = num_cores;
@@ -305,7 +306,7 @@ int main(int argc, char **argv){
 		return FALSE;
 	}
 
-    for (i = 0; i < argc; i++){
+    for (int i = 0; i < argc; i++){
         long long unsigned n;
         char junk;
         if(sscanf(argv[i], "--core_limit=%llu%c", &n, &junk) == 1){
@@ -324,30 +325,8 @@ int main(int argc, char **argv){
 				TRACE_CONFIG("Starting CPU is way off limits!\n");
 				return FALSE;
 			}
-        }else if(sscanf(argv[i], "--pm_size=%llu%c", &n, &junk) == 1){
-            hikv_args->pm_size = n;
-        }else if(sscanf(argv[i], "--num_server_thread=%llu%c", &n, &junk) == 1){
-            hikv_args->num_server_thread = n;
-        }else if(sscanf(argv[i], "--num_backend_thread=%llu%c", &n, &junk) == 1){
-            hikv_args->num_backend_thread = n;
-        }else if(sscanf(argv[i], "--num_warm=%llu%c", &n, &junk) == 1){
-            hikv_args->num_warm_kv = n;
-        }else if(sscanf(argv[i], "--num_put=%llu%c", &n, &junk) == 1){
-            hikv_args->num_put_kv = n;
-        }else if(sscanf(argv[i], "--num_get=%llu%c", &n, &junk) == 1){
-            hikv_args->num_get_kv = n;
-        }else if(sscanf(argv[i], "--num_delete=%llu%c", &n, &junk) == 1){
-            hikv_args->num_delete_kv = n;
-        }else if(sscanf(argv[i], "--num_scan=%llu%c", &n, &junk) == 1){
-            hikv_args->num_scan_kv = n;
-        }else if(sscanf(argv[i], "--scan_range=%llu%c", &n, &junk) == 1){
-            hikv_args->scan_range = n;
-        }else if(sscanf(argv[i], "--num_scan_all=%llu%c", &n, &junk) == 1){
-            hikv_args->scan_all = n;
         }else if(sscanf(argv[i], "--num_client=%llu%c", &n, &junk) == 1){
-            client_num = n;
-            hikv_args->num_put_kv *= n;
-            hikv_args->num_get_kv *= n;      
+            client_num = n; 
         }else if(i > 0){
             printf("error (%s)!\n", argv[i]);
         }
@@ -381,13 +360,11 @@ int main(int argc, char **argv){
 
 	TRACE_INFO("Application initialization finished.\n");
 
-	for (i = ((process_cpu == -1) ? 0 : process_cpu); i < core_limit; i++) {
+	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < core_limit; i++) {
 		cores[i] = i;
 		done[i] = FALSE;
 		sv_thread_arg[i].core = i;
         sv_thread_arg[i].thread_id = i;
-//        sv_thread_arg[i].hi = hi;
-//		memcpy(&sv_thread_arg[i].hikv_args, &hikv_args, HIKV_ARG_SIZE);
 		
 		if (pthread_create(&app_thread[i], 
 				   NULL, RunServerThread, (void *)&sv_thread_arg[i])) {
