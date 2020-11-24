@@ -11,8 +11,6 @@ num_core=1
 echo -n "number of connections: "
 read num_connection
 
-cd build
-
 echo "Testing RTT for $num_connection connections..."
 
 ./server    --num_core=$num_core \
