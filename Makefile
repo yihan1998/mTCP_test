@@ -27,7 +27,7 @@ UTIL_OBJ = ${UTIL_FLD}/http_parsing.o ${UTIL_FLD}/tdate_parse.o ${UTIL_FLD}/netl
 
 # util library and header
 INC = -I./include/ ${UTIL_INC} $(HIKV_INC) ${MTCP_INC} -I${UTIL_FLD}/include 
-LIBS = $(HIKV_LIB) ${MTCP_LIB} -lpthread -ljemalloc -ltbb -lpmem
+LIBS = ${MTCP_LIB} -lpthread 
 
 # psio-specific variables
 ifeq ($(PS),1)
