@@ -376,7 +376,7 @@ int main(int argc, char **argv){
 			break;
 	}
 	
-	for (i = ((process_cpu == -1) ? 0 : process_cpu); i < core_limit; i++) {
+	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < core_limit; i++) {
 		pthread_join(app_thread[i], NULL);
 
 		if (process_cpu != -1)
