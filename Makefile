@@ -1,4 +1,4 @@
-RTE_SDK=/home/yihan/dpdk-stable-18.05.1
+RTE_SDK=/home/yihan/mtcp/dpdk
 RTE_TARGET=x86_64-native-linuxapp-gcc
 
 TARGETS = server
