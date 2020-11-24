@@ -22,12 +22,6 @@ UTIL_FLD = ../mtcp/util
 UTIL_INC = -I${UTIL_FLD}/include
 UTIL_OBJ = ${UTIL_FLD}/http_parsing.o ${UTIL_FLD}/tdate_parse.o ${UTIL_FLD}/netlib.o
 
-#HiKV library and header
-HIKV_INC	= -I./Hikv/ntstore -I./Hikv/mem -I./Hikv/lib -I./Hikv/obj -I./Hikv/tbb -I./Hikv/pmdk/include 
-HIKV_LIB	= -L/usr/local/lib/ -L ./third-party/jemalloc-4.2.1/lib -L ./third-party/tbb 
-HIKV_SRC	= ./Hikv/obj/threadpool.cc ./Hikv/obj/btree.cc ./Hikv/mem/pm_alloc.cc ./Hikv/lib/city.cc ./Hikv/lib/pflush.c ./Hikv/ntstore/ntstore.c
-HIKV_OBJ	= threadpool.o btree.o pm_alloc.o city.o pflush.o ntstore.o 
-
 # util library and header
 INC = -I./include/ ${UTIL_INC} $(HIKV_INC) ${MTCP_INC} -I${UTIL_FLD}/include 
 LIBS = $(HIKV_LIB) ${MTCP_LIB} -lpthread -ljemalloc -ltbb -lpmem
