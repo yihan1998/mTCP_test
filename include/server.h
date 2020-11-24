@@ -22,74 +22,6 @@
 #include "rss.h"
 #include "debug.h"
 
-//HiKV library
-#include "city.h"
-#include "../Hikv/obj/config.h"
-#include "pflush.h"
-#include "random.h"
-#include "pm_alloc.h"
-#include "btree.h"
-#include "hikv.h"
-
-#define __EVAL_READ__
-
-#ifdef __EVAL_READ__
-pthread_mutex_t read_cb_lock;
-int read_cnt;
-int read_time;
-int write_cnt;
-int write_time;
-#endif
-
-//#define __EVAL_CB__
-
-#ifdef __EVAL_CB__
-pthread_mutex_t read_lock;
-int get_cnt;
-int get_time;
-#endif
-
-//#define __REAL_TIME__
-
-#ifdef __REAL_TIME__
-pthread_mutex_t record_lock;
-int request_cnt;
-int byte_sent;
-
-pthread_mutex_t start_lock;
-struct timeval g_start;
-int start_flag;
-
-pthread_mutex_t end_lock;
-struct timeval g_end;
-#endif
-
-#define __EVAL_KV__
-
-#ifdef __EVAL_KV__
-pthread_mutex_t record_lock;
-int put_cnt;
-int get_cnt;
-int scan_cnt;
-
-pthread_mutex_t start_lock;
-struct timeval g_start;
-int start_flag;
-
-pthread_mutex_t put_end_lock;
-struct timeval put_end;
-int put_end_flag;
-
-pthread_mutex_t get_end_lock;
-struct timeval get_end;
-int get_end_flag;
-
-pthread_mutex_t end_lock;
-struct timeval g_end;
-#endif
-
-//#define __EVAL_FRAM__
-
 #define BUF_SIZE 2048
 
 #define MAX_FLOW_NUM  (10000)
@@ -155,5 +87,3 @@ static struct hikv * hi;
 static struct hikv_arg * hikv_args;
 
 void * server_thread(void * arg);
-
-int ZeroCopyProcess(mctx_t mctx, int sockid);

@@ -2,151 +2,6 @@
 
 struct timeval end_all;
 
-#ifdef __EVAL_FRAM__
-int trans_start_flag = 0;
-
-int accept_time = 0;
-int accept_cnt = 0;
-
-int read_time = 0;
-int read_cnt = 0;
-#endif
-
-int ZeroCopyProcess(struct thread_context *ctx, int thread_id, int sockid, struct server_vars *sv){
-	int recv_len;
-	char * recv_buff;
-
-	struct mtcp_var * mvar = (struct mtcp_var *)GetRecvBuffer(ctx->mctx, sockid, &recv_len, &recv_buff);
-
-	//printf(" >> recv len: %d\n", recv_len);
-
-	if(recv_len == 0){
-		return recv_len;
-	}
-
-	int res, to_send;
-
-	to_send = 0;
-
-	if(recv_len == KV_ITEM_SIZE){
-		struct kv_trans_item * request = (struct kv_trans_item *)recv_buff;
-	    res = hi->insert(thread_id, (uint8_t *)request->key, (uint8_t *)request->value);
-    	//printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, request->key, VALUE_SIZE, request->value);
-    
-		to_send = REPLY_SIZE;
-		char * send_buff = GetSendBuffer(mvar, to_send);
-		if(!send_buff){
-			perror("Get send buffer failed\n");
-			return -1;
-		}
-		
-		if (res == true){
-    	    char message[] = "put success";
-        	//memcpy(reply, message, strlen(message));
-			//sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
-			memcpy(send_buff, message, strlen(message));
-			//WriteProcess(mvar, strlen(message));
-			//to_send += REPLY_SIZE;
-	    }else{
-    	    char message[] = "put failed";
-        	//memcpy(reply, message, strlen(message));
-			//sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
-			memcpy(send_buff, message, strlen(message));
-			//WriteProcess(mvar, strlen(message));
-			//to_send += REPLY_SIZE;
-		}
-	#ifdef __EVAL_KV__
-        pthread_mutex_lock(&record_lock);
-    	put_cnt++;
-    	pthread_mutex_unlock(&record_lock);
-	#endif
-	}else if(recv_len == NUM_BATCH * KEY_SIZE){
-	#ifdef __EVAL_KV__
-        pthread_mutex_lock(&put_end_lock);
-        if(!put_end_flag){
-            gettimeofday(&put_end, NULL);
-            put_end_flag = 1;
-        }
-        pthread_mutex_unlock(&put_end_lock);
-    #endif
-		int key_num = recv_len / KEY_SIZE;
-		to_send = NUM_BATCH * VALUE_SIZE;
-		char * send_buff = GetSendBuffer(mvar, to_send);
-
-	    int i;
-		for(i = 0;i < key_num;i++){
-			//printf(" >> GET key: %.*s\n", KEY_SIZE, recv_buff + i * KEY_SIZE);
-			res = hi->search(thread_id, (uint8_t *)(recv_buff + i * KEY_SIZE), (uint8_t *)(send_buff + i * VALUE_LENGTH));
-			if(res == true){
-	            //printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, send_buff);
-				//WriteProcess(mvar, VALUE_SIZE);
-				//to_send += VALUE_SIZE;
-        	}else{
-            	//printf(" >> GET failed\n");
-	    	    char message[VALUE_SIZE] = "get failed";
-    	        memcpy(send_buff + i * VALUE_LENGTH, message, strlen(message));
-				//WriteProcess(mvar, VALUE_SIZE);
-				//to_send += VALUE_SIZE;
-			}
-		}
-	#ifdef __EVAL_KV__
-        pthread_mutex_lock(&record_lock);
-    	get_cnt += key_num;
-    	pthread_mutex_unlock(&record_lock);
-    #endif
-	}else if(recv_len == 2 * KEY_SIZE){
-    #ifdef __EVAL_KV__
-        pthread_mutex_lock(&get_end_lock);
-        if(!get_end_flag){
-            gettimeofday(&get_end, NULL);
-            get_end_flag = 1;
-        }
-        pthread_mutex_unlock(&get_end_lock);
-    #endif
-        //printf(" >> SCAN key: %.*s, %.*s\n", KEY_SIZE, recv_item, KEY_SIZE, recv_item + KEY_SIZE);
-        
-        //char * scan_buff = (char *)malloc(scan_range * VALUE_LENGTH);
-        char * scan_buff = (char *)malloc(sizeof(unsigned long *) * (sv->scan_range));
-
-		to_send = (sv->scan_range - 1) * VALUE_LENGTH;
-		char * send_buff = GetSendBuffer(mvar, to_send);
-
-        int total_scan_count;
-        if (memcmp(recv_buff, recv_buff + KEY_SIZE, KEY_SIZE) > 0){
-            //key1 > key2
-            total_scan_count = hi->range_scan((uint8_t *)(recv_buff + KEY_SIZE), (uint8_t *)recv_buff, scan_buff);
-        }else{
-            //key1 < key2
-            total_scan_count = hi->range_scan((uint8_t *)recv_buff, (uint8_t *)(recv_buff + KEY_SIZE), scan_buff);
-        }
-        //printf(" >> SCAN total count: %d\n", total_scan_count);
-        
-        if(total_scan_count >= sv->scan_range){
-            goto done;
-        }
-
-        int i;
-        for(i = 0;i < total_scan_count;i++){
-            unsigned long * ptr = (unsigned long *)scan_buff;
-            struct kv_item * item = (struct kv_item *)ptr[i];
-            memcpy(send_buff + i * VALUE_LENGTH, item->value, VALUE_LENGTH);
-			//WriteProcess(mvar, VALUE_LENGTH);
-            //printf(" >> SCAN value: %.*s\n", VALUE_LENGTH, value + i * VALUE_LENGTH);
-        }
-        
-done:
-        free(scan_buff);
-    #ifdef __EVAL_KV__
-        pthread_mutex_lock(&record_lock);
-        scan_cnt += 1;
-        pthread_mutex_unlock(&record_lock);
-    #endif
-	}
-    
-	int send_len = SendProcess(mvar, recv_len, to_send);
-
-}
-
 void CleanServerVariable(struct server_vars *sv){
 	sv->recv_len = 0;
 	sv->request_len = 0;
@@ -162,279 +17,23 @@ void CleanServerVariable(struct server_vars *sv){
 }
 
 void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
-#ifdef __REAL_TIME__
-	pthread_mutex_lock(&end_lock);
-    gettimeofday(&g_end, NULL);
-    pthread_mutex_unlock(&end_lock);
-#endif
-
-#ifdef __EVAL_KV__
-        pthread_mutex_lock(&end_lock);
-        gettimeofday(&g_end, NULL);
-        pthread_mutex_unlock(&end_lock);
-#endif
-
-#ifdef __EVAL_FRAM__
-	trans_start_flag = 0;
-#endif
-
 	mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_DEL, sockid, NULL);
 	mtcp_close(ctx->mctx, sockid);
 }
 
 int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struct server_vars *sv){
-#ifdef __TEST_FILE__
 	int len, sent, recv_len;
 	len = sent = 0;
 
     char * recv_item = (char *)malloc(BUF_SIZE);
-
-#ifdef __EVAL_READ__
-    struct timeval read_start;
-    gettimeofday(&read_start, NULL);
-#endif
 
 	len = mtcp_recv(ctx->mctx, sockid, recv_item, BUF_SIZE, 0);
 
 	if(len == 0){
 		return len;
 	}
-
-#ifdef __EVAL_READ__
-    struct timeval read_end;
-    gettimeofday(&read_end, NULL);
-
-    int start_time = read_start.tv_sec * 1000000 + read_start.tv_usec;
-    int end_time = read_end.tv_sec * 1000000 + read_end.tv_usec;
-
-    pthread_mutex_lock(&read_cb_lock);
-    read_cnt++;
-    read_time += (end_time - start_time);
-    pthread_mutex_unlock(&read_cb_lock);
-#endif
-
-#ifdef __EVAL_READ__
-    struct timeval write_start;
-    gettimeofday(&write_start, NULL);
-#endif
 
 	mtcp_write(ctx->mctx, sockid, recv_item, len);
-
-#ifdef __EVAL_READ__
-    struct timeval write_end;
-    gettimeofday(&write_end, NULL);
-
-    start_time = write_start.tv_sec * 1000000 + write_start.tv_usec;
-    end_time = write_end.tv_sec * 1000000 + write_end.tv_usec;
-
-    pthread_mutex_lock(&read_cb_lock);
-    write_cnt++;
-    write_time += (end_time - start_time);
-    pthread_mutex_unlock(&read_cb_lock);
-#endif
-
-#else
-#ifdef __EVAL_FRAM__
-    struct timeval start;
-    gettimeofday(&start, NULL);
-#endif
-
-#ifdef __EVAL_CB__
-    struct timeval start;
-    gettimeofday(&start, NULL);
-#endif
-
-	int len, sent, recv_len;
-	len = sent = 0;
-
-    char * recv_item = (char *)malloc(BUF_SIZE);
-
-#ifdef __EVAL_READ__
-    struct timeval read_start;
-    gettimeofday(&read_start, NULL);
-#endif
-
-	len = mtcp_recv(ctx->mctx, sockid, recv_item, BUF_SIZE, 0);
-
-	if(len == 0){
-		return len;
-	}
-
-#ifdef __EVAL_READ__
-    struct timeval read_end;
-    gettimeofday(&read_end, NULL);
-
-    int start_time = read_start.tv_sec * 1000000 + read_start.tv_usec;
-    int end_time = read_end.tv_sec * 1000000 + read_end.tv_usec;
-
-    pthread_mutex_lock(&read_cb_lock);
-    read_cnt++;
-    read_time += (end_time - start_time);
-    pthread_mutex_unlock(&read_cb_lock);
-#endif
-
-	int res;
-    if(len == KV_ITEM_SIZE){
-		struct kv_trans_item * request = (struct kv_trans_item *)recv_item;
-        res = hi->insert(thread_id, (uint8_t *)request->key, (uint8_t *)request->value);
-        //printf("[SERVER] put key: %.*s\nput value: %.*s\n", KEY_SIZE, recv_item->key, VALUE_SIZE, recv_item->value);
-        char * reply = (char *)malloc(REPLY_SIZE);
-        memset(reply, 0, REPLY_SIZE);
-		if (res == true){
-            char message[] = "put success";
-            memcpy(reply, message, strlen(message));
-			sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
-        }else{
-            char message[] = "put failed";
-            memcpy(reply, message, strlen(message));
-			sent = mtcp_write(ctx->mctx, sockid, reply, REPLY_SIZE);
-		}
-		free(reply);
-
-	#ifdef __EVAL_KV__
-        pthread_mutex_lock(&record_lock);
-    	put_cnt++;
-    	pthread_mutex_unlock(&record_lock);
-	#endif
-    }else if(len == NUM_BATCH * KEY_SIZE){
-    #ifdef __EVAL_KV__
-        pthread_mutex_lock(&put_end_lock);
-        if(!put_end_flag){
-            gettimeofday(&put_end, NULL);
-            put_end_flag = 1;
-        }
-        pthread_mutex_unlock(&put_end_lock);
-    #endif
-	
-		int key_num = len / KEY_SIZE;
-		char * value = (char *)malloc(key_num * VALUE_LENGTH);
-
-        int i;
-		for(i = 0;i < key_num;i++){
-            //printf(" >> GET key: %.*s\n", KEY_SIZE, recv_item + i * KEY_SIZE);
-			res = hi->search(thread_id, (uint8_t *)(recv_item + i * KEY_SIZE), (uint8_t *)(value + i * VALUE_LENGTH));
-            if(res == true){
-                //printf(" >> GET success! value: %.*s\n", VALUE_LENGTH, recv_item + i * KEY_SIZE);
-            }else{
-                //printf(" >> GET failed\n");
-	            memset(value + i * VALUE_LENGTH, 0, VALUE_LENGTH);
-    	        char message[] = "get failed";
-        	    memcpy(value + i * VALUE_LENGTH, message, strlen(message));
-			}
-		}
-
-		sent = mtcp_write(ctx->mctx, sockid, value, key_num * VALUE_LENGTH);
-
-		free(value);
-
-	#ifdef __EVAL_READ__
-        struct timeval write_start;
-        gettimeofday(&write_start, NULL);
-    #endif
-
-	#ifdef __EVAL_READ__
-        struct timeval write_end;
-        gettimeofday(&write_end, NULL);
-
-        int start_time = write_start.tv_sec * 1000000 + write_start.tv_usec;
-        int end_time = write_end.tv_sec * 1000000 + write_end.tv_usec;
-
-        pthread_mutex_lock(&read_cb_lock);
-        write_cnt++;
-        write_time += (end_time - start_time);
-        pthread_mutex_unlock(&read_cb_lock);
-    #endif
-	
-	#ifdef __EVAL_KV__
-        pthread_mutex_lock(&record_lock);
-    	get_cnt += key_num;
-    	pthread_mutex_unlock(&record_lock);
-    #endif
-    }else if(len == 2 * KEY_SIZE){
-    #ifdef __EVAL_KV__
-        pthread_mutex_lock(&get_end_lock);
-        if(!get_end_flag){
-            gettimeofday(&get_end, NULL);
-            get_end_flag = 1;
-        }
-        pthread_mutex_unlock(&get_end_lock);
-    #endif
-        //printf(" >> SCAN key: %.*s, %.*s\n", KEY_SIZE, recv_item, KEY_SIZE, recv_item + KEY_SIZE);
-        
-        //char * scan_buff = (char *)malloc(scan_range * VALUE_LENGTH);
-        char * scan_buff = (char *)malloc(sizeof(unsigned long *) * (sv->scan_range));
-
-        int total_scan_count;
-        if (memcmp(recv_item, recv_item + KEY_SIZE, KEY_SIZE) > 0){
-            //key1 > key2
-            total_scan_count = hi->range_scan((uint8_t *)(recv_item + KEY_SIZE), (uint8_t *)recv_item, scan_buff);
-        }else{
-            //key1 < key2
-            total_scan_count = hi->range_scan((uint8_t *)recv_item, (uint8_t *)(recv_item + KEY_SIZE), scan_buff);
-        }
-        //printf(" >> SCAN total count: %d\n", total_scan_count);
-
-        char * value = (char *)malloc((sv->scan_range - 1) * VALUE_LENGTH);
-        memset(value, 0, (sv->scan_range - 1) * VALUE_LENGTH);
-        
-        if(total_scan_count >= sv->scan_range){
-            goto done;
-        }
-
-        int i;
-        for(i = 0;i < total_scan_count;i++){
-            unsigned long * ptr = (unsigned long *)scan_buff;
-            struct kv_item * item = (struct kv_item *)ptr[i];
-            memcpy(value + i * VALUE_LENGTH, item->value, VALUE_LENGTH);
-            //printf(" >> SCAN value: %.*s\n", VALUE_LENGTH, value + i * VALUE_LENGTH);
-        }
-        
-done:
-		sent = mtcp_write(ctx->mctx, sockid, value, (sv->scan_range - 1) * VALUE_LENGTH);
-    
-        free(scan_buff);
-        free(value);
-    #ifdef __EVAL_KV__
-        pthread_mutex_lock(&record_lock);
-        scan_cnt += 1;
-        pthread_mutex_unlock(&record_lock);
-    #endif
-	}
-
-    #ifdef __EVAL_CB__
-        struct timeval end;
-        gettimeofday(&end, NULL);
-        double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
-        double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
-
-        pthread_mutex_lock(&read_lock);
-        get_cnt++;
-        get_time += (int)(end_time - start_time);
-        pthread_mutex_unlock(&read_lock);
-    #endif
-
-	free(recv_item);
-
-	//fclose(fp);
-
-#ifdef __REAL_TIME__
-    pthread_mutex_lock(&record_lock);
-    request_cnt++;
-    byte_sent += sent;
-    pthread_mutex_unlock(&record_lock);
-#endif
-
-#ifdef __EVAL_FRAM__
-    struct timeval end;
-    gettimeofday(&end, NULL);
-
-    double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
-    double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
-
-	read_cnt++;
-	read_time += (int)(end_time - start_time);
-#endif
-#endif
 
     return len;
 }
@@ -444,11 +43,6 @@ int AcceptConnection(struct thread_context *ctx, int listener){
 	struct server_vars *sv;
 	struct mtcp_epoll_event ev;
 	int c;
-
-#ifdef __EVAL_FRAM__
-	struct timeval start;
-	gettimeofday(&start, NULL);
-#endif
 
 	c = mtcp_accept(mctx, listener, NULL, NULL);
 
@@ -473,17 +67,6 @@ int AcceptConnection(struct thread_context *ctx, int listener){
 					strerror(errno));
 		}
 	}
-
-#ifdef __EVAL_FRAM__
-	struct timeval end;
-	gettimeofday(&end, NULL);
-
-	double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
-    double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
-
-	accept_cnt++;
-	accept_time += (int)(end_time - start_time);
-#endif
 
 	return c;
 }
@@ -553,10 +136,10 @@ int CreateListeningSocket(struct thread_context *ctx){
 		return -1;
 	}
 
-	/* bind to port 12345 */
+	/* bind to port 80 */
 	saddr.sin_family = AF_INET;
 	saddr.sin_addr.s_addr = INADDR_ANY;
-	saddr.sin_port = htons(12345);
+	saddr.sin_port = htons(80);
 	ret = mtcp_bind(ctx->mctx, listener, 
 			(struct sockaddr *)&saddr, sizeof(struct sockaddr_in));
 	if (ret < 0) {
@@ -585,8 +168,6 @@ void * RunServerThread(void *arg){
 
 	int core = args->core;
 	int thread_id = args->thread_id;
-//    struct hikv * hi = args->hi;
-//	struct hikv_arg hikv_args = args->hikv_args;
 
 	struct thread_context *ctx;
 	mctx_t mctx;
@@ -596,48 +177,6 @@ void * RunServerThread(void *arg){
 	int nevents;
 	int i, ret;
 	int do_accept;
-
-#ifdef __EVAL_READ__
-    pthread_mutex_init(&read_cb_lock, NULL);
-    read_cnt = read_time = 0;
-    write_cnt = write_time = 0;
-#endif
-
-#ifdef __REAL_TIME__
-    pthread_mutex_init(&record_lock, NULL);
-    request_cnt = byte_sent = 0;
-
-    pthread_mutex_init(&start_lock, NULL);
-    start_flag = 0;
-
-    pthread_mutex_init(&end_lock, NULL);
-#endif
-
-#ifdef __EVAL_KV__
-    pthread_mutex_init(&record_lock, NULL);
-    put_cnt = get_cnt = 0;
-
-    pthread_mutex_init(&start_lock, NULL);
-    start_flag = 0;
-
-    pthread_mutex_init(&put_end_lock, NULL);
-    put_end_flag = 0;
-
-    pthread_mutex_init(&get_end_lock, NULL);
-    get_end_flag = 0;
-
-    pthread_mutex_init(&end_lock, NULL);
-#endif
-
-#ifdef __EVAL_FRAM__
-	int cycle_cnt, handle_time, cycle_time;
-	cycle_cnt = handle_time = cycle_time = 0;
-#endif
-
-#ifdef __EVAL_CB__
-    pthread_mutex_init(&read_lock, NULL);
-    get_cnt = get_time = 0;
-#endif
 	
 	/* initialization */
 	ctx = InitializeServerThread(core);
@@ -662,20 +201,12 @@ void * RunServerThread(void *arg){
 	}
 
 	while (!done[core]) {
-#ifdef __EVAL_FRAM__
-		struct timeval epoll_start;
-		gettimeofday(&epoll_start, NULL);
-#endif
 		nevents = mtcp_epoll_wait(mctx, ep, events, MAX_EVENTS, -1);
 		if (nevents < 0) {
 			if (errno != EINTR)
 				perror("mtcp_epoll_wait");
 			break;
 		}
-#ifdef __EVAL_FRAM__
-		struct timeval handle_start;
-		gettimeofday(&handle_start, NULL);
-#endif
 		do_accept = FALSE;
 		for (i = 0; i < nevents; i++) {
 
@@ -703,13 +234,8 @@ void * RunServerThread(void *arg){
 						&ctx->svars[events[i].data.sockid]);
 
 			} else if (events[i].events & MTCP_EPOLLIN) {
-				#ifndef ZERO_COPY
 				ret = HandleReadEvent(ctx, thread_id, events[i].data.sockid, 
 						&ctx->svars[events[i].data.sockid]);
-				#else
-				ret = ZeroCopyProcess(ctx, thread_id, events[i].data.sockid, 
-						&ctx->svars[events[i].data.sockid]);
-				#endif
 
 				if (ret == 0) {
 					/* connection closed by remote host */
@@ -735,127 +261,8 @@ void * RunServerThread(void *arg){
 				if (ret < 0)
 					break;
 			}
-#ifdef __REAL_TIME__
-		    pthread_mutex_lock(&start_lock);
-		    if(!start_flag){
-        		gettimeofday(&g_start, NULL);
-		        start_flag = 1;
-    		}
-    		pthread_mutex_unlock(&start_lock);
-#endif
-
-#ifdef __EVAL_KV__
-		    pthread_mutex_lock(&start_lock);
-		    if(!start_flag){
-    		    gettimeofday(&g_start, NULL);
-		        start_flag = 1;
-    		}
-			pthread_mutex_unlock(&start_lock);
-#endif
 		}
-#ifdef __EVAL_FRAM__
-		struct timeval end;
-		gettimeofday(&end, NULL);
-
-		if(trans_start_flag){
-			double epoll_start_time = (double)epoll_start.tv_sec * 1000000 + (double)epoll_start.tv_usec;
-			double handle_start_time = (double)handle_start.tv_sec * 1000000 + (double)handle_start.tv_usec;
-	        double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
-
-    	    cycle_cnt++;
-	    	handle_time += (int)(end_time - handle_start_time);
-	    	cycle_time += (int)(end_time - epoll_start_time);
-		}
-
-		if(do_accept){
-			trans_start_flag = 1;
-		}
-#endif
 	}
-
-#ifdef __EVAL_FRAM__
-	char buff[100];
-    
-    sprintf(buff, "tot_cycle %.4f tot_handle %.4f accept %.4f handleRead %.4f\n", 
-			((double)cycle_time)/cycle_cnt, ((double)handle_time)/cycle_cnt, 
-			((double)accept_time)/accept_cnt, ((double)read_time)/read_cnt);
-
-    FILE * fp = fopen("cycle.txt", "a+");
-    fseek(fp, 0, SEEK_END);
-    
-    fwrite(buff, strlen(buff), 1, fp);
-    fclose(fp);	
-#endif
-
-#ifdef __REAL_TIME__
-
-    double start_time = (double)g_start.tv_sec + ((double)g_start.tv_usec/(double)1000000);
-    double end_time = (double)g_end.tv_sec + ((double)g_end.tv_usec/(double)1000000);
-
-	double elapsed = end_time - start_time;
-
-	FILE * fp = fopen("throughput.txt", "a+");
-    fseek(fp, 0, SEEK_END);
-
-    char buff[1024];
-
-    sprintf(buff, "rps %.4f throughput %.4f\n", 
-            ((double)request_cnt)/elapsed, ((double)byte_sent)/elapsed);
-    
-    fwrite(buff, strlen(buff), 1, fp);
-
-    fclose(fp);
-#endif
-
-#ifdef __EVAL_READ__
-    FILE * fp = fopen("read_cb.txt", "a+");
-    fseek(fp, 0, SEEK_END);
-
-    char buff[1024];
-
-    sprintf(buff, "read %.4f write %.4f\n", 
-                ((double)read_time)/read_cnt, ((double)write_time)/write_cnt);
-    
-    fwrite(buff, strlen(buff), 1, fp);
-
-    fclose(fp);
-#endif
-
-#ifdef __EVAL_KV__
-    double start_time = (double)g_start.tv_sec + ((double)g_start.tv_usec/(double)1000000);
-    double put_end_time = (double)put_end.tv_sec + ((double)put_end.tv_usec/(double)1000000);
-    double get_end_time = (double)get_end.tv_sec + ((double)get_end.tv_usec/(double)1000000);
-    double end_time = (double)g_end.tv_sec + ((double)g_end.tv_usec/(double)1000000);
-
-    double put_exe_time = put_end_time - start_time;
-	double get_exe_time = get_end_time - put_end_time;
-	double scan_exe_time = end_time - get_end_time;
-
-	FILE * fp = fopen("kv_throughput.txt", "a+");
-    fseek(fp, 0, SEEK_END);
-
-    char buff[1024];
-
-    sprintf(buff, "put_iops %.4f get_iops %.4f scan_iops %.4f\n", 
-                    ((double)put_cnt)/put_exe_time, ((double)get_cnt)/get_exe_time, ((double)scan_cnt)/scan_exe_time);
-    
-    fwrite(buff, strlen(buff), 1, fp);
-
-    fclose(fp);
-#endif
-
-#ifdef __EVAL_CB__
-    FILE * fp = fopen("callback.txt", "a+");
-    fseek(fp, 0, SEEK_END);
-
-    char buff[1024];
-
-    sprintf(buff, "%.4f\n", ((double)get_time)/get_cnt);
-    
-    fwrite(buff, strlen(buff), 1, fp);
-
-    fclose(fp);
-#endif
 
 	/* destroy mtcp context: this will kill the mtcp thread */
 	mtcp_destroy_context(mctx);
@@ -897,63 +304,6 @@ int main(int argc, char **argv){
 		TRACE_CONFIG("$%s directory_to_service\n", argv[0]);
 		return FALSE;
 	}
-#if 0
-	while (-1 != (o = getopt(argc, argv, "N:f:c:b"))) {
-		switch (o) {
-		case 'N':
-			core_limit = mystrtol(optarg, 10);
-			if (core_limit > num_cores) {
-				TRACE_CONFIG("CPU limit should be smaller than the "
-					     "number of CPUs: %d\n", num_cores);
-				return FALSE;
-			}
-			/** 
-			 * it is important that core limit is set 
-			 * before mtcp_init() is called. You can
-			 * not set core_limit after mtcp_init()
-			 */
-			mtcp_getconf(&mcfg);
-			mcfg.num_cores = core_limit;
-			mtcp_setconf(&mcfg);
-			break;
-		case 'f':
-			conf_file = optarg;
-			break;
-		case 'c':
-			process_cpu = mystrtol(optarg, 10);
-			if (process_cpu > core_limit) {
-				TRACE_CONFIG("Starting CPU is way off limits!\n");
-				return FALSE;
-			}
-			break;
-		case 'b':
-			backlog = mystrtol(optarg, 10);
-			break;
-		}
-	}
-#endif
-
-    int put_test, get_test, scan_test, scan_range;
-    scan_range = 4;
-    put_test = get_test = NUM_KEYS;
-    scan_test = NUM_KEYS - scan_range;
-
-	struct hikv_arg * hikv_args = (struct hikv_arg *)malloc(HIKV_ARG_SIZE);
-
-	hikv_args->pm_size = 20;
-	hikv_args->num_server_thread = 1;
-	hikv_args->num_backend_thread = 1;
-	hikv_args->num_warm_kv = 0;
-	hikv_args->num_put_kv = put_test;
-	hikv_args->num_get_kv = get_test;
-	hikv_args->num_delete_kv = 0;
-	hikv_args->num_scan_kv = scan_test;
-	hikv_args->scan_range = scan_range;
-	hikv_args->seed = 1234;
-	hikv_args->scan_all = 0;
-
-	int i;
-    int client_num = 1;
 
     for (i = 0; i < argc; i++){
         long long unsigned n;
@@ -1003,12 +353,6 @@ int main(int argc, char **argv){
         }
     }
 
-	size_t pm_size = hikv_args->pm_size;
-    uint64_t num_server_thread = hikv_args->num_server_thread;
-    uint64_t num_backend_thread = hikv_args->num_backend_thread;
-    uint64_t num_warm_kv = hikv_args->num_warm_kv;
-    uint64_t num_put_kv = hikv_args->num_put_kv;
-
 	/* initialize mtcp */
 	if (conf_file == NULL) {
 		TRACE_CONFIG("You forgot to pass the mTCP startup config file!\n");
@@ -1036,12 +380,6 @@ int main(int argc, char **argv){
 	mtcp_register_signal(SIGINT, SignalHandler);
 
 	TRACE_INFO("Application initialization finished.\n");
-
-    //Initialize Key-Value storage
-
-	char pmem[128] = "/home/pmem0/pm";
-    char pmem_meta[128] = "/home/pmem0/pmMETA";
-    hi = new hikv(pm_size * 1024 * 1024 * 1024, num_server_thread, num_backend_thread, num_server_thread * (num_put_kv + num_warm_kv), pmem, pmem_meta);
 
 	for (i = ((process_cpu == -1) ? 0 : process_cpu); i < core_limit; i++) {
 		cores[i] = i;
