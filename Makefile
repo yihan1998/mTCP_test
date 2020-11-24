@@ -1,7 +1,7 @@
 RTE_SDK=/home/yihan/dpdk-stable-18.05.1
 RTE_TARGET=x86_64-native-linuxapp-gcc
 
-TARGETS = server client
+TARGETS = server
 CC		= g++
 DPDK	= 1
 PS		= 0
@@ -79,9 +79,6 @@ LIBS += -L$(LIBCCP) -lccp -lstartccp
 INC += -I$(LIBCCP)
 endif
 
-CLI_INC = -Iinclude 
-CLI_LIB = -L/usr/local/lib/ -L ./third-party/jemalloc-4.2.1/lib -L ./third-party/tbb -lpthread -ljemalloc -ltbb -lpmem
-
 server.o: server.cc $(HIKV_SRC)
 	${CC} -c $^ ${CFLAGS} ${INC}
 
@@ -90,9 +87,6 @@ server:
 
 server_all:
 	make server.o && make server
-
-client:
-	$(CC) -std=c++11 client.cc $(CLI_INC) -o $@ $(CLI_LIB)
 
 clean:
 		rm -f *.o $(TARGET)
