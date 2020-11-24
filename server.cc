@@ -322,7 +322,7 @@ void SignalHandler(int signum){
 }
 
 int main(int argc, char **argv){
-	printf(" [main] avail dev: %d\n", rte_dev_count_avail());
+	printf(" [main] avail dev: %d\n", rte_eth_dev_count_avail());
 	int ret;
 	struct mtcp_conf mcfg;
 	int cores[MAX_CPUS];
