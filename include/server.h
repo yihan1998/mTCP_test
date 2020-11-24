@@ -23,6 +23,7 @@
 #include "debug.h"
 
 #define BUF_SIZE 2048
+int buff_size = 1024;
 
 #define MAX_FLOW_NUM  (10000)
 

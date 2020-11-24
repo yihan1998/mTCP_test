@@ -27,9 +27,9 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	int len, sent, recv_len;
 	len = sent = 0;
 
-    char * recv_item = (char *)malloc(BUF_SIZE);
+    char buff[buff_size + 1];
 
-	len = mtcp_recv(ctx->mctx, sockid, recv_item, BUF_SIZE, 0);
+	len = mtcp_recv(ctx->mctx, sockid, buff, buff_size, 0);
 
 	if(len == 0){
 		return len;
@@ -38,7 +38,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	recv_bytes += len;
 	request++;
 
-	int send_len = mtcp_write(ctx->mctx, sockid, recv_item, len);
+	int send_len = mtcp_write(ctx->mctx, sockid, buff, len);
 	send_bytes += send_len;
 	reply++;
 
