@@ -74,7 +74,7 @@ struct server_vars {
 };
 
 static int num_cores;
-static int core_limit;
+static int num_core;
 static pthread_t app_thread[MAX_CPUS];
 static int done[MAX_CPUS];
 static char *conf_file = NULL;
@@ -83,7 +83,13 @@ static int backlog = -1;
 //static pthread_t sv_thread[MAX_CPUS];
 static struct server_arg sv_thread_arg[MAX_CPUS];
 
-static struct hikv * hi;
-static struct hikv_arg * hikv_args;
+long long recv_bytes, send_bytes;
+
+long long request, reply;
+
+struct timeval start, log_start;
+int established_flag = 0;
+
+struct timeval end;
 
 void * server_thread(void * arg);

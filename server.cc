@@ -1,8 +1,7 @@
 #include "server.h"
 
-struct timeval end_all;
-
-int client_num;
+int client_num = 0;
+int finish_num = 0;
 
 void CleanServerVariable(struct server_vars *sv){
 	sv->recv_len = 0;
@@ -21,6 +20,7 @@ void CleanServerVariable(struct server_vars *sv){
 void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
 	mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_DEL, sockid, NULL);
 	mtcp_close(ctx->mctx, sockid);
+	gettimeofday(&end, NULL);
 }
 
 int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struct server_vars *sv){
@@ -35,7 +35,12 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		return len;
 	}
 
-	mtcp_write(ctx->mctx, sockid, recv_item, len);
+	recv_bytes += len;
+	request++;
+
+	int send_len = mtcp_write(ctx->mctx, sockid, recv_item, len);
+	send_bytes += send_len;
+	reply++;
 
     return len;
 }
@@ -69,6 +74,12 @@ int AcceptConnection(struct thread_context *ctx, int listener){
 					strerror(errno));
 		}
 	}
+
+	if(!established_flag) {
+        gettimeofday(&start, NULL);
+        gettimeofday(&log_start, NULL);
+        established_flag = 1;
+    }
 
 	return c;
 }
@@ -202,6 +213,8 @@ void * RunServerThread(void *arg){
 		exit(-1);
 	}
 
+    printf("========== Start to wait events ==========\n");
+
 	while (!done[core]) {
 		nevents = mtcp_epoll_wait(mctx, ep, events, MAX_EVENTS, -1);
 		if (nevents < 0) {
@@ -243,11 +256,19 @@ void * RunServerThread(void *arg){
 					/* connection closed by remote host */
 					CloseConnection(ctx, events[i].data.sockid, 
 							&ctx->svars[events[i].data.sockid]);
+					finish_num++;
+    	            if (finish_num == client_num) {
+            	        done = 1;
+                	}
 				} else if (ret < 0) {
 					/* if not EAGAIN, it's an error */
 					if (errno != EAGAIN) {
 						CloseConnection(ctx, events[i].data.sockid, 
 								&ctx->svars[events[i].data.sockid]);
+						finish_num++;
+	    	            if (finish_num == client_num) {
+    	        	        done = 1;
+        	        	}
 					}
 				}
 
@@ -266,6 +287,16 @@ void * RunServerThread(void *arg){
 		}
 	}
 
+	printf("========== Clean up ==========\n");
+    
+    double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
+    double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
+    double total_time = (end_time - start_time)/1000000.00;
+
+    printf(" >> recv data rate: %.2f(Mbps), recv request rate: %.2f, send data rate: %.2f(Mbps), send reply rate: %.2f\n", 
+                    (recv_bytes * 8.0) / (total_time * 1000 * 1000), request / (total_time * 1000), 
+                    (send_bytes * 8.0) / (total_time * 1000 * 1000), reply / (total_time * 1000));
+
 	/* destroy mtcp context: this will kill the mtcp thread */
 	mtcp_destroy_context(mctx);
 	pthread_exit(NULL);
@@ -276,7 +307,7 @@ void * RunServerThread(void *arg){
 void SignalHandler(int signum){
 	int i;
 
-	for (i = 0; i < core_limit; i++) {
+	for (i = 0; i < num_core; i++) {
 		if (app_thread[i] == pthread_self()) {
 			//TRACE_INFO("Server thread %d got SIGINT\n", i);
 			done[i] = TRUE;
@@ -295,7 +326,7 @@ int main(int argc, char **argv){
 	int process_cpu;
 
 	num_cores = sysconf(_SC_NPROCESSORS_ONLN);
-	core_limit = num_cores;
+	num_core = num_cores;
 	process_cpu = -1;
 
 	char conf_name[] = "server.conf";
@@ -309,24 +340,23 @@ int main(int argc, char **argv){
     for (int i = 0; i < argc; i++){
         long long unsigned n;
         char junk;
-        if(sscanf(argv[i], "--core_limit=%llu%c", &n, &junk) == 1){
-            core_limit = n;
-			if (core_limit > num_cores) {
+        if(sscanf(argv[i], "--num_core=%llu%c", &n, &junk) == 1){
+            num_core = n;
+			printf(" >> core num: %d\n", num_core);
+			if (num_core > MAX_CPUS) {
 				TRACE_CONFIG("CPU limit should be smaller than the "
-					     "number of CPUs: %d\n", num_cores);
+					     "number of CPUs: %d\n", MAX_CPUS);
 				return FALSE;
 			}
 			mtcp_getconf(&mcfg);
-			mcfg.num_cores = core_limit;
+			mcfg.num_cores = num_core;
 			mtcp_setconf(&mcfg);
-        }else if(sscanf(argv[i], "--process_cpu=%llu%c", &n, &junk) == 1){
-            process_cpu = n;
-			if (process_cpu > core_limit) {
-				TRACE_CONFIG("Starting CPU is way off limits!\n");
-				return FALSE;
-			}
         }else if(sscanf(argv[i], "--num_client=%llu%c", &n, &junk) == 1){
             client_num = n; 
+			printf(" >> client num: %d\n", client_num);
+        }else if(sscanf(argv[i], "--size=%llu%c", &n, &junk) == 1){
+            buff_size = n;
+			printf(" >> buff size: %d\n", buff_size);
         }else if(i > 0){
             printf("error (%s)!\n", argv[i]);
         }
@@ -360,7 +390,7 @@ int main(int argc, char **argv){
 
 	TRACE_INFO("Application initialization finished.\n");
 
-	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < core_limit; i++) {
+	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_core; i++) {
 		cores[i] = i;
 		done[i] = FALSE;
 		sv_thread_arg[i].core = i;
@@ -376,7 +406,7 @@ int main(int argc, char **argv){
 			break;
 	}
 	
-	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < core_limit; i++) {
+	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_core; i++) {
 		pthread_join(app_thread[i], NULL);
 
 		if (process_cpu != -1)
