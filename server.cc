@@ -258,7 +258,7 @@ void * RunServerThread(void *arg){
 							&ctx->svars[events[i].data.sockid]);
 					finish_num++;
     	            if (finish_num == client_num) {
-            	        done = 1;
+            	        done[core] = 1;
                 	}
 				} else if (ret < 0) {
 					/* if not EAGAIN, it's an error */
@@ -267,7 +267,7 @@ void * RunServerThread(void *arg){
 								&ctx->svars[events[i].data.sockid]);
 						finish_num++;
 	    	            if (finish_num == client_num) {
-    	        	        done = 1;
+    	        	        done[core] = 1;
         	        	}
 					}
 				}
