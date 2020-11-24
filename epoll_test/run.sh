@@ -17,11 +17,16 @@ read num_thread
 
 for i in `seq 1 $num_core`
 do
-    ./linux_test --server_ip=$server_ip --server_port=$server_port --size=$buff_size --time=$duration --num_thread=$num_thread --core_id=$i &
+    ./linux_test    --server_ip=$server_ip \
+                    --server_port=$server_port \
+                    --size=$buff_size \
+                    --time=$duration \
+                    --num_thread=$num_thread \
+                    --core_id=$i &
 done
 
 wait
 
-total=`expr $num_core \* $num_thread`
+#total=`expr $num_core \* $num_thread`
 
-python merge_file.py $total
+#python merge_file.py $total

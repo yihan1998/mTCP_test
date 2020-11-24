@@ -1,19 +1,22 @@
 #!/bin/bash
 
-server='server'
-client='client'
+echo -n "buffer size: "
+read buff_size
+#buff_size=1024
 
-server_ip='192.168.3.2'
-server_port=12345
+#echo -n "number of CPU cores: "
+#read num_core
+num_core=1
 
+echo -n "number of connections: "
+read num_connection
 
+cd build
 
-if test $1 = $server
-then
-    rm record_core_*.txt
-#    make clean
-#    make server
-    ./server -N 1 -p service -f server.conf
-else
-    ./client $2 $server_ip $server_port $3
-fi
+echo "Testing RTT for $num_connection connections..."
+
+./server    --num_core=$num_core \
+            --size=$buff_size \
+            --num_client=$num_connection
+
+echo "Test done"
