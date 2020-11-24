@@ -1,5 +1,5 @@
-export RTE_SDK=/home/yihan/dpdk-stable-18.05.1
-export RTE_TARGET=x86_64-native-linuxapp-gcc
+RTE_SDK=/home/yihan/dpdk-stable-18.05.1
+RTE_TARGET=x86_64-native-linuxapp-gcc
 
 TARGETS = server client
 CC		= g++
