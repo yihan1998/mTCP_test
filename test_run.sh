@@ -24,7 +24,5 @@ do
                 --size=$buff_size \
                 --num_client=$num_connection
 
-    sleep 1
-
     echo "Test done"
 done
