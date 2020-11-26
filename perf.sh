@@ -11,8 +11,6 @@ num_core=1
 #echo -n "number of connections: "
 #read num_connection
 
-cd build
-
 for j in $(seq 0 10)
 do
     num_connection=`echo "2^$j" | bc `
