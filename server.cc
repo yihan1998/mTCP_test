@@ -229,7 +229,7 @@ void * RunServerThread(void *arg){
 		}
 
 		round++;
-        tot_event += num_events;
+        tot_event += nevents;
 
 		do_accept = FALSE;
 		for (i = 0; i < nevents; i++) {
