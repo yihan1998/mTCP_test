@@ -306,8 +306,8 @@ void * RunServerThread(void *arg){
                     (recv_bytes * 8.0) / (total_time * 1000 * 1000), request / (total_time * 1000), 
                     (send_bytes * 8.0) / (total_time * 1000 * 1000), reply / (total_time * 1000));
 
-	printf(" >> total events: %llu, round: %llu, events per round: %d\n", 
-                    tot_event, round, ((double)tot_event) / round);
+	printf(" >> total events: %llu, round: %llu, events per round: %f\n", 
+                    tot_event, round, ((double)tot_event) / (double)round);
 
 	/* destroy mtcp context: this will kill the mtcp thread */
 	mtcp_destroy_context(mctx);
