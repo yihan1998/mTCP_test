@@ -8,6 +8,17 @@ int finish_num = 0;
 int tot_event;
 int round;
 
+#define TEST_INTERVAL
+
+#ifdef TEST_INTERVAL
+FILE * interval_file;
+long long * interval_buff;
+int interval_buff_len;
+
+struct timeval last_interval;
+int record_interval;
+#endif
+
 void CleanServerVariable(struct server_vars *sv){
 	sv->recv_len = 0;
 	sv->request_len = 0;
@@ -217,7 +228,13 @@ void * RunServerThread(void *arg){
 		TRACE_ERROR("Failed to create listening socket.\n");
 		exit(-1);
 	}
+#ifdef TEST_INTERVAL
+    interval_file = fopen("epoll_interval.txt", "wb");
+    fseek(interval_file, 0, SEEK_END);
 
+    interval_buff = (long long *)calloc(M_128, sizeof(long long));
+    interval_buff_len = 0;
+#endif
     printf("========== Start to wait events ==========\n");
 
 	while (!done[core]) {
@@ -227,6 +244,21 @@ void * RunServerThread(void *arg){
 				perror("mtcp_epoll_wait");
 			break;
 		}
+
+#ifdef TEST_INTERVAL
+        if (!record_interval) {
+            gettimeofday(&last_interval, NULL);
+            record_interval = 1;
+        } else {
+            struct timeval current;
+            gettimeofday(&current, NULL);
+
+            double interval = TIMEVAL_TO_USEC(current) - TIMEVAL_TO_USEC(last_interval);
+            interval_buff[interval_buff_len++] = interval;
+            gettimeofday(&last_interval, NULL);
+        }
+
+#endif
 
 		round++;
         tot_event += nevents;
@@ -297,6 +329,15 @@ void * RunServerThread(void *arg){
 	}
 
 	printf("========== Clean up ==========\n");
+
+#ifdef TEST_INTERVAL
+    for (int i = 0; i < interval_buff_len; i++) {
+        fprintf(interval_file, "%llu\n", interval_buff[i]);
+        fflush(interval_file);
+    }
+
+    fclose(interval_file);
+#endif
     
     double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
     double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
