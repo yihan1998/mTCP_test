@@ -5,6 +5,9 @@
 int client_num = 0;
 int finish_num = 0;
 
+int tot_event;
+int round;
+
 void CleanServerVariable(struct server_vars *sv){
 	sv->recv_len = 0;
 	sv->request_len = 0;
@@ -224,6 +227,10 @@ void * RunServerThread(void *arg){
 				perror("mtcp_epoll_wait");
 			break;
 		}
+
+		round++;
+        tot_event += num_events;
+
 		do_accept = FALSE;
 		for (i = 0; i < nevents; i++) {
 
@@ -298,6 +305,9 @@ void * RunServerThread(void *arg){
     printf(" >> recv data rate: %.2f(Mbps), recv request rate: %.2f, send data rate: %.2f(Mbps), send reply rate: %.2f\n", 
                     (recv_bytes * 8.0) / (total_time * 1000 * 1000), request / (total_time * 1000), 
                     (send_bytes * 8.0) / (total_time * 1000 * 1000), reply / (total_time * 1000));
+
+	printf(" [%s] total events: %llu, round: %llu, events per round: %d", 
+                    __func__, tot_event, round, ((double)tot_event) / round);
 
 	/* destroy mtcp context: this will kill the mtcp thread */
 	mtcp_destroy_context(mctx);
