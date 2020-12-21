@@ -215,7 +215,7 @@ void * RunClientThread(void * arg){
 	g_stat[core] = &ctx->stat;
 	srand(time(NULL));
 
-	mtcp_init_rss(mctx, INADDR_ANY, IP_RANGE, server_ip, server_port);
+	mtcp_init_rss(mctx, INADDR_ANY, IP_RANGE, inet_addr(server_ip), htons(server_port));
 
 	ctx->target = client_thread_num;
 
