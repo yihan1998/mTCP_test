@@ -1,7 +1,7 @@
 RTE_SDK=/home/yihan/mtcp/dpdk
 RTE_TARGET=x86_64-native-linuxapp-gcc
 
-TARGETS = server
+TARGETS = server client
 CC		= g++
 DPDK	= 1
 PS		= 0
@@ -79,14 +79,8 @@ LIBS += -L$(LIBCCP) -lccp -lstartccp
 INC += -I$(LIBCCP)
 endif
 
-server.o: server.cc $(HIKV_SRC)
-	${CC} -c $^ ${CFLAGS} ${INC}
-
-server: 
-	${CC} $(HIKV_OBJ) server.o ${MTCP_FLD}/lib/libmtcp.a $< ${LIBS} ${UTIL_OBJ} -o $@
-
-server_all:
-	make server.o && make server
+server: server.cc 
+	$(CC) $(CFLAGS) ${MTCP_FLD}/lib/libmtcp.a $^ $(INC) ${LIBS} ${UTIL_OBJ} -o $@ $(LDFLAGS) 
 
 clean:
 		rm -f *.o $(TARGET)
