@@ -64,7 +64,7 @@ int CreateConnection(thread_context_t ctx){
     ctx->vars[sockid].file_ptr = input_file;
 
 	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = inet_addr(server_ip);;
+	addr.sin_addr.s_addr = inet_addr(server_ip);
 	addr.sin_port = htons(server_port);
 	
 	ret = mtcp_connect(mctx, sockid, 
@@ -375,9 +375,9 @@ int main(int argc, char * argv[]){
             buff_size = n;
 			printf(" >> buff size: %d\n", buff_size);
         }else if(sscanf(argv[i], "--server_ip=%s%c", server_ip, &junk) == 1) {
-            //printf("[CLIENT] server ip: %s\n", server_ip);
+            printf("[CLIENT] server ip: %s\n", server_ip);
         }else if(sscanf(argv[i], "--server_port=%d%c", &server_port, &junk) == 1) {
-            //printf("[CLIENT] server port: %d\n", server_port);
+            printf("[CLIENT] server port: %d\n", server_port);
         }else if(i > 0){
             printf("error (%s)!\n", argv[i]);
         }
