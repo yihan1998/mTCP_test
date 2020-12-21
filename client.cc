@@ -85,6 +85,8 @@ int CreateConnection(thread_context_t ctx){
 	ev.data.sockid = sockid;
 	mtcp_epoll_ctl(mctx, ctx->ep, MTCP_EPOLL_CTL_ADD, sockid, &ev);
 
+    fprintf(stdout, " [%s] add EPOLLOUT event", __func__);
+
 	return sockid;
 }
 
@@ -215,7 +217,7 @@ void * RunClientThread(void * arg){
 	g_stat[core] = &ctx->stat;
 	srand(time(NULL));
 
-	mtcp_init_rss(mctx, INADDR_ANY, IP_RANGE, inet_addr(server_ip), htons(server_port));
+	mtcp_init_rss(mctx, INADDR_ANY, IP_RANGE, inet_addr(server_ip), server_port);
 
 	ctx->target = num_flow;
 
