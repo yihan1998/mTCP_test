@@ -64,8 +64,8 @@ int CreateConnection(thread_context_t ctx){
     ctx->vars[sockid].file_ptr = input_file;
 
 	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = daddr;
-	addr.sin_port = dport;
+	addr.sin_addr.s_addr = inet_addr(server_ip);;
+	addr.sin_port = htons(server_port);
 	
 	ret = mtcp_connect(mctx, sockid, 
 			(struct sockaddr *)&addr, sizeof(struct sockaddr_in));
