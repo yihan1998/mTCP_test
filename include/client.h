@@ -1,5 +1,8 @@
 #include "common.h"
 
+static struct thread_context *g_ctx[MAX_CPUS] = {0};
+static struct wget_stat *g_stat[MAX_CPUS] = {0};
+
 #define MAX_URL_LEN 128
 #define FILE_LEN    128
 #define FILE_IDX     10
@@ -37,19 +40,15 @@ static int total_flows;
 static int flows[MAX_CPUS];
 static int flowcnt = 0;
 static int concurrency;
-static int max_fds;
+static int max_fds = 30000;
 static uint64_t response_size = 0;
 
 //#define RECEIVE_DEBUG
 
 //#define __EV_RTT__
 
-int buf_size;
-
 //pthread_mutex_t work_done_lock;
 int work_done_flag = 0;
-
-int client_thread_num;
 
 //pthread_mutex_t fin_client_thread_lock;
 int fin_client_thread = 0;
@@ -100,6 +99,22 @@ struct client_vars
 	char * file_ptr;
 };
 
+struct client_stat
+{
+	uint64_t waits;
+	uint64_t events;
+	uint64_t connects;
+	uint64_t reads;
+	uint64_t writes;
+	uint64_t completes;
+
+	uint64_t errors;
+	uint64_t timedout;
+
+	uint64_t sum_resp_time;
+	uint64_t max_resp_time;
+};
+
 struct thread_context
 {
 	int core;
@@ -115,7 +130,7 @@ struct thread_context
 	int done;
 	int pending;
 
-	struct wget_stat stat;
+	struct client_stat stat;
 };
 
 char input_file[M_512];

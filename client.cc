@@ -1,5 +1,47 @@
 #include "client.h"
 
+int buff_size = 1024;
+
+int num_core;
+
+int client_thread_num;
+
+static pthread_t app_thread[MAX_CPUS];
+static int done[MAX_CPUS];
+static char *conf_file = NULL;
+
+thread_context_t 
+CreateContext(int core)
+{
+	thread_context_t ctx;
+
+	ctx = (thread_context_t)calloc(1, sizeof(struct thread_context));
+	if (!ctx) {
+		perror("malloc");
+		TRACE_ERROR("Failed to allocate memory for thread context.\n");
+		return NULL;
+	}
+	ctx->core = core;
+
+	ctx->mctx = mtcp_create_context(core);
+	if (!ctx->mctx) {
+		TRACE_ERROR("Failed to create mtcp context.\n");
+		free(ctx);
+		return NULL;
+	}
+	g_mctx[core] = ctx->mctx;
+
+	return ctx;
+}
+
+void 
+DestroyContext(thread_context_t ctx) 
+{
+	g_stat[ctx->core] = NULL;
+	mtcp_destroy_context(ctx->mctx);
+	free(ctx);
+}
+
 int CreateConnection(thread_context_t ctx){
     mctx_t mctx = ctx->mctx;
 	struct mtcp_epoll_event ev;
@@ -19,7 +61,7 @@ int CreateConnection(thread_context_t ctx){
 		exit(-1);
 	}
 
-    ctx->vars[sockid]->file_ptr = input_file;
+    ctx->vars[sockid].file_ptr = input_file;
 
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = daddr;
@@ -71,7 +113,7 @@ HandleReadEvent(thread_context_t ctx, int sockid, struct client_vars *vars)
     int recv_len = 0;
     //printf(" [%s] total recv: %d, total send: %d\n", __func__, total_recv, total_send);
     //printf(" [%s] recv data(len: %d): %.*s\n", __func__, recv_len, recv_len, recv_buff);
-    int len = mtcp_read(mctx, sockid, buf, buff_size);
+    int len = mtcp_read(mctx, sockid, recv_buff, buff_size);
     
 }
 
@@ -85,9 +127,65 @@ HandleWriteEvent(thread_context_t ctx, int sockid, struct client_vars *vars)
     }
 
     int send_len = mtcp_write(mctx, sockid, vars->file_ptr, buff_size);
-    vars->total_send += send_len;
+    vars->write += send_len;
 
     vars->file_ptr = input_file + ((vars->file_ptr - input_file) + send_len) % M_512;
+}
+
+static void 
+PrintStats()
+{
+	struct wget_stat total = {0};
+	struct wget_stat *st;
+	uint64_t avg_resp_time;
+	uint64_t total_resp_time = 0;
+	int i;
+
+	for (i = 0; i < core_limit; i++) {
+		st = g_stat[i];
+
+		if (st == NULL) continue;
+		avg_resp_time = st->completes? st->sum_resp_time / st->completes : 0;
+#if 0
+		fprintf(stderr, "[CPU%2d] epoll_wait: %5lu, event: %7lu, "
+				"connect: %7lu, read: %4lu MB, write: %4lu MB, "
+				"completes: %7lu (resp_time avg: %4lu, max: %6lu us), "
+				"errors: %2lu (timedout: %2lu)\n", 
+				i, st->waits, st->events, st->connects, 
+				st->reads / 1024 / 1024, st->writes / 1024 / 1024, 
+				st->completes, avg_resp_time, st->max_resp_time, 
+				st->errors, st->timedout);
+#endif
+
+		total.waits += st->waits;
+		total.events += st->events;
+		total.connects += st->connects;
+		total.reads += st->reads;
+		total.writes += st->writes;
+		total.completes += st->completes;
+		total_resp_time += avg_resp_time;
+		if (st->max_resp_time > total.max_resp_time)
+			total.max_resp_time = st->max_resp_time;
+		total.errors += st->errors;
+		total.timedout += st->timedout;
+
+		memset(st, 0, sizeof(struct wget_stat));		
+	}
+	fprintf(stderr, "[ ALL ] connect: %7lu, read: %4lu MB, write: %4lu MB, "
+			"completes: %7lu (resp_time avg: %4lu, max: %6lu us)\n", 
+			total.connects, 
+			total.reads / 1024 / 1024, total.writes / 1024 / 1024, 
+			total.completes, total_resp_time / core_limit, total.max_resp_time);
+#if 0
+	fprintf(stderr, "[ ALL ] epoll_wait: %5lu, event: %7lu, "
+			"connect: %7lu, read: %4lu MB, write: %4lu MB, "
+			"completes: %7lu (resp_time avg: %4lu, max: %6lu us), "
+			"errors: %2lu (timedout: %2lu)\n", 
+			total.waits, total.events, total.connects, 
+			total.reads / 1024 / 1024, total.writes / 1024 / 1024, 
+			total.completes, total_resp_time / core_limit, total.max_resp_time, 
+			total.errors, total.timedout);
+#endif
 }
 
 void * RunClientThread(void * arg){
@@ -248,20 +346,12 @@ SignalHandler(int signum)
 int main(int argc, char * argv[]){
     int ret;
 	struct mtcp_conf mcfg;
+    char *conf_file;
 	int cores[MAX_CPUS];
 	int process_cpu;
 
-	num_cores = sysconf(_SC_NPROCESSORS_ONLN);
-	num_core = num_cores;
-	process_cpu = -1;
-
-	char conf_name[] = "server.conf";
+	char conf_name[] = "client.conf";
 	conf_file = conf_name;
-
-	if (argc < 2) {
-		TRACE_CONFIG("$%s directory_to_service\n", argv[0]);
-		return FALSE;
-	}
 
     for (int i = 0; i < argc; i++){
         long long unsigned n;
@@ -279,7 +369,7 @@ int main(int argc, char * argv[]){
 			mtcp_setconf(&mcfg);
         }else if(sscanf(argv[i], "--num_thread=%llu%c", &n, &junk) == 1){
             client_thread_num = n; 
-			printf(" >> thread num: %d\n", client_num);
+			printf(" >> thread num: %d\n", client_thread_num);
         }else if(sscanf(argv[i], "--size=%llu%c", &n, &junk) == 1){
             buff_size = n;
 			printf(" >> buff size: %d\n", buff_size);
@@ -300,16 +390,10 @@ int main(int argc, char * argv[]){
 		exit(EXIT_FAILURE);
 	}
 
-	mtcp_getconf(&mcfg);
-	if (backlog > mcfg.max_concurrency) {
-		TRACE_CONFIG("backlog can not be set larger than CONFIG.max_concurrency\n");
-		return FALSE;
-	}
-
-	/* if backlog is not specified, set it to 4K */
-	if (backlog == -1) {
-		backlog = 4096;
-	}
+    mtcp_getconf(&mcfg);
+	mcfg.max_concurrency = max_fds;
+	mcfg.max_num_buffers = max_fds;
+	mtcp_setconf(&mcfg);
 	
 	/* register signal handler to mtcp */
 	mtcp_register_signal(SIGINT, SignalHandler);
