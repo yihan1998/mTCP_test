@@ -4,7 +4,7 @@ int buff_size = 1024;
 
 int num_core;
 
-int client_thread_num;
+int num_flow;
 
 static char *conf_file = NULL;
 char server_ip[20];
@@ -217,11 +217,11 @@ void * RunClientThread(void * arg){
 
 	mtcp_init_rss(mctx, INADDR_ANY, IP_RANGE, inet_addr(server_ip), htons(server_port));
 
-	ctx->target = client_thread_num;
+	ctx->target = num_flow;
 
 	daddr_in.s_addr = daddr;
 	fprintf(stderr, "Thread %d handles %d flows. connecting to %s:%u\n", 
-			core, n, inet_ntoa(daddr_in), ntohs(dport));
+			core, num_flow, inet_ntoa(server_ip), ntohs(server_port));
 
 	/* Initialization */
 	maxevents = max_fds * 3;
@@ -277,6 +277,8 @@ void * RunClientThread(void * arg){
 
 		nevents = mtcp_epoll_wait(mctx, ep, events, maxevents, -1);
 		ctx->stat.waits++;
+
+        fprintf(stdout, " [%s] receive %d events", __func__, nevents);
 	
 		if (nevents < 0) {
 			if (errno != EINTR) {
@@ -368,9 +370,9 @@ int main(int argc, char * argv[]){
 			mtcp_getconf(&mcfg);
 			mcfg.num_cores = num_core;
 			mtcp_setconf(&mcfg);
-        }else if(sscanf(argv[i], "--num_thread=%llu%c", &n, &junk) == 1){
-            client_thread_num = n; 
-			printf(" >> thread num: %d\n", client_thread_num);
+        }else if(sscanf(argv[i], "--num_flow=%llu%c", &n, &junk) == 1){
+            num_flow = n; 
+			printf(" >> flow num: %d\n", num_flow);
         }else if(sscanf(argv[i], "--size=%llu%c", &n, &junk) == 1){
             buff_size = n;
 			printf(" >> buff size: %d\n", buff_size);
