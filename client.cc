@@ -223,7 +223,7 @@ void * RunClientThread(void * arg){
 
 	daddr_in.s_addr = daddr;
 	fprintf(stderr, "Thread %d handles %d flows. connecting to %s:%u\n", 
-			core, num_flow, server_ip, ntohs(server_port));
+			core, num_flow, server_ip, server_port);
 
 	/* Initialization */
 	maxevents = max_fds * 3;
