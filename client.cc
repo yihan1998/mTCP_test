@@ -7,6 +7,8 @@ int num_core;
 int client_thread_num;
 
 static char *conf_file = NULL;
+static char server_ip[20];
+static int server_port;
 
 thread_context_t 
 CreateContext(int core)
@@ -372,6 +374,10 @@ int main(int argc, char * argv[]){
         }else if(sscanf(argv[i], "--size=%llu%c", &n, &junk) == 1){
             buff_size = n;
 			printf(" >> buff size: %d\n", buff_size);
+        }else if(sscanf(argv[i], "--server_ip=%s%c", server_ip, &junk) == 1) {
+            //printf("[CLIENT] server ip: %s\n", server_ip);
+        }else if(sscanf(argv[i], "--server_port=%d%c", &server_port, &junk) == 1) {
+            //printf("[CLIENT] server port: %d\n", server_port);
         }else if(i > 0){
             printf("error (%s)!\n", argv[i]);
         }
