@@ -118,6 +118,7 @@ HandleReadEvent(thread_context_t ctx, int sockid, struct client_vars *vars)
 static inline int
 HandleWriteEvent(thread_context_t ctx, int sockid, struct client_vars *vars)
 {
+    fprintf(stdout, " [%s] sending data...", __func__);
     mctx_t mctx = ctx->mctx;
 
     if (vars->file_ptr + buff_size >= input_file + M_512) {
