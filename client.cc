@@ -7,8 +7,8 @@ int num_core;
 int client_thread_num;
 
 static char *conf_file = NULL;
-static char server_ip[20];
-static int server_port;
+char server_ip[20];
+int server_port;
 
 thread_context_t 
 CreateContext(int core)
@@ -215,7 +215,7 @@ void * RunClientThread(void * arg){
 	g_stat[core] = &ctx->stat;
 	srand(time(NULL));
 
-	mtcp_init_rss(mctx, saddr, IP_RANGE, daddr, dport);
+	mtcp_init_rss(mctx, INADDR_ANY, IP_RANGE, server_ip, server_port);
 
 	ctx->target = client_thread_num;
 
