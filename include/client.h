@@ -1,7 +1,7 @@
 #include "common.h"
 
 static struct thread_context *g_ctx[MAX_CPUS] = {0};
-static struct wget_stat *g_stat[MAX_CPUS] = {0};
+static struct client_stat *g_stat[MAX_CPUS] = {0};
 
 #define MAX_URL_LEN 128
 #define FILE_LEN    128

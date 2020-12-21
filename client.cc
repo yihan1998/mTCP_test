@@ -6,8 +6,6 @@ int num_core;
 
 int client_thread_num;
 
-static pthread_t app_thread[MAX_CPUS];
-static int done[MAX_CPUS];
 static char *conf_file = NULL;
 
 thread_context_t 
@@ -135,8 +133,8 @@ HandleWriteEvent(thread_context_t ctx, int sockid, struct client_vars *vars)
 static void 
 PrintStats()
 {
-	struct wget_stat total = {0};
-	struct wget_stat *st;
+	struct client_stat total = {0};
+	struct client_stat *st;
 	uint64_t avg_resp_time;
 	uint64_t total_resp_time = 0;
 	int i;
@@ -169,7 +167,7 @@ PrintStats()
 		total.errors += st->errors;
 		total.timedout += st->timedout;
 
-		memset(st, 0, sizeof(struct wget_stat));		
+		memset(st, 0, sizeof(struct client_stat));		
 	}
 	fprintf(stderr, "[ ALL ] connect: %7lu, read: %4lu MB, write: %4lu MB, "
 			"completes: %7lu (resp_time avg: %4lu, max: %6lu us)\n", 
@@ -403,8 +401,6 @@ int main(int argc, char * argv[]){
 	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_core; i++) {
 		cores[i] = i;
 		done[i] = FALSE;
-		sv_thread_arg[i].core = i;
-        sv_thread_arg[i].thread_id = i;
 		
 		if (pthread_create(&app_thread[i], 
 				   NULL, RunClientThread, (void *)&cores[i])) {
