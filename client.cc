@@ -278,8 +278,6 @@ void * RunClientThread(void * arg){
 
 		nevents = mtcp_epoll_wait(mctx, ep, events, maxevents, -1);
 		ctx->stat.waits++;
-
-        fprintf(stdout, " [%s] receive %d events", __func__, nevents);
 	
 		if (nevents < 0) {
 			if (errno != EINTR) {
