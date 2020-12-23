@@ -353,7 +353,7 @@ int main(int argc, char * argv[]){
 	struct mtcp_conf mcfg;
     char *conf_file;
 	int cores[MAX_CPUS];
-	int process_cpu;
+	int process_cpu = -1;
 
 	char conf_name[] = "client.conf";
 	conf_file = conf_name;
