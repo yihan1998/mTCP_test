@@ -183,13 +183,22 @@ handle_write_event(int epfd, int sockfd, struct param * vars) {
     struct sock_info * info = (struct sock_info *)vars->data;
 
     char send_buff[buff_size];
+    if (info->file_ptr + buff_size >= input_file + M_512) {
+        info->file_ptr = input_file;
+    }
+    
     memcpy(send_buff, info->file_ptr, buff_size);
 
 #ifdef EVAL_RTT
     gettimeofday(&info->start, NULL);
 #endif
 
-    int send_len = write(sockfd, send_buff, buff_size);
+    int send_len = tardis_write(sockfd, send_buff, buff_size);
+
+    if(send_len < 0) {
+        return;
+    }
+
     info->total_send += send_len;
 
     info->file_ptr = input_file + ((info->file_ptr - input_file) + send_len) % M_512;
