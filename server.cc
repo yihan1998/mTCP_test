@@ -12,7 +12,7 @@ int execution_time;
 
 #define TIMEVAL_TO_USEC(t)  (double)((t).tv_sec * 1000000.00 + (t).tv_usec)
 
-#define TEST_INTERVAL
+//#define TEST_INTERVAL
 
 #ifdef TEST_INTERVAL
 FILE * interval_file;
