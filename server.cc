@@ -58,9 +58,9 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	recv_bytes += len;
 	request++;
 
-	int send_len = mtcp_write(ctx->mctx, sockid, buff, len);
-	send_bytes += send_len;
-	reply++;
+//	int send_len = mtcp_write(ctx->mctx, sockid, buff, len);
+//	send_bytes += send_len;
+//	reply++;
 
     return len;
 }
