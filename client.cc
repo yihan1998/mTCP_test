@@ -40,9 +40,7 @@ CreateContext(int core)
 void 
 DestroyContext(thread_context_t ctx) 
 {
-	g_stat[ctx->core] = NULL;
 	mtcp_destroy_context(ctx->mctx);
-	free(ctx);
 }
 
 int CreateConnection(thread_context_t ctx){
