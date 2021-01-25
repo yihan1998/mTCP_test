@@ -346,7 +346,7 @@ void * RunClientThread(void * arg){
 
 		gettimeofday(&current, NULL);
 		if(current.tv_sec - start.tv_sec >= execution_time) {
-			fprintf(stdout, " [%s] Time's up! End connections\n", __func__);
+			fprintf(stdout, " [%s] Time's up! End %d connections\n", __func__, num_connect);
             for (int i = 0; i < num_connect; i++) {
 				CloseConnection(ctx, connect_socket[i]);
 			}
@@ -453,6 +453,8 @@ int main(int argc, char * argv[]){
 		if (process_cpu != -1)
 			break;
 	}
+
+	printf(" [%s] Test finished!\n", __func__);
 	
 	mtcp_destroy();
 	return 0;

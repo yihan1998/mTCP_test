@@ -478,6 +478,8 @@ int main(int argc, char **argv){
 			break;
 	}
 	
+	printf(" [%s] Test finished!\n", __func__);
+	
 	mtcp_destroy();
 	return 0;
 }
