@@ -88,15 +88,13 @@ int CreateConnection(thread_context_t ctx){
 	ev.data.sockid = sockid;
 	mtcp_epoll_ctl(mctx, ctx->ep, MTCP_EPOLL_CTL_ADD, sockid, &ev);
 
-    fprintf(stdout, " [%s] add EPOLLOUT event", __func__);
-
 	return sockid;
 }
 
 static inline void 
 CloseConnection(thread_context_t ctx, int sockid)
 {
-	mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_DEL, sockid, NULL);
+	//mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_DEL, sockid, NULL);
 	mtcp_close(ctx->mctx, sockid);
 	ctx->pending--;
 	ctx->done++;
@@ -292,7 +290,6 @@ void * RunClientThread(void * arg){
 
 		while(num_connect < concurrency && num_connect < num_flow) {
             int ret;
-			fprintf(stdout, " creating new connection\n");
 			if ((ret = CreateConnection(ctx)) < 0) {
 				done[core] = TRUE;
 				break;
@@ -315,8 +312,6 @@ void * RunClientThread(void * arg){
 			}
 			done[core] = TRUE;
 			break;
-		} else {
-			ctx->stat.events += nevents;
 		}
 
 		for (i = 0; i < nevents; i++) {
@@ -358,13 +353,6 @@ void * RunClientThread(void * arg){
 				CloseConnection(ctx, connect_socket[i]);
 			}
             done[core] = TRUE;
-		}
-
-		if (ctx->done >= ctx->target) {
-			fprintf(stdout, "[CPU %d] Completed %d connections, "
-					"errors: %d incompletes: %d\n", 
-					ctx->core, ctx->done, ctx->errors, ctx->incompletes);
-			break;
 		}
 	}
 
