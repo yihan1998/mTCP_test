@@ -354,7 +354,7 @@ void * RunServerThread(void *arg){
 	/* destroy mtcp context: this will kill the mtcp thread */
 	mtcp_destroy_context(mctx);
 
-	return NULL;
+	pthread_exit(NULL);
 }
 
 void SignalHandler(int signum){
