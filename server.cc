@@ -334,10 +334,7 @@ void * RunServerThread(void *arg){
 		gettimeofday(&current, NULL);
 		if(current.tv_sec - start.tv_sec >= execution_time + 5) {
 			fprintf(stdout, " [%s] Time's up! End connections\n", __func__);
-            for (int i = 0; i < num_connect; i++) {
-				CloseConnection(ctx, listener, 
-								&ctx->svars[listener]);
-			}
+            CloseConnection(ctx, listener, &ctx->svars[listener]);
             done[core] = TRUE;
 		}
 		
