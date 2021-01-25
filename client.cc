@@ -100,6 +100,7 @@ CloseConnection(thread_context_t ctx, int sockid)
 	mtcp_close(ctx->mctx, sockid);
 	ctx->pending--;
 	ctx->done++;
+/*
 	assert(ctx->pending >= 0);
 	while (ctx->pending < concurrency && ctx->started < ctx->target) {
 		if (CreateConnection(ctx) < 0) {
@@ -107,6 +108,7 @@ CloseConnection(thread_context_t ctx, int sockid)
 			break;
 		}
 	}
+*/
 }
 
 static inline int
@@ -337,7 +339,7 @@ void * RunClientThread(void * arg){
 
 		gettimeofday(&current, NULL);
 		if(current.tv_sec - start.tv_sec >= execution_time) {
-			fprintf(stdout, " [%s] Time's up! End connections", __func__);
+			fprintf(stdout, " [%s] Time's up! End connections\n", __func__);
             for (int i = 0; i < num_connect; i++) {
 				CloseConnection(ctx, connect_socket[i]);
 			}
