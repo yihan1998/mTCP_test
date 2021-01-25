@@ -290,7 +290,7 @@ void * RunClientThread(void * arg){
 		}
 */
 
-		while(num_connection < CONFIG.concurrency && num_connection < num_flow) {
+		while(num_connect < concurrency && num_connect < num_flow) {
             int ret;
 			if ((ret = CreateConnection(ctx)) < 0) {
 				done[core] = TRUE;
