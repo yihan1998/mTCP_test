@@ -361,7 +361,7 @@ void * RunServerThread(void *arg){
                     (send_bytes * 8.0) / (total_time * 1000 * 1000), reply / (total_time * 1000));
 
 	/* destroy mtcp context: this will kill the mtcp thread */
-	mtcp_destroy_context(mctx);
+	//mtcp_destroy_context(mctx);
 
 	pthread_exit(NULL);
 }

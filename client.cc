@@ -354,7 +354,7 @@ void * RunClientThread(void * arg){
 		}
 	}
 
-	DestroyContext(ctx);
+	//DestroyContext(ctx);
 
 	pthread_exit(NULL);
 }
