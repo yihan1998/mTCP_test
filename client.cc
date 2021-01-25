@@ -384,7 +384,7 @@ int main(int argc, char * argv[]){
     for (int i = 0; i < argc; i++){
         long long unsigned n;
         char junk;
-        if(sscanf(argv[i], "--num_coress=%llu%c", &n, &junk) == 1){
+        if(sscanf(argv[i], "--num_cores=%llu%c", &n, &junk) == 1){
             num_cores = n;
 			printf(" >> core num: %d\n", num_cores);
 			if (num_cores > MAX_CPUS) {

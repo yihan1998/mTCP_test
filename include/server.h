@@ -74,8 +74,8 @@ struct server_vars {
 //    struct ring_buf * recv_buf;
 };
 
+static int total_cores;
 static int num_cores;
-static int num_core;
 static pthread_t app_thread[MAX_CPUS];
 static int done[MAX_CPUS];
 static char *conf_file = NULL;

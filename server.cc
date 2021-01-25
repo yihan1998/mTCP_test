@@ -361,7 +361,7 @@ void * RunServerThread(void *arg){
 void SignalHandler(int signum){
 	int i;
 
-	for (i = 0; i < num_core; i++) {
+	for (i = 0; i < num_cores; i++) {
 		if (app_thread[i] == pthread_self()) {
 			//TRACE_INFO("Server thread %d got SIGINT\n", i);
 			done[i] = TRUE;
@@ -379,8 +379,8 @@ int main(int argc, char **argv){
 	int cores[MAX_CPUS];
 	int process_cpu;
 
-	num_cores = sysconf(_SC_NPROCESSORS_ONLN);
-	num_core = num_cores;
+	total_cores = sysconf(_SC_NPROCESSORS_ONLN);
+	num_cores = total_cores;
 	process_cpu = -1;
 
 	char conf_name[] = "server.conf";
@@ -394,16 +394,16 @@ int main(int argc, char **argv){
     for (int i = 0; i < argc; i++){
         long long unsigned n;
         char junk;
-        if(sscanf(argv[i], "--num_core=%llu%c", &n, &junk) == 1){
-            num_core = n;
-			printf(" >> core num: %d\n", num_core);
-			if (num_core > MAX_CPUS) {
+        if(sscanf(argv[i], "--num_cores=%llu%c", &n, &junk) == 1){
+            num_cores = n;
+			printf(" >> core num: %d\n", num_cores);
+			if (num_cores > MAX_CPUS) {
 				TRACE_CONFIG("CPU limit should be smaller than the "
 					     "number of CPUs: %d\n", MAX_CPUS);
 				return FALSE;
 			}
 			mtcp_getconf(&mcfg);
-			mcfg.num_cores = num_core;
+			mcfg.num_cores = num_cores;
 			mtcp_setconf(&mcfg);
         }else if(sscanf(argv[i], "--num_client=%llu%c", &n, &junk) == 1){
             client_num = n; 
@@ -447,7 +447,7 @@ int main(int argc, char **argv){
 
 	TRACE_INFO("Application initialization finished.\n");
 
-	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_core; i++) {
+	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_cores; i++) {
 		cores[i] = i;
 		done[i] = FALSE;
 		sv_thread_arg[i].core = i;
@@ -463,7 +463,7 @@ int main(int argc, char **argv){
 			break;
 	}
 	
-	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_core; i++) {
+	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_cores; i++) {
 		pthread_join(app_thread[i], NULL);
 
 		if (process_cpu != -1)
