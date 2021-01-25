@@ -262,7 +262,7 @@ void * RunClientThread(void * arg){
 
     fclose(fp);
 
-	int * connect_socket = (int *)malloc(concurrency, sizeof(int));
+	int * connect_socket = (int *)calloc(concurrency, sizeof(int));
 	int num_connect = 0;
 
 	while (!done[core]) {
