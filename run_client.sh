@@ -16,7 +16,7 @@ test_time=60
 #echo -n "number of connections: "
 #read num_connection
 
-for j in $(seq 0 10)
+for j in $(seq 0 8)
 do
     total_conn=`echo "2^$j" | bc `
 
