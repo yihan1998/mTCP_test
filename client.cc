@@ -354,9 +354,10 @@ void * RunClientThread(void * arg){
 		}
 	}
 
-	//DestroyContext(ctx);
-
+	mtcp_destroy_context(mctx);
 	pthread_exit(NULL);
+
+	return NULL;
 }
 
 void 
