@@ -343,7 +343,6 @@ void * RunClientThread(void * arg){
             for (int i = 0; i < num_connect; i++) {
 				CloseConnection(ctx, connect_socket[i]);
 			}
-			
             done[core] = 1;
 		}
 
