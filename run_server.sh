@@ -8,6 +8,7 @@ read buff_size
 #read num_core
 num_core=1
 
+test_time=60
 #echo -n "number of connections: "
 #read num_connection
 
@@ -22,6 +23,7 @@ do
 
     ./server    --num_core=$num_core \
                 --size=$buff_size \
+                --time=$test_time \
                 --num_client=$num_connection
 
     echo "Test done"

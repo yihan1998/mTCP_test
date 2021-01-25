@@ -8,6 +8,8 @@ int finish_num = 0;
 int tot_event;
 int round;
 
+int execution_time;
+
 #define TIMEVAL_TO_USEC(t)  (double)((t).tv_sec * 1000000.00 + (t).tv_usec)
 
 #define TEST_INTERVAL
@@ -345,12 +347,9 @@ void * RunServerThread(void *arg){
     double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
     double total_time = (end_time - start_time)/1000000.00;
 
-    printf(" >> recv data rate: %.2f(Mbps), recv request rate: %.2f, send data rate: %.2f(Mbps), send reply rate: %.2f\n", 
+    printf(" >> recv payload rate: %.2f(Mbps), recv request rate: %.2f, send payload rate: %.2f(Mbps), send reply rate: %.2f\n", 
                     (recv_bytes * 8.0) / (total_time * 1000 * 1000), request / (total_time * 1000), 
                     (send_bytes * 8.0) / (total_time * 1000 * 1000), reply / (total_time * 1000));
-
-	printf(" >> total events: %llu, round: %llu, events per round: %f\n", 
-                    tot_event, round, ((double)tot_event) / (double)round);
 
 	/* destroy mtcp context: this will kill the mtcp thread */
 	mtcp_destroy_context(mctx);
@@ -412,6 +411,9 @@ int main(int argc, char **argv){
         }else if(sscanf(argv[i], "--size=%llu%c", &n, &junk) == 1){
             buff_size = n;
 			printf(" >> buff size: %d\n", buff_size);
+        }else if(sscanf(argv[i], "--time=%llu%c", &n, &junk) == 1){
+            execution_time = n;
+			printf(" >> total time of execution: %d\n", execution_time);
         }else if(i > 0){
             printf("error (%s)!\n", argv[i]);
         }

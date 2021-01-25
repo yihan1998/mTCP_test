@@ -2,13 +2,18 @@
 
 int buff_size = 1024;
 
-int num_core;
+int num_cores;
 
 int num_flow;
 
 static char *conf_file = NULL;
 char server_ip[20];
 int server_port;
+
+int execution_time;
+
+int start_flag = 0;
+struct timeval start, current;
 
 thread_context_t 
 CreateContext(int core)
@@ -259,6 +264,9 @@ void * RunClientThread(void * arg){
 
     fclose(fp);
 
+	int * connect_socket = (int *)malloc(concurrency, sizeof(int));
+	int num_connect = 0;
+
 	while (!done[core]) {
 		gettimeofday(&cur_tv, NULL);
 		//cur_ts = TIMEVAL_TO_USEC(cur_tv);
@@ -270,10 +278,18 @@ void * RunClientThread(void * arg){
 		}
 
 		while (ctx->pending < concurrency && ctx->started < ctx->target) {
-			if (CreateConnection(ctx) < 0) {
+			int ret;
+			if ((ret = CreateConnection(ctx)) < 0) {
 				done[core] = TRUE;
 				break;
+			} else {
+				connect_socket[num_connect++] = ret;
 			}
+		}
+
+		if(!start_flag) {
+			gettimeofday(&start, NULL);
+			start_flag = 1;
 		}
 
 		nevents = mtcp_epoll_wait(mctx, ep, events, maxevents, -1);
@@ -321,6 +337,16 @@ void * RunClientThread(void * arg){
 			}
 		}
 
+		gettimeofday(&current, NULL);
+		if(current.tv_sec - start.tv_sec >= execution_time) {
+			fprintf(stdout, " [%s] Time's up! End connections", __func__);
+            for (int i = 0; i < num_connect; i++) {
+				CloseConnection(ctx, connect_socket[i]);
+			}
+			
+            done = 1;
+		}
+
 		if (ctx->done >= ctx->target) {
 			fprintf(stdout, "[CPU %d] Completed %d connections, "
 					"errors: %d incompletes: %d\n", 
@@ -358,16 +384,16 @@ int main(int argc, char * argv[]){
     for (int i = 0; i < argc; i++){
         long long unsigned n;
         char junk;
-        if(sscanf(argv[i], "--num_core=%llu%c", &n, &junk) == 1){
-            num_core = n;
-			printf(" >> core num: %d\n", num_core);
-			if (num_core > MAX_CPUS) {
+        if(sscanf(argv[i], "--num_coress=%llu%c", &n, &junk) == 1){
+            num_cores = n;
+			printf(" >> core num: %d\n", num_cores);
+			if (num_cores > MAX_CPUS) {
 				TRACE_CONFIG("CPU limit should be smaller than the "
 					     "number of CPUs: %d\n", MAX_CPUS);
 				return FALSE;
 			}
 			mtcp_getconf(&mcfg);
-			mcfg.num_cores = num_core;
+			mcfg.num_coress = num_cores;
 			mtcp_setconf(&mcfg);
         }else if(sscanf(argv[i], "--num_flow=%llu%c", &n, &junk) == 1){
             num_flow = n; 
@@ -375,6 +401,9 @@ int main(int argc, char * argv[]){
         }else if(sscanf(argv[i], "--size=%llu%c", &n, &junk) == 1){
             buff_size = n;
 			printf(" >> buff size: %d\n", buff_size);
+        }else if(sscanf(argv[i], "--time=%llu%c", &n, &junk) == 1){
+            execution_time = n;
+			printf(" >> total time of execution: %d\n", execution_time);
         }else if(sscanf(argv[i], "--server_ip=%s%c", server_ip, &junk) == 1) {
             printf("[CLIENT] server ip: %s\n", server_ip);
         }else if(sscanf(argv[i], "--server_port=%d%c", &server_port, &junk) == 1) {
@@ -406,7 +435,7 @@ int main(int argc, char * argv[]){
 
 	TRACE_INFO("Application initialization finished.\n");
 
-	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_core; i++) {
+	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_cores; i++) {
 		cores[i] = i;
 		done[i] = FALSE;
 		
@@ -420,7 +449,7 @@ int main(int argc, char * argv[]){
 			break;
 	}
 	
-	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_core; i++) {
+	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_cores; i++) {
 		pthread_join(app_thread[i], NULL);
 
 		if (process_cpu != -1)
