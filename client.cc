@@ -2,8 +2,6 @@
 
 int buff_size = 1024;
 
-int num_cores;
-
 int num_flow;
 
 static char *conf_file = NULL;
@@ -344,7 +342,7 @@ void * RunClientThread(void * arg){
 				CloseConnection(ctx, connect_socket[i]);
 			}
 			
-            done = 1;
+            done[core] = 1;
 		}
 
 		if (ctx->done >= ctx->target) {
@@ -393,7 +391,7 @@ int main(int argc, char * argv[]){
 				return FALSE;
 			}
 			mtcp_getconf(&mcfg);
-			mcfg.num_coress = num_cores;
+			mcfg.num_cores = num_cores;
 			mtcp_setconf(&mcfg);
         }else if(sscanf(argv[i], "--num_flow=%llu%c", &n, &junk) == 1){
             num_flow = n; 
