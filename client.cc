@@ -384,7 +384,7 @@ int main(int argc, char * argv[]){
     for (int i = 0; i < argc; i++){
         long long unsigned n;
         char junk;
-        if(sscanf(argv[i], "--num_cores=%llu%c", &n, &junk) == 1){
+        if(sscanf(argv[i], "--num_cores=%llu", &n) == 1){
             num_cores = n;
 			printf(" >> core num: %d\n", num_cores);
 			if (num_cores > MAX_CPUS) {
@@ -401,7 +401,7 @@ int main(int argc, char * argv[]){
         }else if(sscanf(argv[i], "--size=%llu%c", &n, &junk) == 1){
             buff_size = n;
 			printf(" >> buff size: %d\n", buff_size);
-        }else if(sscanf(argv[i], "--time=%llu%c", &n, &junk) == 1){
+        }else if(sscanf(argv[i], "--time=%llu", &n) == 1){
             execution_time = n;
 			printf(" >> total time of execution: %d\n", execution_time);
         }else if(sscanf(argv[i], "--server_ip=%s%c", server_ip, &junk) == 1) {
