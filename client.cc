@@ -272,11 +272,13 @@ void * RunClientThread(void * arg){
 		//cur_ts = TIMEVAL_TO_USEC(cur_tv);
 
 		/* print statistics every second */
+/*
 		if (core == 0 && cur_tv.tv_sec > prev_tv.tv_sec) {
 		  	PrintStats();
 			prev_tv = cur_tv;
 		}
-
+*/
+/*
 		while (ctx->pending < concurrency && ctx->started < ctx->target) {
 			int ret;
 			if ((ret = CreateConnection(ctx)) < 0) {
@@ -286,6 +288,17 @@ void * RunClientThread(void * arg){
 				connect_socket[num_connect++] = ret;
 			}
 		}
+*/
+
+		while(num_connection < CONFIG.concurrency && num_connection < num_flow) {
+            int ret;
+			if ((ret = CreateConnection(ctx)) < 0) {
+				done[core] = TRUE;
+				break;
+			} else {
+				connect_socket[num_connect++] = ret;
+			}
+        }
 
 		if(!start_flag) {
 			gettimeofday(&start, NULL);
