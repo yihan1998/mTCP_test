@@ -333,7 +333,7 @@ void * RunServerThread(void *arg){
 
 		struct timeval current;
 		gettimeofday(&current, NULL);
-		if(current.tv_sec - start.tv_sec >= execution_time + 5) {
+		if(current.tv_sec - start.tv_sec >= execution_time) {
 			fprintf(stdout, " [%s] Time's up! End connections\n", __func__);
             CloseConnection(ctx, listener, &ctx->svars[listener]);
             done[core] = TRUE;
