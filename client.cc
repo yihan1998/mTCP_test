@@ -292,6 +292,7 @@ void * RunClientThread(void * arg){
 
 		while(num_connect < concurrency && num_connect < num_flow) {
             int ret;
+			fprintf(stdout, " creating new connection\n");
 			if ((ret = CreateConnection(ctx)) < 0) {
 				done[core] = TRUE;
 				break;
@@ -356,7 +357,7 @@ void * RunClientThread(void * arg){
             for (int i = 0; i < num_connect; i++) {
 				CloseConnection(ctx, connect_socket[i]);
 			}
-            done[core] = 1;
+            done[core] = TRUE;
 		}
 
 		if (ctx->done >= ctx->target) {
