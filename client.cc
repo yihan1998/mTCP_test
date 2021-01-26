@@ -361,7 +361,7 @@ int main(int argc, char * argv[]){
             printf(" >> server ip: %s\n", server_ip);
         }else if(sscanf(argv[i], "--server_port=%d%c", &server_port, &junk) == 1) {
             printf(" >> server port: %d\n", server_port);
-        }else if(sscanf(argv[i], "--benchmark=%s", s) == 1){
+        }else if(sscanf(argv[i], "--benchmark=%s%c", s, &junk) == 1){
             printf(" >> test: %s\n", s);
             if (!strcmp(s, "open")) {
                 benchmark = OPENLOOP;
