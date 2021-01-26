@@ -332,11 +332,10 @@ int main(int argc, char * argv[]){
 	char conf_name[] = "client.conf";
 	conf_file = conf_name;
 
-	char s[20];
-
     for (int i = 0; i < argc; i++){
         long long unsigned n;
         char junk;
+		char s[20];
         if(sscanf(argv[i], "--num_cores=%llu", &n) == 1){
             num_cores = n;
 			printf(" >> core num: %d\n", num_cores);
@@ -362,7 +361,7 @@ int main(int argc, char * argv[]){
         }else if(sscanf(argv[i], "--server_port=%d%c", &server_port, &junk) == 1) {
             printf(" >> server port: %d\n", server_port);
         }else if(sscanf(argv[i], "--benchmark=%s%c", s, &junk) == 1){
-            printf(" >> test: %s\n", s);
+            printf(" >> test: %s!", s);
             if (!strcmp(s, "open")) {
                 benchmark = OPENLOOP;
                 printf(" >> running open loop test");
