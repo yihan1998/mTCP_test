@@ -171,7 +171,7 @@ HandleWriteEvent(thread_context_t ctx, int sockid, struct conn_stat * var)
 
 	if (benchmark == CLOSELOOP) {
 		struct mtcp_epoll_event ev;
-		ev.events = MTCP_EPOLLOUT;
+		ev.events = MTCP_EPOLLIN;
 		ev.data.ptr = var;
 		mtcp_epoll_ctl(mctx, ctx->ep, MTCP_EPOLL_CTL_MOD, sockid, &ev);
 	}
@@ -361,7 +361,6 @@ int main(int argc, char * argv[]){
         }else if(sscanf(argv[i], "--server_port=%d%c", &server_port, &junk) == 1) {
             printf(" >> server port: %d\n", server_port);
         }else if(sscanf(argv[i], "--test_mode=%s%c", s, &junk)){
-            printf(" >> test: %s!", s);
             if (!strcmp(s, "open")) {
                 benchmark = OPENLOOP;
                 printf(" >> running open loop test");
