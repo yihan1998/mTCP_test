@@ -1,7 +1,6 @@
 #include "common.h"
 
 static struct thread_context *g_ctx[MAX_CPUS] = {0};
-static struct client_stat *g_stat[MAX_CPUS] = {0};
 
 #define MAX_URL_LEN 128
 #define FILE_LEN    128
@@ -57,71 +56,39 @@ int fin_client_thread = 0;
 pthread_mutex_t rtt_lock;
 #endif
 
-struct debug_response_arg {
-    struct event * read_ev;
-    struct send_info * info;
-    FILE * fp;
-};
-
-struct response_arg {
-    struct event * read_ev;
-    struct send_info * info;
-};
-
-#define RESPONSE_ARG_SIZE sizeof(struct response_arg)
-
 struct send_info {
     int * sockfd;
 //    pthread_mutex_t * send_lock;
     int * send_byte;
 //    pthread_mutex_t * recv_lock;
     int * recv_byte;
-    struct hikv_arg * hikv_thread_arg;
     int thread_id;
 };
 
-struct client_vars
-{
-	int request_sent;
-
-	char response[HTTP_HEADER_LEN];
-	int resp_len;
-	int headerset;
-	uint32_t header_len;
-	uint64_t file_len;
-	uint64_t recv;
-	uint64_t write;
-
-	struct timeval t_start;
-	struct timeval t_end;
-	
-	int fd;
-	char * file_ptr;
+struct sock_info {
+    char * file_ptr;
+    int total_send;
+    int total_recv;
+#ifdef EVAL_RTT
+    struct timeval start;
+#endif
 };
 
-struct client_stat
-{
-	uint64_t waits;
-	uint64_t events;
-	uint64_t connects;
-	uint64_t reads;
-	uint64_t writes;
-	uint64_t completes;
+#define SOCK_INFO_SIZE  sizeof(struct sock_info)
 
-	uint64_t errors;
-	uint64_t timedout;
-
-	uint64_t sum_resp_time;
-	uint64_t max_resp_time;
+struct conn_stat {
+    int sockfd;
+    int complete;
+    struct sock_info * info;
 };
 
-struct thread_context
-{
+#define CONN_STAT_SIZE sizeof(struct conn_stat)
+
+struct thread_context {
 	int core;
 
 	mctx_t mctx;
 	int ep;
-	struct client_vars *vars;
 
 	int target;
 	int started;
@@ -130,8 +97,13 @@ struct thread_context
 	int done;
 	int pending;
 
-	struct client_stat stat;
+	struct conn_stat * stats;
 };
+
+typedef enum {
+    CLOSELOOP,
+    OPENLOOP,
+} test_t;
 
 char input_file[M_512];
 

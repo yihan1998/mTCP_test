@@ -13,6 +13,10 @@ int execution_time;
 int start_flag = 0;
 struct timeval start, current;
 
+test_t benchmark;
+
+__thread int num_connection;
+
 thread_context_t 
 CreateContext(int core)
 {
@@ -55,14 +59,12 @@ int CreateConnection(thread_context_t ctx){
 		TRACE_INFO("Failed to create socket!\n");
 		return -1;
 	}
-	memset(&ctx->vars[sockid], 0, sizeof(struct client_vars));
+
 	ret = mtcp_setsock_nonblock(mctx, sockid);
 	if (ret < 0) {
 		TRACE_ERROR("Failed to set socket in nonblocking mode.\n");
 		exit(-1);
 	}
-
-    ctx->vars[sockid].file_ptr = input_file;
 
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = inet_addr(server_ip);
@@ -80,11 +82,22 @@ int CreateConnection(thread_context_t ctx){
 
 	ctx->started++;
 	ctx->pending++;
-	ctx->stat.connects++;
+
+	ctx->stats[num_connection].sockfd = sockid;
+	ctx->stats[num_connection].complete = 0;
+
+	struct sock_info * info = (struct sock_info *)calloc(1, SOCK_INFO_SIZE);
+    info->file_ptr = input_file;
+    info->total_send = 0;
+    info->total_recv = 0;
+
+    ctx->stats[num_connection].info = info;
 
 	ev.events = MTCP_EPOLLOUT;
-	ev.data.sockid = sockid;
+	ev.data.ptr = &ctx->stats[num_connection];
 	mtcp_epoll_ctl(mctx, ctx->ep, MTCP_EPOLL_CTL_ADD, sockid, &ev);
+
+	num_connection++;
 
 	return sockid;
 }
@@ -108,8 +121,10 @@ CloseConnection(thread_context_t ctx, int sockid)
 }
 
 static inline int
-HandleReadEvent(thread_context_t ctx, int sockid, struct client_vars *vars)
+HandleReadEvent(thread_context_t ctx, int sockid, struct conn_stat * var)
 {
+    struct sock_info * info = var->info;
+ 
     mctx_t mctx = ctx->mctx;
 
     char recv_buff[buff_size];
@@ -118,77 +133,50 @@ HandleReadEvent(thread_context_t ctx, int sockid, struct client_vars *vars)
     //printf(" [%s] recv data(len: %d): %.*s\n", __func__, recv_len, recv_len, recv_buff);
     int len = mtcp_read(mctx, sockid, recv_buff, buff_size);
     
+	if(len <= 0) {
+        return len;
+    }
+
+	info->total_recv += len;
+
+    if (benchmark == CLOSELOOP && info->total_recv == info->total_send) {
+        /* Close loop test */
+        struct mtcp_epoll_event ev;
+        ev.events = EPOLLIN | EPOLLOUT;
+        ev.data.ptr = var;
+
+		mtcp_epoll_ctl(mctx, ctx->ep, MTCP_EPOLL_CTL_MOD, sockid, &ev);
+    }
+
+	return len;
 }
 
 static inline int
-HandleWriteEvent(thread_context_t ctx, int sockid, struct client_vars *vars)
+HandleWriteEvent(thread_context_t ctx, int sockid, struct conn_stat * var)
 {
+    struct sock_info * info = var->info;
+
     mctx_t mctx = ctx->mctx;
 
-    if (vars->file_ptr + buff_size >= input_file + M_512) {
-        vars->file_ptr = input_file;
+    if (info->file_ptr + buff_size >= input_file + M_512) {
+        info->file_ptr = input_file;
     }
 
     int send_len = mtcp_write(mctx, sockid, vars->file_ptr, buff_size);
-    vars->write += send_len;
 
-    vars->file_ptr = input_file + ((vars->file_ptr - input_file) + send_len) % M_512;
-}
+	if(send_len < 0) {
+        return send_len;
+    }
+    
+	info->total_send += send_len;
+    info->file_ptr = input_file + ((info->file_ptr - input_file) + send_len) % M_512;
 
-static void 
-PrintStats()
-{
-	struct client_stat total = {0};
-	struct client_stat *st;
-	uint64_t avg_resp_time;
-	uint64_t total_resp_time = 0;
-	int i;
-
-	for (i = 0; i < core_limit; i++) {
-		st = g_stat[i];
-
-		if (st == NULL) continue;
-		avg_resp_time = st->completes? st->sum_resp_time / st->completes : 0;
-#if 0
-		fprintf(stderr, "[CPU%2d] epoll_wait: %5lu, event: %7lu, "
-				"connect: %7lu, read: %4lu MB, write: %4lu MB, "
-				"completes: %7lu (resp_time avg: %4lu, max: %6lu us), "
-				"errors: %2lu (timedout: %2lu)\n", 
-				i, st->waits, st->events, st->connects, 
-				st->reads / 1024 / 1024, st->writes / 1024 / 1024, 
-				st->completes, avg_resp_time, st->max_resp_time, 
-				st->errors, st->timedout);
-#endif
-
-		total.waits += st->waits;
-		total.events += st->events;
-		total.connects += st->connects;
-		total.reads += st->reads;
-		total.writes += st->writes;
-		total.completes += st->completes;
-		total_resp_time += avg_resp_time;
-		if (st->max_resp_time > total.max_resp_time)
-			total.max_resp_time = st->max_resp_time;
-		total.errors += st->errors;
-		total.timedout += st->timedout;
-
-		memset(st, 0, sizeof(struct client_stat));		
+	if (benchmark == CLOSELOOP) {
+		struct mtcp_epoll_event ev;
+		ev.events = MTCP_EPOLLOUT;
+		ev.data.ptr = var;
+		mtcp_epoll_ctl(mctx, ctx->ep, MTCP_EPOLL_CTL_MOD, sockid, &ev);
 	}
-	fprintf(stderr, "[ ALL ] connect: %7lu, read: %4lu MB, write: %4lu MB, "
-			"completes: %7lu (resp_time avg: %4lu, max: %6lu us)\n", 
-			total.connects, 
-			total.reads / 1024 / 1024, total.writes / 1024 / 1024, 
-			total.completes, total_resp_time / core_limit, total.max_resp_time);
-#if 0
-	fprintf(stderr, "[ ALL ] epoll_wait: %5lu, event: %7lu, "
-			"connect: %7lu, read: %4lu MB, write: %4lu MB, "
-			"completes: %7lu (resp_time avg: %4lu, max: %6lu us), "
-			"errors: %2lu (timedout: %2lu)\n", 
-			total.waits, total.events, total.connects, 
-			total.reads / 1024 / 1024, total.writes / 1024 / 1024, 
-			total.completes, total_resp_time / core_limit, total.max_resp_time, 
-			total.errors, total.timedout);
-#endif
 }
 
 void * RunClientThread(void * arg){
@@ -200,7 +188,6 @@ void * RunClientThread(void * arg){
 	int ep;
 	struct mtcp_epoll_event *events;
 	int nevents;
-	struct client_vars *vars;
 	int i;
 
 	struct timeval cur_tv, prev_tv;
@@ -240,12 +227,7 @@ void * RunClientThread(void * arg){
 	}
 	ctx->ep = ep;
 
-	vars = (struct client_vars *)calloc(max_fds, sizeof(struct client_vars));
-	if (!vars) {
-		fprintf(stderr,"Failed to create wget variables!\n");
-		exit(EXIT_FAILURE);
-	}
-	ctx->vars = vars;
+	ctx->stats = (struct conn_stat *)calloc(max_fds, CONN_STAT_SIZE);
 
 	ctx->started = ctx->done = ctx->pending = 0;
 	ctx->errors = ctx->incompletes = 0;
@@ -261,38 +243,15 @@ void * RunClientThread(void * arg){
     fclose(fp);
 
 	int * connect_socket = (int *)calloc(concurrency, sizeof(int));
-	int num_connect = 0;
 
 	while (!done[core]) {
 		gettimeofday(&cur_tv, NULL);
-		//cur_ts = TIMEVAL_TO_USEC(cur_tv);
 
-		/* print statistics every second */
-/*
-		if (core == 0 && cur_tv.tv_sec > prev_tv.tv_sec) {
-		  	PrintStats();
-			prev_tv = cur_tv;
-		}
-*/
-/*
-		while (ctx->pending < concurrency && ctx->started < ctx->target) {
-			int ret;
-			if ((ret = CreateConnection(ctx)) < 0) {
-				done[core] = TRUE;
-				break;
-			} else {
-				connect_socket[num_connect++] = ret;
-			}
-		}
-*/
-
-		while(num_connect < concurrency && num_connect < num_flow) {
+		while(num_connection < concurrency && num_connection < num_flow) {
             int ret;
 			if ((ret = CreateConnection(ctx)) < 0) {
 				done[core] = TRUE;
 				break;
-			} else {
-				connect_socket[num_connect++] = ret;
 			}
         }
 
@@ -313,42 +272,39 @@ void * RunClientThread(void * arg){
 		}
 
 		for (i = 0; i < nevents; i++) {
+            struct conn_stat * var = (struct conn_stat *)events[i].data.ptr;
 
 			if (events[i].events & MTCP_EPOLLERR) {
 				int err;
 				socklen_t len = sizeof(err);
 
 				fprintf(stdout,"[CPU %d] Error on socket %d\n", 
-						core, events[i].data.sockid);
-				ctx->stat.errors++;
+						core, var->sockfd);
 				ctx->errors++;
-				if (mtcp_getsockopt(mctx, events[i].data.sockid, 
-							SOL_SOCKET, SO_ERROR, (void *)&err, &len) == 0) {
-					if (err == ETIMEDOUT)
-						ctx->stat.timedout++;
-				}
-				CloseConnection(ctx, events[i].data.sockid);
+				CloseConnection(ctx, var->sockfd);
 
 			} else if (events[i].events & MTCP_EPOLLIN) {
-				HandleReadEvent(ctx, 
-						events[i].data.sockid, &vars[events[i].data.sockid]);
+				HandleReadEvent(ctx, var->sockfd, var);
 
 			} else if (events[i].events == MTCP_EPOLLOUT) {
-				HandleWriteEvent(ctx, 
-						events[i].data.sockid, &vars[events[i].data.sockid]);
+				HandleWriteEvent(ctx, var->sockfd, var);
 
 			} else {
 				fprintf(stdout,"Socket %d: event: %s\n", 
-						events[i].data.sockid, EventToString(events[i].events));
+						var->sockfd, EventToString(events[i].events));
 				assert(0);
 			}
 		}
 
 		gettimeofday(&current, NULL);
 		if(current.tv_sec - start.tv_sec >= execution_time) {
-			fprintf(stdout, " [%s] Time's up! End %d connections\n", __func__, num_connect);
-            for (int i = 0; i < num_connect; i++) {
-				CloseConnection(ctx, connect_socket[i]);
+			fprintf(stdout, " [%s] Time's up! End %d connections\n", __func__, num_connection);
+            for (int i = 0; i < num_connection; i++) {
+				struct conn_stat * var = &stats[i];
+	            if (!var->complete) {
+    	            CloseConnection(ctx, var->sockfd);
+					var->complete = 1;
+            	}
 			}
             done[core] = TRUE;
 		}
@@ -404,9 +360,17 @@ int main(int argc, char * argv[]){
             execution_time = n;
 			printf(" >> total time of execution: %d\n", execution_time);
         }else if(sscanf(argv[i], "--server_ip=%s%c", server_ip, &junk) == 1) {
-            printf("[CLIENT] server ip: %s\n", server_ip);
+            printf(" >> server ip: %s\n", server_ip);
         }else if(sscanf(argv[i], "--server_port=%d%c", &server_port, &junk) == 1) {
-            printf("[CLIENT] server port: %d\n", server_port);
+            printf(" >> server port: %d\n", server_port);
+        }else if(sscanf(argv[i], "--benchmark=%s%c", s, &junk) == 1){
+            if (!strcmp(s, "open")) {
+                benchmark = OPENLOOP;
+                printf(" >> running open loop test");
+            } else if (!strcmp(s, "close")) {
+                benchmark = CLOSELOOP;
+                printf(" >> running close loop test");
+            }
         }else if(i > 0){
             printf("error (%s)!\n", argv[i]);
         }
