@@ -13,6 +13,9 @@ max_cores=4
 
 test_time=60
 
+echo -n "benchmark type[open/close loop]?: "
+read test_mode
+
 #echo -n "number of connections: "
 #read num_connection
 
@@ -36,7 +39,8 @@ do
                 --size=$buff_size \
                 --time=$test_time \
                 --server_ip=$server_ip \
-                --server_port=$server_port
+                --server_port=$server_port \
+                --test_mode=$test_mode
     
     wait
 
