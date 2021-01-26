@@ -64,7 +64,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		if(send_len < 0) {
             return send_len;
         }
-		
+
 		send_bytes += send_len;
 		reply++;
 	}
@@ -406,6 +406,8 @@ int main(int argc, char **argv){
 		TRACE_CONFIG("$%s directory_to_service\n", argv[0]);
 		return FALSE;
 	}
+
+	char s[20];
 
     for (int i = 0; i < argc; i++){
         long long unsigned n;
