@@ -100,11 +100,6 @@ struct thread_context {
 	struct conn_stat * stats;
 };
 
-typedef enum {
-    CLOSELOOP,
-    OPENLOOP,
-} test_t;
-
 char input_file[M_512];
 
 typedef struct thread_context* thread_context_t;

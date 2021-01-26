@@ -58,9 +58,16 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	recv_bytes += len;
 	request++;
 
-//	int send_len = mtcp_write(ctx->mctx, sockid, buff, len);
-//	send_bytes += send_len;
-//	reply++;
+	if (benchmark == CLOSELOOP) {
+		int send_len = mtcp_write(ctx->mctx, sockid, buff, len);
+
+		if(send_len < 0) {
+            return send_len;
+        }
+		
+		send_bytes += send_len;
+		reply++;
+	}
 
     return len;
 }
@@ -423,6 +430,14 @@ int main(int argc, char **argv){
         }else if(sscanf(argv[i], "--time=%llu%c", &n, &junk) == 1){
             execution_time = n;
 			printf(" >> total time of execution: %d\n", execution_time);
+        }else if(sscanf(argv[i], "--benchmark=%s%c", s, &junk) == 1){
+            if (!strcmp(s, "open")) {
+                benchmark = OPENLOOP;
+                printf(" >> running open loop test");
+            } else if (!strcmp(s, "close")) {
+                benchmark = CLOSELOOP;
+                printf(" >> running close loop test");
+            }
         }else if(i > 0){
             printf("error (%s)!\n", argv[i]);
         }

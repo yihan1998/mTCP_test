@@ -78,5 +78,12 @@ struct client_arg {
     int port;
 };
 
+typedef enum {
+    CLOSELOOP,
+    OPENLOOP,
+} test_t;
+
+test_t benchmark;
+
 static pthread_t cl_thread[110];
 static struct client_arg cl_thread_arg[110];

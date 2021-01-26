@@ -13,8 +13,6 @@ int execution_time;
 int start_flag = 0;
 struct timeval start, current;
 
-test_t benchmark;
-
 __thread int num_connection;
 
 thread_context_t 
