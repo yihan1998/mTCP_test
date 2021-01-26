@@ -260,7 +260,6 @@ void * RunClientThread(void * arg){
 		}
 
 		nevents = mtcp_epoll_wait(mctx, ep, events, maxevents, -1);
-		ctx->stat.waits++;
 	
 		if (nevents < 0) {
 			if (errno != EINTR) {
