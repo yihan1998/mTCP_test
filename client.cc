@@ -360,7 +360,7 @@ int main(int argc, char * argv[]){
             printf(" >> server ip: %s\n", server_ip);
         }else if(sscanf(argv[i], "--server_port=%d%c", &server_port, &junk) == 1) {
             printf(" >> server port: %d\n", server_port);
-        }else if(sscanf(argv[i], "--test_case=%s%c", s, &junk)){
+        }else if(sscanf(argv[i], "--test_mode=%s%c", s, &junk)){
             printf(" >> test: %s!", s);
             if (!strcmp(s, "open")) {
                 benchmark = OPENLOOP;
