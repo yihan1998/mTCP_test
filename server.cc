@@ -432,7 +432,8 @@ int main(int argc, char **argv){
         }else if(sscanf(argv[i], "--time=%llu%c", &n, &junk) == 1){
             execution_time = n;
 			printf(" >> total time of execution: %d\n", execution_time);
-        }else if(sscanf(argv[i], "--benchmark=%s%c", s, &junk) == 1){
+        }else if(sscanf(argv[i], "--benchmark=%s%c", s, &junk)){
+            printf(" >> test: %s!", s);
             if (!strcmp(s, "open")) {
                 benchmark = OPENLOOP;
                 printf(" >> running open loop test");
