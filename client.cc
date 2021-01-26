@@ -362,6 +362,7 @@ int main(int argc, char * argv[]){
         }else if(sscanf(argv[i], "--server_port=%d%c", &server_port, &junk) == 1) {
             printf(" >> server port: %d\n", server_port);
         }else if(sscanf(argv[i], "--benchmark=%s", s) == 1){
+            printf(" >> test: %s\n", s);
             if (!strcmp(s, "open")) {
                 benchmark = OPENLOOP;
                 printf(" >> running open loop test");
