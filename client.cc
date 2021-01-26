@@ -126,10 +126,8 @@ HandleReadEvent(thread_context_t ctx, int sockid, struct conn_stat * var)
     mctx_t mctx = ctx->mctx;
 
     char recv_buff[buff_size];
-    int recv_len = 0;
-    //printf(" [%s] total recv: %d, total send: %d\n", __func__, total_recv, total_send);
-    //printf(" [%s] recv data(len: %d): %.*s\n", __func__, recv_len, recv_len, recv_buff);
-    int len = mtcp_read(mctx, sockid, recv_buff, buff_size);
+    
+	int len = mtcp_read(mctx, sockid, recv_buff, buff_size);
     
 	if(len <= 0) {
         return len;
