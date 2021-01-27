@@ -16,9 +16,9 @@ struct timeval start, current;
 __thread int num_connection;
 
 #ifdef EVAL_RTT
-long long * rtt_buff;
-int rtt_buff_len;
-FILE * rtt_file;
+__thread long long * rtt_buff;
+__thread int rtt_buff_len;
+__thread FILE * rtt_file;
 #endif
 
 thread_context_t 
