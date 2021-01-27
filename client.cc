@@ -263,6 +263,16 @@ void * RunClientThread(void * arg){
 
     fclose(fp);
 
+#ifdef EVAL_RTT
+    char name[20];
+    sprintf(name, "rtt_core_%d.txt", core);
+    rtt_file = fopen(name, "wb");
+    fseek(rtt_file, 0, SEEK_END);
+
+    rtt_buff = (long long *)calloc(M_128, sizeof(long long));
+    rtt_buff_len = 0;
+#endif
+
 	int * connect_socket = (int *)calloc(concurrency, sizeof(int));
 
 	while (!done[core]) {
@@ -413,16 +423,6 @@ int main(int argc, char * argv[]){
 	mcfg.max_concurrency = max_fds;
 	mcfg.max_num_buffers = max_fds;
 	mtcp_setconf(&mcfg);
-
-#ifdef EVAL_RTT
-    char name[20];
-    sprintf(name, "rtt_core_%d.txt", core_id);
-    rtt_file = fopen(name, "wb");
-    fseek(rtt_file, 0, SEEK_END);
-
-    rtt_buff = (long long *)calloc(M_128, sizeof(long long));
-    rtt_buff_len = 0;
-#endif
 	
 	/* register signal handler to mtcp */
 	mtcp_register_signal(SIGINT, SignalHandler);
