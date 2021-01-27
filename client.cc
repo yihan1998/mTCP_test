@@ -15,6 +15,12 @@ struct timeval start, current;
 
 __thread int num_connection;
 
+#ifdef EVAL_RTT
+long long * rtt_buff;
+int rtt_buff_len;
+FILE * rtt_file;
+#endif
+
 thread_context_t 
 CreateContext(int core)
 {
