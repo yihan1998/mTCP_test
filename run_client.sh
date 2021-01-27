@@ -29,7 +29,7 @@ fi
 
 rm rtt_*.txt
 
-make clean && make RTT=$eval_rtt
+make clean && make client RTT=$eval_rtt
 
 #echo -n "number of connections: "
 #read num_connection

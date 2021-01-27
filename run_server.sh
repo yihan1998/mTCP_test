@@ -14,6 +14,8 @@ read test_time
 #echo -n "number of connections: "
 #read num_connection
 
+make clean && make server 
+
 echo -n "benchmark type[open/close loop]?: "
 read test_mode
 
