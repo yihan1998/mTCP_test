@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo -n "buffer size: "
+echo -n "Buffer size(B): "
 read buff_size
 #buff_size=1024
 
@@ -8,7 +8,9 @@ read buff_size
 #read num_core
 num_cores=1
 
-test_time=60
+echo -n "Total test time(s): "
+read test_time
+
 #echo -n "number of connections: "
 #read num_connection
 
