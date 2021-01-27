@@ -159,13 +159,17 @@ handle_read_event(int epfd, int sockfd, struct param * vars) {
 #ifdef EVAL_RTT
     struct timeval current;
     gettimeofday(&current, NULL);
+    
     long long elapsed;
     if (current.tv_usec < info->start.tv_usec) {
         elapsed = 1000000 + current.tv_usec - info->start.tv_usec;
     } else {
         elapsed = current.tv_usec - info->start.tv_usec;
     }
-    rtt_buff[rtt_buff_len++] = elapsed;
+
+    if (rtt_buff_len < M_128) {
+        rtt_buff[rtt_buff_len++] = elapsed;
+    }
 #endif
 
     if (info->total_recv == info->total_send) {

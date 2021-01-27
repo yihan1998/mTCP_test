@@ -31,8 +31,6 @@
 
 #include "sizes.h"
 
-//#define EVAL_RTT
-
 /* Client thread args */
 struct client_arg {
     int core_id;

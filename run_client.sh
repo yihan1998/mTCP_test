@@ -3,7 +3,7 @@
 server_ip='10.0.0.2'
 server_port=80
 
-echo -n "buffer size: "
+echo -n "Buffer size(B): "
 read buff_size
 #buff_size=1024
 
@@ -11,10 +11,25 @@ read buff_size
 #read num_core
 max_cores=4
 
-test_time=60
+echo -n "Total test time(s): "
+read test_time
 
-echo -n "benchmark type[open/close loop]?: "
+echo -n "Benchmark type[open/close loop]?: "
 read test_mode
+
+echo -n "Record Round Trip Time[yes/no]?: "
+read record_rtt
+
+if [[ "$record_rtt" == *"yes"* ]];then
+    echo " >> evaluting Round Trip Time"
+    eval_rtt=1
+else
+    eval_rtt=0
+fi
+
+rm rtt_*.txt
+
+make clean && make RTT=$eval_rtt
 
 #echo -n "number of connections: "
 #read num_connection
@@ -46,5 +61,11 @@ do
 
     echo "Test done"
 
-    sleep 10
+    sleep 5
+
+    if [ $eval_rtt -eq 1 ]
+    then
+        total=`expr $num_cores \* $num_flow`
+        python merge_file.py $total
+    fi
 done

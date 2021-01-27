@@ -79,6 +79,10 @@ LIBS += -L$(LIBCCP) -lccp -lstartccp
 INC += -I$(LIBCCP)
 endif
 
+ifeq ($(RTT),1)
+CFLAGS += -DEVAL_RTT
+endif
+
 server: server.cc 
 	$(CC) $(CFLAGS) ${MTCP_FLD}/lib/libmtcp.a $^ $(INC) ${LIBS} ${UTIL_OBJ} -o $@ $(LDFLAGS) 
 
