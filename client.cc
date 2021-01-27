@@ -340,6 +340,15 @@ void * RunClientThread(void * arg){
 		}
 	}
 
+#ifdef EVAL_RTT
+    for (int i = 0; i < rtt_buff_len; i++) {
+        fprintf(rtt_file, "%llu\n", rtt_buff[i]);
+        fflush(rtt_file);
+    }
+
+    fclose(rtt_file);
+#endif
+
 	mtcp_destroy_context(mctx);
 	pthread_exit(NULL);
 
