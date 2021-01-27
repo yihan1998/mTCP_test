@@ -1,4 +1,5 @@
 #!/bin/bash
+trap 'exit' TERM
 
 echo -n "Buffer size(B): "
 read buff_size

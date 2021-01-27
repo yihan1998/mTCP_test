@@ -1,4 +1,5 @@
 #!/bin/bash
+trap 'exit' TERM
 
 server_ip='10.0.0.2'
 server_port=80
