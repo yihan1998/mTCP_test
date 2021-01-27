@@ -11,13 +11,13 @@ num_cores=1
 echo -n "Total test time(s): "
 read test_time
 
+echo -n "benchmark type[open/close loop]?: "
+read test_mode
+
 #echo -n "number of connections: "
 #read num_connection
 
 make clean && make server 
-
-echo -n "benchmark type[open/close loop]?: "
-read test_mode
 
 for j in $(seq 0 8)
 do
