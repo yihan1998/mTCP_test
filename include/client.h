@@ -42,19 +42,12 @@ static int concurrency = 100;
 static int max_fds = 300;
 static uint64_t response_size = 0;
 
-//#define RECEIVE_DEBUG
-
-//#define __EV_RTT__
-
 //pthread_mutex_t work_done_lock;
 int work_done_flag = 0;
 
 //pthread_mutex_t fin_client_thread_lock;
 int fin_client_thread = 0;
 
-#ifdef __EV_RTT__
-pthread_mutex_t rtt_lock;
-#endif
 
 struct send_info {
     int * sockfd;

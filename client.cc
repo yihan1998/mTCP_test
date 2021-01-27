@@ -135,6 +135,22 @@ HandleReadEvent(thread_context_t ctx, int sockid, struct conn_stat * var)
 
 	info->total_recv += len;
 
+#ifdef EVAL_RTT
+    struct timeval current;
+    gettimeofday(&current, NULL);
+
+    long long elapsed;
+    if (current.tv_usec < info->start.tv_usec) {
+        elapsed = 1000000 + current.tv_usec - info->start.tv_usec;
+    } else {
+        elapsed = current.tv_usec - info->start.tv_usec;
+    }
+
+    if (rtt_buff_len < M_128) {
+        rtt_buff[rtt_buff_len++] = elapsed;
+    }
+#endif
+
     if (benchmark == CLOSELOOP && info->total_recv == info->total_send) {
         /* Close loop test */
         struct mtcp_epoll_event ev;
@@ -157,6 +173,10 @@ HandleWriteEvent(thread_context_t ctx, int sockid, struct conn_stat * var)
     if (info->file_ptr + buff_size >= input_file + M_512) {
         info->file_ptr = input_file;
     }
+
+#ifdef EVAL_RTT
+    gettimeofday(&info->start, NULL);
+#endif
 
     int send_len = mtcp_write(mctx, sockid, info->file_ptr, buff_size);
 
@@ -387,6 +407,16 @@ int main(int argc, char * argv[]){
 	mcfg.max_concurrency = max_fds;
 	mcfg.max_num_buffers = max_fds;
 	mtcp_setconf(&mcfg);
+
+#ifdef EVAL_RTT
+    char name[20];
+    sprintf(name, "rtt_core_%d.txt", core_id);
+    rtt_file = fopen(name, "wb");
+    fseek(rtt_file, 0, SEEK_END);
+
+    rtt_buff = (long long *)calloc(M_128, sizeof(long long));
+    rtt_buff_len = 0;
+#endif
 	
 	/* register signal handler to mtcp */
 	mtcp_register_signal(SIGINT, SignalHandler);
