@@ -345,8 +345,6 @@ void * RunClientThread(void * arg){
 		}
 	}
 
-	free(input_file);
-
 	free(connect_socket);
 	
 	free(events);
