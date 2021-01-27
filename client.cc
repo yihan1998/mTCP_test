@@ -49,6 +49,11 @@ void
 DestroyContext(thread_context_t ctx) 
 {
 	mtcp_destroy_context(ctx->mctx);
+	for (int i = 0; i < num_connection; i++) {
+		free(ctx->stats[i].info);
+	}
+	
+	free(ctx->stats);
 }
 
 int CreateConnection(thread_context_t ctx){
@@ -340,6 +345,12 @@ void * RunClientThread(void * arg){
 		}
 	}
 
+	free(input_file);
+
+	free(connect_socket);
+	
+	free(events);
+
 #ifdef EVAL_RTT
     for (int i = 0; i < rtt_buff_len; i++) {
         fprintf(rtt_file, "%llu\n", rtt_buff[i]);
@@ -347,6 +358,7 @@ void * RunClientThread(void * arg){
     }
 
     fclose(rtt_file);
+	free(rtt_buff);
 #endif
 
 	mtcp_destroy_context(mctx);
