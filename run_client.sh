@@ -62,7 +62,7 @@ do
 
     echo "Test done"
 
-    wait_time=`expr \( $test_time + 10 \) / 2`
+    wait_time=`expr $test_time / 2`
 
     sleep $wait_time
 
