@@ -209,6 +209,7 @@ int CreateListeningSocket(struct thread_context *ctx){
 
 void
 ServerSignalHandler(int signum) {
+	printf(" >> receive signal %d\n", signum);
 	if (signum == SIGINT) {
 		printf(" >> receive SIGINT signal\n");
 		for (int i = 0; i < num_cores; i++) {
@@ -397,7 +398,8 @@ void * RunServerThread(void *arg){
 				printf("signal is invalid\n");
 			}else{
 				printf("the specified thread is alive\n");
-				kill(app_thread[i], SIGINT);
+				int ret = kill(app_thread[i], SIGINT);
+				printf("ret : %d\n", ret);
 			}
 		}
 	}
