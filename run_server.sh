@@ -5,9 +5,9 @@ echo -n "Buffer size(B): "
 read buff_size
 #buff_size=1024
 
-#echo -n "number of CPU cores: "
-#read num_core
-num_cores=1
+echo -n "number of CPU cores: "
+read num_cores
+#num_cores=1
 
 echo -n "Total test time(s): "
 read test_time
@@ -24,13 +24,21 @@ for j in $(seq 0 8)
 do
     num_connection=`echo "2^$j" | bc `
 
+    exec_time=`expr $test_time \* $2`
+
     echo "Testing RTT for $num_connection connections..."
 
     ./server    --num_cores=$num_cores \
                 --size=$buff_size \
                 --time=$test_time \
                 --num_client=$num_connection \
-                --test_mode=$test_mode
+                --test_mode=$test_mode &
+
+    sleep $exec_time &
+    
+    wait $!
+
+    pkill server
 
     echo "Test done"
 done
