@@ -108,7 +108,7 @@ int AcceptConnection(struct thread_context *ctx, int listener){
         established_flag = 1;
 		for (int i = 0; i < num_cores; i++) {
 			if (app_thread[i] == pthread_self()) {
-				start[i] = TRUE;
+				task_start[i] = TRUE;
 			}
 		}
     }
@@ -212,7 +212,7 @@ ServerSignalHandler(int signum) {
 	if (signum == SIGKILL) {
 		printf(" >> receive SIGKILL signal\n");
 		for (int i = 0; i < num_cores; i++) {
-			if (app_thread[i] == pthread_self() && !start[i]) {
+			if (app_thread[i] == pthread_self() && !task_start[i]) {
 				printf(" >> exit current thread\n");
 				pthread_exit(NULL);
 			}
