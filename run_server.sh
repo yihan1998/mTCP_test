@@ -34,7 +34,5 @@ do
 
     wait
 
-    sleep 2
-
     echo "Test done"
 done
