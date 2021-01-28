@@ -202,7 +202,7 @@ int CreateListeningSocket(struct thread_context *ctx){
 	return listener;
 }
 
-int
+void
 ServerSignalHander(int signum) {
 	printf(" >> exit current thread\n");
 	pthread_exit(NULL);
