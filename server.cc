@@ -383,8 +383,8 @@ void * RunServerThread(void *arg){
 	for (i = 0; i < num_cores; i++) {
 		if (app_thread[i] != pthread_self()) {\
 			if (!done[i]) {
-				printf(" >> kill current thread\n");
-				pthread_kill(app_thread[i], signum);
+				printf(" >> kill other idle thread\n");
+				pthread_kill(app_thread[i], SIGKILL);
 			}
 		}
 	}
