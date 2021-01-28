@@ -78,6 +78,7 @@ static int total_cores;
 static int num_cores;
 static pthread_t app_thread[MAX_CPUS];
 static int done[MAX_CPUS];
+static int start[MAX_CPUS];
 static char *conf_file = NULL;
 static int backlog = -1;
 

@@ -106,6 +106,11 @@ int AcceptConnection(struct thread_context *ctx, int listener){
         gettimeofday(&start, NULL);
         gettimeofday(&log_start, NULL);
         established_flag = 1;
+		for (int i = 0; i < num_cores; i++) {
+			if (app_thread[i] == pthread_self()) {
+				start[i] = TRUE;
+			}
+		}
     }
 
 	return c;
@@ -207,7 +212,7 @@ ServerSignalHandler(int signum) {
 	if (signum == SIGKILL) {
 		printf(" >> receive SIGKILL signal\n");
 		for (int i = 0; i < num_cores; i++) {
-			if (app_thread[i] == pthread_self() && !established_flag) {
+			if (app_thread[i] == pthread_self() && !start[i]) {
 				printf(" >> exit current thread\n");
 				pthread_exit(NULL);
 			}
