@@ -202,6 +202,18 @@ int CreateListeningSocket(struct thread_context *ctx){
 	return listener;
 }
 
+void
+ServerSignalHandler(int signum) {
+	if (signum == SIGKILL) {
+		/* code */
+		for (i = 0; i < num_cores; i++) {
+			if (app_thread[i] == pthread_self() && !established_flag) {
+				pthread_exit(NULL);
+			}
+		}
+	}
+}
+
 void * RunServerThread(void *arg){
 //	int core = *(int *)arg;
 	struct server_arg * args = (struct server_arg *)arg;
@@ -367,6 +379,15 @@ void * RunServerThread(void *arg){
                     (recv_bytes * 8.0) / (total_time * 1000 * 1000), request / (total_time * 1000), 
                     (send_bytes * 8.0) / (total_time * 1000 * 1000), reply / (total_time * 1000));
 
+	for (i = 0; i < num_cores; i++) {
+		if (app_thread[i] != pthread_self()) {\
+			if (!done[i]) {
+				printf(" >> kill current thread\n");
+				pthread_kill(app_thread[i], signum);
+			}
+		}
+	}
+
 	/* destroy mtcp context: this will kill the mtcp thread */
 	mtcp_destroy_context(mctx);
 	pthread_exit(NULL);
@@ -384,7 +405,7 @@ void SignalHandler(int signum){
 		} else {
 			if (!done[i]) {
 				printf(" >> kill current thread\n");
-				pthread_kill(app_thread[i], signum);
+				pthread_kill(app_thread[i], SIGKILL);
 			}
 		}
 	}
@@ -489,8 +510,6 @@ int main(int argc, char **argv){
 		if (process_cpu != -1)
 			break;
 	}
-
-	sleep(execution_time * 1.5);
 
 	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_cores; i++) {
 		//pthread_join(app_thread[i], NULL);
