@@ -209,12 +209,11 @@ int CreateListeningSocket(struct thread_context *ctx){
 
 void
 ServerSignalHandler(int signum) {
-	printf(" >> receive signal %d\n", signum);
-	if (signum == SIGINT) {
-		printf(" >> receive SIGINT signal\n");
+	if (signum == SIGQUIT) {
+		printf(" >> receive SIGQUIT signal\n");
 		for (int i = 0; i < num_cores; i++) {
 			if (app_thread[i] == pthread_self() && !task_start[i]) {
-				printf(" >> exit current thread\n");
+				printf(" >> exit current thread on core %d\n", i);
 				pthread_exit(NULL);
 			}
 		}
@@ -223,7 +222,7 @@ ServerSignalHandler(int signum) {
 
 void * RunServerThread(void *arg){
 //	int core = *(int *)arg;
-	signal(SIGINT, ServerSignalHandler);
+	signal(SIGQUIT, ServerSignalHandler);
 
 	struct server_arg * args = (struct server_arg *)arg;
 
@@ -427,7 +426,7 @@ void SignalHandler(int signum){
 		} else {
 			if (!done[i]) {
 				printf(" >> kill current thread\n");
-				pthread_kill(app_thread[i], SIGKILL);
+				pthread_kill(app_thread[i], SIGQUIT);
 			}
 		}
 	}
@@ -539,19 +538,6 @@ int main(int argc, char **argv){
 		if (process_cpu != -1) {
 			break;
 		}
-			
-/*
-		int kill_rc = pthread_kill(app_thread[i], 0);
-
-		if (kill_rc == ESRCH) {
-			printf("the specified thread did not exists or already quit\n");
-		}else if(kill_rc == EINVAL) {
-			printf("signal is invalid\n");
-		}else{
-			printf("the specified thread is alive\n");
-			pthread_kill(app_thread[i], SIGQUIT);
-		}
-*/
 	}
 	
 	printf(" [%s] Test finished!\n", __func__);
