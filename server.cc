@@ -205,9 +205,10 @@ int CreateListeningSocket(struct thread_context *ctx){
 void
 ServerSignalHandler(int signum) {
 	if (signum == SIGKILL) {
-		/* code */
-		for (i = 0; i < num_cores; i++) {
+		printf(" >> receive SIGKILL signal\n");
+		for (int i = 0; i < num_cores; i++) {
 			if (app_thread[i] == pthread_self() && !established_flag) {
+				printf(" >> exit current thread\n");
 				pthread_exit(NULL);
 			}
 		}
