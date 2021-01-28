@@ -202,8 +202,18 @@ int CreateListeningSocket(struct thread_context *ctx){
 	return listener;
 }
 
+void
+handle_signal(int signal) {
+    if (signal == SIGKILL) {
+        printf(" [%s] received kill signal", __func__);
+        pthread_exit(NULL);
+    }
+}
+
 void * RunServerThread(void *arg){
 //	int core = *(int *)arg;
+	signal(SIGKILL, handle_signal);
+
 	struct server_arg * args = (struct server_arg *)arg;
 
 	int core = args->core;
@@ -488,12 +498,24 @@ int main(int argc, char **argv){
 		if (process_cpu != -1)
 			break;
 	}
-	
-	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_cores; i++) {
-		pthread_join(app_thread[i], NULL);
 
-		if (process_cpu != -1)
-			break;
+	sleep(execution_time * 1.5);
+
+	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_cores; i++) {
+		//pthread_join(app_thread[i], NULL);
+
+		//if (process_cpu != -1)
+		//	break;
+		int kill_rc = pthread_kill(app_thread[i], 0);
+
+		if (kill_rc == ESRCH) {
+			printf("the specified thread did not exists or already quit\n");
+		}else if(kill_rc == EINVAL) {
+			printf("signal is invalid\n");
+		}else{
+			printf("the specified thread is alive\n");
+			pthread_kill(app_thread[i], SIGKILL);
+		}
 	}
 	
 	printf(" [%s] Test finished!\n", __func__);
