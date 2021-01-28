@@ -40,5 +40,7 @@ do
 
     pkill -9 server
 
+    wait
+
     echo "Test done"
 done
