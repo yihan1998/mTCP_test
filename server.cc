@@ -513,10 +513,13 @@ int main(int argc, char **argv){
 	}
 
 	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_cores; i++) {
-		//pthread_join(app_thread[i], NULL);
+		pthread_join(app_thread[i], NULL);
 
-		//if (process_cpu != -1)
-		//	break;
+		if (process_cpu != -1) {
+			break;
+		}
+			
+/*
 		int kill_rc = pthread_kill(app_thread[i], 0);
 
 		if (kill_rc == ESRCH) {
@@ -527,6 +530,7 @@ int main(int argc, char **argv){
 			printf("the specified thread is alive\n");
 			pthread_kill(app_thread[i], SIGQUIT);
 		}
+*/
 	}
 	
 	printf(" [%s] Test finished!\n", __func__);
