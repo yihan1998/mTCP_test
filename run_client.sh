@@ -62,9 +62,7 @@ do
 
     echo "Test done"
 
-    wait_time=`expr $test_time / 2`
-
-    sleep $wait_time
+    sleep 10
 
     if [ $eval_rtt -eq 1 ]
     then
