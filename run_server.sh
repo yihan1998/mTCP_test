@@ -24,21 +24,13 @@ for j in $(seq 0 8)
 do
     num_connection=`echo "2^$j" | bc `
 
-    exec_time=`expr $test_time \* 2`
-
     echo "Testing RTT for $num_connection connections..."
 
     ./server    --num_cores=$num_cores \
                 --size=$buff_size \
                 --time=$test_time \
                 --num_client=$num_connection \
-                --test_mode=$test_mode &
-
-    sleep $exec_time &
-    
-    wait $!
-
-    pkill -9 server
+                --test_mode=$test_mode 
 
     wait
 
