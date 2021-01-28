@@ -361,6 +361,8 @@ void * RunClientThread(void * arg){
 	free(rtt_buff);
 #endif
 
+	sleep(1);
+
 	mtcp_destroy_context(mctx);
 	pthread_exit(NULL);
 
