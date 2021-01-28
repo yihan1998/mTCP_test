@@ -24,7 +24,7 @@ for j in $(seq 0 8)
 do
     num_connection=`echo "2^$j" | bc `
 
-    exec_time=`expr $test_time \* 1.5`
+    exec_time=`echo "$test_time * 1.5" | bc `
 
     echo "Testing RTT for $num_connection connections..."
 
