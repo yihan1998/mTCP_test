@@ -202,9 +202,16 @@ int CreateListeningSocket(struct thread_context *ctx){
 	return listener;
 }
 
+int
+ServerSignalHander(int signum) {
+	printf(" >> exit current thread\n");
+	pthread_exit(NULL);
+}
 
 void * RunServerThread(void *arg){
 //	int core = *(int *)arg;
+	signal(SIGKILL, ServerSignalHander);
+	
 	struct server_arg * args = (struct server_arg *)arg;
 
 	int core = args->core;
@@ -506,6 +513,7 @@ int main(int argc, char **argv){
 			printf("signal is invalid\n");
 		}else{
 			printf("the specified thread is alive\n");
+			pthread_kill(app_thread[i], SIGKILL);
 		}
 	}
 	
