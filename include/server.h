@@ -85,13 +85,13 @@ static int backlog = -1;
 //static pthread_t sv_thread[MAX_CPUS];
 static struct server_arg sv_thread_arg[MAX_CPUS];
 
-long long recv_bytes, send_bytes;
+__thread long long recv_bytes, send_bytes;
 
-long long request, reply;
+__thread long long request, reply;
 
-struct timeval start, log_start;
-int established_flag = 0;
+__thread struct timeval start, log_start;
+__thread int established_flag = 0;
 
-struct timeval end;
+__thread struct timeval end;
 
 void * server_thread(void * arg);
