@@ -38,7 +38,7 @@ do
     
     wait $!
 
-    pkill server
+    pkill -9 server
 
     echo "Test done"
 done
