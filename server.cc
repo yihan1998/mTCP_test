@@ -209,8 +209,8 @@ int CreateListeningSocket(struct thread_context *ctx){
 
 void
 ServerSignalHandler(int signum) {
-	if (signum == SIGKILL) {
-		printf(" >> receive SIGKILL signal\n");
+	if (signum == SIGINT) {
+		printf(" >> receive SIGINT signal\n");
 		for (int i = 0; i < num_cores; i++) {
 			if (app_thread[i] == pthread_self() && !task_start[i]) {
 				printf(" >> exit current thread\n");
@@ -222,7 +222,7 @@ ServerSignalHandler(int signum) {
 
 void * RunServerThread(void *arg){
 //	int core = *(int *)arg;
-	signal(SIGKILL, ServerSignalHandler);
+	signal(SIGINT, ServerSignalHandler);
 
 	struct server_arg * args = (struct server_arg *)arg;
 
@@ -397,7 +397,7 @@ void * RunServerThread(void *arg){
 				printf("signal is invalid\n");
 			}else{
 				printf("the specified thread is alive\n");
-				pthread_kill(app_thread[i], SIGKILL);
+				kill(app_thread[i], SIGINT);
 			}
 		}
 	}
