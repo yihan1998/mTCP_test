@@ -222,6 +222,7 @@ void * RunClientThread(void * arg){
 
 	printf(" [%s] binding to core %d\n", __func__, core);
 	mtcp_core_affinitize(core);
+	printf(" [%s] running on core %d\n", __func__, rte_lcore_id());
 
 	ctx = CreateContext(core);
 	if (!ctx) {
