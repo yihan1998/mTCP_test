@@ -40,6 +40,7 @@ CreateContext(int core)
 		free(ctx);
 		return NULL;
 	}
+	printf(" [%s] mctx: %p\n", __func__, ctx->mctx);
 	g_mctx[core] = ctx->mctx;
 
 	return ctx;
