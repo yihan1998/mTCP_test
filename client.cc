@@ -223,29 +223,12 @@ void * RunClientThread(void * arg){
 	printf(" [%s] binding to core %d\n", __func__, core);
 	mtcp_core_affinitize(core);
 
-	int nrcpus = sysconf(_SC_NPROCESSORS_CONF);
-
-	cpu_set_t mask;
-    CPU_ZERO(&mask);
-	if (sched_getaffinity(0, sizeof(cpu_set_t), &mask) == -1) 
-    {   
-        perror("sched_getaffinity");
-        exit(EXIT_FAILURE);
-    }
-    
-    for (int i = 0; i < nrcpus; i++)
-    {
-        if (CPU_ISSET(i, &mask))
-        {
-            printf(" [%s] running on core %d\n", __func__, i); 
-        }
-    }
-
 	ctx = CreateContext(core);
 	if (!ctx) {
 		return NULL;
 	}
 	mctx = ctx->mctx;
+	printf(" [%s] mctx: %p\n", __func__, mctx);
 	g_ctx[core] = ctx;
 	srand(time(NULL));
 
