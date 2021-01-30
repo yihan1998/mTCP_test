@@ -224,6 +224,9 @@ void * RunClientThread(void * arg){
 	mtcp_core_affinitize(core);
 
 	int nrcpus = sysconf(_SC_NPROCESSORS_CONF);
+	
+	cpu_set_t mask;
+    CPU_ZERO(&mask);
     
     for (int i = 0; i < nrcpus; i++)
     {
