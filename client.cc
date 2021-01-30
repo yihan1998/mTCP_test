@@ -237,7 +237,7 @@ void * RunClientThread(void * arg){
     {
         if (CPU_ISSET(i, &mask))
         {
-            printf(" [%s] running on core %d\n", i); 
+            printf(" [%s] running on core %d\n", __func__, i); 
         }
     }
 
