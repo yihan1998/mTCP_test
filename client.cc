@@ -224,9 +224,14 @@ void * RunClientThread(void * arg){
 	mtcp_core_affinitize(core);
 
 	int nrcpus = sysconf(_SC_NPROCESSORS_CONF);
-	
+
 	cpu_set_t mask;
     CPU_ZERO(&mask);
+	if (sched_getaffinity(0, sizeof(cpu_set_t), &mask) == -1) 
+    {   
+        perror("sched_getaffinity");
+        exit(EXIT_FAILURE);
+    }
     
     for (int i = 0; i < nrcpus; i++)
     {
