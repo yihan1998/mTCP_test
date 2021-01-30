@@ -40,7 +40,6 @@ CreateContext(int core)
 		free(ctx);
 		return NULL;
 	}
-	printf(" [%s] mctx: %p\n", __func__, ctx->mctx);
 	g_mctx[core] = ctx->mctx;
 
 	return ctx;
@@ -80,6 +79,7 @@ int CreateConnection(thread_context_t ctx){
 	addr.sin_addr.s_addr = inet_addr(server_ip);
 	addr.sin_port = htons(server_port);
 	
+	printf(" [%s] mtcp core: %d\n", __func__, mctx->cpu);
 	ret = mtcp_connect(mctx, sockid, 
 			(struct sockaddr *)&addr, sizeof(struct sockaddr_in));
 	if (ret < 0) {
@@ -231,7 +231,6 @@ void * RunClientThread(void * arg){
 	sleep(3);
 
 	mctx = ctx->mctx;
-	printf(" [%s] mctx: %p\n", __func__, mctx);
 	g_ctx[core] = ctx;
 	srand(time(NULL));
 
