@@ -3,7 +3,7 @@
 #include <rte_ethdev.h>
 
 int finish_num = 0;
-__trhead int num_connection;
+__thread int num_connection;
 
 int execution_time;
 
