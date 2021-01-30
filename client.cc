@@ -78,6 +78,7 @@ int CreateConnection(thread_context_t ctx){
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = inet_addr(server_ip);
 	addr.sin_port = htons(server_port);
+	printf(" >> connecting to %s(%d)\n", server_ip, server_port);
 	
 	ret = mtcp_connect(mctx, sockid, 
 			(struct sockaddr *)&addr, sizeof(struct sockaddr_in));
