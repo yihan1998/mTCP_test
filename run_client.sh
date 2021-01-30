@@ -35,7 +35,7 @@ make clean && make client RTT=$eval_rtt
 #echo -n "number of connections: "
 #read num_connection
 
-for j in $(seq 0 8)
+for j in $(seq 0 10)
 do
     total_conn=`echo "2^$j" | bc `
 

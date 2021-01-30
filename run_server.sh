@@ -20,7 +20,7 @@ read test_mode
 
 make clean && make server 
 
-for j in $(seq 0 8)
+for j in $(seq 0 10)
 do
     num_connection=`echo "2^$j" | bc `
 

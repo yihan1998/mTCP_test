@@ -20,13 +20,21 @@ read test_mode
 
 make clean && make server 
 
-for j in $(seq 0 8)
+if [ ! -d perf_result ];then
+    echo making perf_result directory
+    mkdir perf_result
+else
+    echo cleaning perf_result directory
+    rm -fr perf_result/*
+fi
+
+for j in $(seq 0 10)
 do
     num_connection=`echo "2^$j" | bc `
 
     echo "Testing RTT for $num_connection connections..."
 
-    perf_output="perf-mtcp-$num_cores-$num_connection.txt"
+    perf_output="perf_result/perf-mtcp-$num_cores-$num_connection.txt"
 
     perf stat -a -o $perf_output -d -d --per-core --no-aggr -- ./server \
                 --num_cores=$num_cores \
