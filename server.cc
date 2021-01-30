@@ -2,11 +2,8 @@
 
 #include <rte_ethdev.h>
 
-int client_num = 0;
 int finish_num = 0;
-
-int tot_event;
-int round;
+__trhead int num_connection;
 
 int execution_time;
 
@@ -89,12 +86,12 @@ int AcceptConnection(struct thread_context *ctx, int listener){
 		sv = &ctx->svars[c];
 		CleanServerVariable(sv);
 		TRACE_APP("New connection %d accepted.\n", c);
-		printf("New connection %d accepted.\n", c);
 		ev.events = MTCP_EPOLLIN;
 		ev.data.sockid = c;
 		mtcp_setsock_nonblock(ctx->mctx, c);
 		mtcp_epoll_ctl(mctx, ctx->ep, MTCP_EPOLL_CTL_ADD, c, &ev);
 		TRACE_APP("Socket %d registered.\n", c);
+		num_connection++;
 
 	} else {
 		if (errno != EAGAIN) {
@@ -276,6 +273,7 @@ void * RunServerThread(void *arg){
 				perror("mtcp_epoll_wait");
 			break;
 		}
+		printf(" >> recv %d events\n", nevents);
 
 #ifdef TEST_INTERVAL
         if (!record_interval) {
@@ -291,9 +289,6 @@ void * RunServerThread(void *arg){
         }
 
 #endif
-
-		round++;
-        tot_event += nevents;
 
 		do_accept = FALSE;
 		for (i = 0; i < nevents; i++) {
@@ -330,7 +325,7 @@ void * RunServerThread(void *arg){
 					CloseConnection(ctx, events[i].data.sockid, 
 							&ctx->svars[events[i].data.sockid]);
 					finish_num++;
-    	            if (finish_num == client_num) {
+    	            if (finish_num == num_connection) {
             	        done[core] = 1;
                 	}
 				} else if (ret < 0) {
@@ -339,7 +334,7 @@ void * RunServerThread(void *arg){
 						CloseConnection(ctx, events[i].data.sockid, 
 								&ctx->svars[events[i].data.sockid]);
 						finish_num++;
-	    	            if (finish_num == client_num) {
+	    	            if (finish_num == num_connection) {
     	        	        done[core] = 1;
         	        	}
 					}
@@ -467,9 +462,6 @@ int main(int argc, char **argv){
 			mtcp_getconf(&mcfg);
 			mcfg.num_cores = num_cores;
 			mtcp_setconf(&mcfg);
-        }else if(sscanf(argv[i], "--num_client=%llu%c", &n, &junk) == 1){
-            client_num = n; 
-			printf(" >> client num: %d\n", client_num);
         }else if(sscanf(argv[i], "--size=%llu%c", &n, &junk) == 1){
             buff_size = n;
 			printf(" >> buff size: %d\n", buff_size);

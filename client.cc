@@ -88,7 +88,6 @@ int CreateConnection(thread_context_t ctx){
 			return -1;
 		}
 	}
-	printf(" >> connected to port %d\n", server_port);
 
 	ctx->started++;
 	ctx->pending++;
@@ -171,7 +170,6 @@ HandleReadEvent(thread_context_t ctx, int sockid, struct conn_stat * var)
 
 		mtcp_epoll_ctl(mctx, ctx->ep, MTCP_EPOLL_CTL_MOD, sockid, &ev);
     }
-	printf(" >> receive len: %d\n", len);
 
 	return len;
 }
@@ -206,8 +204,6 @@ HandleWriteEvent(thread_context_t ctx, int sockid, struct conn_stat * var)
 		ev.data.ptr = var;
 		mtcp_epoll_ctl(mctx, ctx->ep, MTCP_EPOLL_CTL_MOD, sockid, &ev);
 	}
-
-	printf(" >> send len: %d\n", send_len);
 }
 
 void * RunClientThread(void * arg){
