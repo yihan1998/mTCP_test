@@ -69,6 +69,12 @@ int CreateConnection(thread_context_t ctx){
 		return -1;
 	}
 
+	ret = mtcp_setsock_nonblock(mctx, sockid);
+	if (ret < 0) {
+		TRACE_ERROR("Failed to set socket in nonblocking mode.\n");
+		exit(-1);
+	}
+
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = inet_addr(server_ip);
 	addr.sin_port = htons(server_port);
@@ -81,12 +87,6 @@ int CreateConnection(thread_context_t ctx){
 			mtcp_close(mctx, sockid);
 			return -1;
 		}
-	}
-
-	ret = mtcp_setsock_nonblock(mctx, sockid);
-	if (ret < 0) {
-		TRACE_ERROR("Failed to set socket in nonblocking mode.\n");
-		exit(-1);
 	}
 
 	ctx->started++;
