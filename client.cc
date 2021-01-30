@@ -227,7 +227,6 @@ void * RunClientThread(void * arg){
 	if (!ctx) {
 		return NULL;
 	}
-	sleep(3);
 
 	mctx = ctx->mctx;
 	g_ctx[core] = ctx;
