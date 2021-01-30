@@ -79,7 +79,6 @@ int CreateConnection(thread_context_t ctx){
 	addr.sin_addr.s_addr = inet_addr(server_ip);
 	addr.sin_port = htons(server_port);
 	
-	printf(" [%s] mtcp core: %d\n", __func__, mctx->cpu);
 	ret = mtcp_connect(mctx, sockid, 
 			(struct sockaddr *)&addr, sizeof(struct sockaddr_in));
 	if (ret < 0) {
