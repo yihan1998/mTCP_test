@@ -222,7 +222,16 @@ void * RunClientThread(void * arg){
 
 	printf(" [%s] binding to core %d\n", __func__, core);
 	mtcp_core_affinitize(core);
-	printf(" [%s] running on core %d\n", __func__, rte_lcore_id());
+
+	int nrcpus = sysconf(_SC_NPROCESSORS_CONF);
+    
+    for (int i = 0; i < nrcpus; i++)
+    {
+        if (CPU_ISSET(i, &mask))
+        {
+            printf(" [%s] running on core %d\n", i); 
+        }
+    }
 
 	ctx = CreateContext(core);
 	if (!ctx) {
