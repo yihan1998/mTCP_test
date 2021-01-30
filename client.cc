@@ -88,6 +88,7 @@ int CreateConnection(thread_context_t ctx){
 			return -1;
 		}
 	}
+	printf(" >> connected to port %d\n", server_port);
 
 	ctx->started++;
 	ctx->pending++;
