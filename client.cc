@@ -5,8 +5,8 @@ int buff_size = 1024;
 int num_flow;
 
 static char *conf_file = NULL;
-__thread char server_ip[20];
-__thread int server_port;
+char server_ip[20];
+int server_port;
 
 int execution_time;
 
