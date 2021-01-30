@@ -29,7 +29,6 @@ do
     ./server    --num_cores=$num_cores \
                 --size=$buff_size \
                 --time=$test_time \
-                --num_client=$num_connection \
                 --test_mode=$test_mode 
 
     wait
