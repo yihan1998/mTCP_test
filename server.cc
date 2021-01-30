@@ -273,8 +273,7 @@ void * RunServerThread(void *arg){
 				perror("mtcp_epoll_wait");
 			break;
 		}
-		printf(" >> recv %d events\n", nevents);
-
+		
 #ifdef TEST_INTERVAL
         if (!record_interval) {
             gettimeofday(&last_interval, NULL);
