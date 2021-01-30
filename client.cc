@@ -227,6 +227,8 @@ void * RunClientThread(void * arg){
 	if (!ctx) {
 		return NULL;
 	}
+	sleep(3);
+
 	mctx = ctx->mctx;
 	printf(" [%s] mctx: %p\n", __func__, mctx);
 	g_ctx[core] = ctx;
