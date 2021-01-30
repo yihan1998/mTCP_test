@@ -220,6 +220,7 @@ void * RunClientThread(void * arg){
 	struct timeval cur_tv, prev_tv;
 	//uint64_t cur_ts, prev_ts;
 
+	printf(" [%s] binding to core %d\n", __func__, core);
 	mtcp_core_affinitize(core);
 
 	ctx = CreateContext(core);
