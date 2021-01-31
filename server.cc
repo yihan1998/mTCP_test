@@ -392,7 +392,7 @@ void * RunServerThread(void *arg){
 				printf("signal is invalid\n");
 			}else{
 				printf("the specified thread is alive\n");
-				int ret = pthread_kill(app_thread[i], SIGINT);
+				int ret = pthread_kill(app_thread[i], SIGQUIT);
 				if (ret == EINVAL) {
 					printf("Invalid signal\n");
 				} else if (ret == ESRCH) {
