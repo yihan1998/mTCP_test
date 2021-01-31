@@ -212,7 +212,10 @@ ServerSignalHandler(int signum) {
 		for (int i = 0; i < num_cores; i++) {
 			if (app_thread[i] == pthread_self() && !task_start[i]) {
 				printf(" >> exit current thread on core %d\n", i);
+				mtcp_destroy_context(mctx);
 				pthread_exit(NULL);
+
+				return NULL;
 			}
 		}
 	}
