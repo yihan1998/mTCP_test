@@ -230,7 +230,7 @@ ServerSignalHandler(int signum) {
 		char throughput_file_name[32];
 		sprintf(throughput_file_name, "throughput_core_%d.txt", core);
 
-		FILE * throughput_file = fopen("", "a+");
+		FILE * throughput_file = fopen(throughput_file_name, "a+");
 
 	    sprintf(result_buff, " [%d] recv payload rate: %.2f(Mbps), recv request rate: %.2f, send payload rate: %.2f(Mbps), send reply rate: %.2f\n", 
     	                num_connection, (recv_bytes * 8.0) / (total_time * 1000 * 1000), request / (total_time * 1000), 
@@ -404,7 +404,7 @@ void * RunServerThread(void *arg){
 	char throughput_file_name[32];
 	sprintf(throughput_file_name, "throughput_core_%d.txt", core);
 
-	FILE * throughput_file = fopen("", "a+");
+	FILE * throughput_file = fopen(throughput_file_name, "a+");
 
     sprintf(result_buff, " [%d] recv payload rate: %.2f(Mbps), recv request rate: %.2f, send payload rate: %.2f(Mbps), send reply rate: %.2f\n", 
     	                num_connection, (recv_bytes * 8.0) / (total_time * 1000 * 1000), request / (total_time * 1000), 
