@@ -217,6 +217,12 @@ ServerSignalHandler(int signum) {
     	double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
     	double total_time = (end_time - start_time)/1000000.00;
 
+		for (int i = 0; i < num_cores; i++) {
+			if (app_thread[i] == pthread_self()) {
+				core = i;
+			}
+		}
+
 	    char result_buff[512];
 
 		char throughput_file_name[32];
@@ -397,7 +403,7 @@ void * RunServerThread(void *arg){
 	sprintf(throughput_file_name, "throughput_core_%d.txt", core);
 
 	FILE * throughput_file = fopen("", "a+");
-	
+
     sprintf(result_buff, " [%d] recv payload rate: %.2f(Mbps), recv request rate: %.2f, send payload rate: %.2f(Mbps), send reply rate: %.2f\n", 
     	                num_connection, (recv_bytes * 8.0) / (total_time * 1000 * 1000), request / (total_time * 1000), 
         	            (send_bytes * 8.0) / (total_time * 1000 * 1000), reply / (total_time * 1000));
