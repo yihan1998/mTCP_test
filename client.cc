@@ -211,7 +211,7 @@ ServerSignalHandler(int signum) {
 	if (signum == SIGQUIT) {
 		printf(" >> receive SIGQUIT signal\n");
 		for (int i = 0; i < num_cores; i++) {
-			if (app_thread[i] == pthread_self() && !task_start[i]) {
+			if (app_thread[i] == pthread_self()) {
 				printf(" >> exit current thread on core %d\n", i);
 				done[i] = TRUE;
 			}
