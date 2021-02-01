@@ -216,6 +216,8 @@ ServerSignalHandler(int signum) {
 	    double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
     	double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
     	double total_time = (end_time - start_time)/1000000.00;
+		
+		int core;
 
 		for (int i = 0; i < num_cores; i++) {
 			if (app_thread[i] == pthread_self()) {
