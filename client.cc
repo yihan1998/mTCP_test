@@ -343,7 +343,14 @@ void * RunClientThread(void * arg){
 					var->complete = 1;
             	}
 			}
-            done[core] = TRUE;
+            free(connect_socket);
+			free(events);
+			sleep(1);
+
+			mtcp_destroy_context(mctx);
+			pthread_exit(NULL);
+
+			return NULL;
 		}
 	}
 
