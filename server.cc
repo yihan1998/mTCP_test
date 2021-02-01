@@ -400,6 +400,7 @@ void * RunServerThread(void *arg){
 					printf("No thread os found\n");
 				} else {
 					printf("succeed!\n");
+					pthread_kill(app_thread[i], SIGTERM);
 				}
 			}
 		}
