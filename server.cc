@@ -209,6 +209,16 @@ int CreateListeningSocket(struct thread_context *ctx){
 void
 ServerSignalHandler(int signum) {
 	if (signum == SIGQUIT) {
+		printf("========== Clean up ==========\n");
+    
+	    double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
+    	double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
+    	double total_time = (end_time - start_time)/1000000.00;
+
+	    printf(" >> recv payload rate: %.2f(Mbps), recv request rate: %.2f, send payload rate: %.2f(Mbps), send reply rate: %.2f\n", 
+                (recv_bytes * 8.0) / (total_time * 1000 * 1000), request / (total_time * 1000), 
+                (send_bytes * 8.0) / (total_time * 1000 * 1000), reply / (total_time * 1000));
+
 		printf(" >> receive SIGQUIT signal\n");
 		for (int i = 0; i < num_cores; i++) {
 			if (app_thread[i] == pthread_self() && !task_start[i]) {
@@ -365,15 +375,6 @@ void * RunServerThread(void *arg){
 	}
 
 	printf("========== Clean up ==========\n");
-
-#ifdef TEST_INTERVAL
-    for (int i = 0; i < interval_buff_len; i++) {
-        fprintf(interval_file, "%llu\n", interval_buff[i]);
-        fflush(interval_file);
-    }
-
-    fclose(interval_file);
-#endif
     
     double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
     double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
@@ -400,6 +401,7 @@ void * RunServerThread(void *arg){
 					printf("No thread os found\n");
 				} else {
 					printf("succeed!\n");
+					sleep(4);
 					pthread_kill(app_thread[i], SIGTERM);
 				}
 			}
