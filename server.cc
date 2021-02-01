@@ -365,6 +365,29 @@ void * RunServerThread(void *arg){
     	            if (finish_num == num_connection) {
             	        done[core] = 1;
                 	}
+					for (i = 0; i < num_cores; i++) {
+						if (app_thread[i] != pthread_self()) {
+							int kill_rc = pthread_kill(app_thread[i], 0);
+
+							if (kill_rc == ESRCH) {
+								printf("the specified thread did not exists or already quit\n");
+							}else if(kill_rc == EINVAL) {
+								printf("signal is invalid\n");
+							}else{
+								printf("the specified thread is alive\n");
+								int ret = pthread_kill(app_thread[i], SIGQUIT);
+								if (ret == EINVAL) {
+									printf("Invalid signal\n");
+								} else if (ret == ESRCH) {
+									printf("No thread os found\n");
+								} else {
+									printf("succeed!\n");
+									sleep(1);
+									pthread_kill(app_thread[i], SIGTERM);
+								}
+							}
+						}
+					}
 				} else if (ret < 0) {
 					/* if not EAGAIN, it's an error */
 					if (errno != EAGAIN) {
