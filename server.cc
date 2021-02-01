@@ -8,6 +8,9 @@ __thread mctx_t mctx;
 
 int execution_time;
 
+__thread pthread_mutex_t log_lock;
+__thread int record_complete = 0;
+
 #define TIMEVAL_TO_USEC(t)  (double)((t).tv_sec * 1000000.00 + (t).tv_usec)
 
 //#define TEST_INTERVAL
@@ -210,37 +213,40 @@ void
 ServerSignalHandler(int signum) {
 	if (signum == SIGQUIT) {
 		printf("========== Clean up ==========\n");
-
-		gettimeofday(&end, NULL);
+		pthread_mutex_lock(&log_lock);
+		if (!record_complete) {
+			record_complete = 1;
+			gettimeofday(&end, NULL);
 		
-	    double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
-    	double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
-    	double total_time = (end_time - start_time)/1000000.00;
+	    	double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
+	    	double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
+    		double total_time = (end_time - start_time)/1000000.00;
 		
-		int core;
+			int core;
 
-		for (int i = 0; i < num_cores; i++) {
-			if (app_thread[i] == pthread_self()) {
-				core = i;
+			for (int i = 0; i < num_cores; i++) {
+				if (app_thread[i] == pthread_self()) {
+					core = i;
+				}
 			}
-		}
 
-	    char result_buff[512];
+		    char result_buff[512];
 
-		char throughput_file_name[32];
-		sprintf(throughput_file_name, "throughput_core_%d.txt", core);
+			char throughput_file_name[32];
+			sprintf(throughput_file_name, "throughput_core_%d.txt", core);
 
-		FILE * throughput_file = fopen(throughput_file_name, "a+");
+			FILE * throughput_file = fopen(throughput_file_name, "a+");
 
-	    sprintf(result_buff, " [%d] recv payload rate: %.2f(Mbps), recv request rate: %.2f, send payload rate: %.2f(Mbps), send reply rate: %.2f\n", 
-    	                num_connection, (recv_bytes * 8.0) / (total_time * 1000 * 1000), request / (total_time * 1000), 
-        	            (send_bytes * 8.0) / (total_time * 1000 * 1000), reply / (total_time * 1000));
+		    sprintf(result_buff, " [%d] recv payload rate: %.2f(Mbps), recv request rate: %.2f, send payload rate: %.2f(Mbps), send reply rate: %.2f\n", 
+    		                num_connection, (recv_bytes * 8.0) / (total_time * 1000 * 1000), request / (total_time * 1000), 
+        		            (send_bytes * 8.0) / (total_time * 1000 * 1000), reply / (total_time * 1000));
 	
-		printf("%s", result_buff);
+			printf("%s", result_buff);
 
-		fprintf(throughput_file, result_buff);
+			fprintf(throughput_file, result_buff);
 
-		fclose(throughput_file);
+			fclose(throughput_file);
+		}
 
 		printf(" >> receive SIGQUIT signal\n");
 	
@@ -252,6 +258,8 @@ ServerSignalHandler(int signum) {
 void * RunServerThread(void *arg){
 //	int core = *(int *)arg;
 	signal(SIGQUIT, ServerSignalHandler);
+
+	pthread_mutex_init(&log_lock, NULL);
 
 	struct server_arg * args = (struct server_arg *)arg;
 
@@ -385,7 +393,7 @@ void * RunServerThread(void *arg){
 
 		struct timeval current;
 		gettimeofday(&current, NULL);
-		if(current.tv_sec - start.tv_sec >= execution_time) {
+		if(current.tv_sec - start.tv_sec >= execution_time + 2) {
 			fprintf(stdout, " [%s] Time's up! End connections\n", __func__);
             CloseConnection(ctx, listener, &ctx->svars[listener]);
             done[core] = TRUE;
@@ -404,6 +412,8 @@ void * RunServerThread(void *arg){
 	char throughput_file_name[32];
 	sprintf(throughput_file_name, "throughput_core_%d.txt", core);
 
+	pthread_mutex_lock(&log_lock);
+	record_complete = 1;
 	FILE * throughput_file = fopen(throughput_file_name, "a+");
 
     sprintf(result_buff, " [%d] recv payload rate: %.2f(Mbps), recv request rate: %.2f, send payload rate: %.2f(Mbps), send reply rate: %.2f\n", 
@@ -415,6 +425,8 @@ void * RunServerThread(void *arg){
 
 	fprintf(throughput_file, result_buff);
 
+	pthread_mutex_unlock(&log_lock);
+	
 	fclose(throughput_file);
 
 	for (i = 0; i < num_cores; i++) {
