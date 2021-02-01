@@ -38,7 +38,7 @@ static in_addr_t saddr;
 static int total_flows;
 static int flows[MAX_CPUS];
 static int flowcnt = 0;
-static int concurrency = 100;
+static int concurrency = 1000;
 static int max_fds = 300;
 static uint64_t response_size = 0;
 
