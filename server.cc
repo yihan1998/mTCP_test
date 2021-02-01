@@ -4,6 +4,7 @@
 
 int finish_num = 0;
 __thread int num_connection;
+__thread mctx_t mctx;
 
 int execution_time;
 
@@ -231,7 +232,6 @@ void * RunServerThread(void *arg){
 	int thread_id = args->thread_id;
 
 	struct thread_context *ctx;
-	mctx_t mctx;
 	int listener;
 	int ep;
 	struct mtcp_epoll_event *events;
