@@ -20,6 +20,8 @@ read test_mode
 
 make clean && make server 
 
+rm throughput_*.txt
+
 for j in $(seq 0 10)
 do
     num_connection=`echo "2^$j" | bc `
