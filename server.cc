@@ -217,11 +217,25 @@ ServerSignalHandler(int signum) {
     	double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
     	double total_time = (end_time - start_time)/1000000.00;
 
-	    printf(" >> recv payload rate: %.2f(Mbps), recv request rate: %.2f, send payload rate: %.2f(Mbps), send reply rate: %.2f\n", 
-                (recv_bytes * 8.0) / (total_time * 1000 * 1000), request / (total_time * 1000), 
-                (send_bytes * 8.0) / (total_time * 1000 * 1000), reply / (total_time * 1000));
+	    char result_buff[512];
+
+		char throughput_file_name[32];
+		sprintf(throughput_file_name, "throughput_core_%d.txt", core);
+
+		FILE * throughput_file = fopen("", "a+");
+
+	    sprintf(result_buff, " [%d] recv payload rate: %.2f(Mbps), recv request rate: %.2f, send payload rate: %.2f(Mbps), send reply rate: %.2f\n", 
+    	                num_connection, (recv_bytes * 8.0) / (total_time * 1000 * 1000), request / (total_time * 1000), 
+        	            (send_bytes * 8.0) / (total_time * 1000 * 1000), reply / (total_time * 1000));
+	
+		printf("%s", result_buff);
+
+		fprintf(throughput_file, result_buff);
+
+		fclose(throughput_file);
 
 		printf(" >> receive SIGQUIT signal\n");
+	
 		mtcp_destroy_context(mctx);
 		pthread_exit(NULL);
 	}
@@ -377,9 +391,23 @@ void * RunServerThread(void *arg){
     double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
     double total_time = (end_time - start_time)/1000000.00;
 
-    printf(" >> recv payload rate: %.2f(Mbps), recv request rate: %.2f, send payload rate: %.2f(Mbps), send reply rate: %.2f\n", 
-                    (recv_bytes * 8.0) / (total_time * 1000 * 1000), request / (total_time * 1000), 
-                    (send_bytes * 8.0) / (total_time * 1000 * 1000), reply / (total_time * 1000));
+	char result_buff[512];
+
+	char throughput_file_name[32];
+	sprintf(throughput_file_name, "throughput_core_%d.txt", core);
+
+	FILE * throughput_file = fopen("", "a+");
+	
+    sprintf(result_buff, " [%d] recv payload rate: %.2f(Mbps), recv request rate: %.2f, send payload rate: %.2f(Mbps), send reply rate: %.2f\n", 
+    	                num_connection, (recv_bytes * 8.0) / (total_time * 1000 * 1000), request / (total_time * 1000), 
+        	            (send_bytes * 8.0) / (total_time * 1000 * 1000), reply / (total_time * 1000));
+	
+	
+	printf("%s", result_buff);
+
+	fprintf(throughput_file, result_buff);
+
+	fclose(throughput_file);
 
 	for (i = 0; i < num_cores; i++) {
 		if (app_thread[i] != pthread_self()) {
@@ -534,8 +562,8 @@ int main(int argc, char **argv){
 	}
 	
 	printf(" [%s] Test finished!\n", __func__);
-	
-	mtcp_destroy();
 	exit(1);
+	mtcp_destroy();
+	
 	return 0;
 }
