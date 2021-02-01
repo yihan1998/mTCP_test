@@ -20,14 +20,15 @@ read test_mode
 
 make clean && make server 
 
-if [ ! -d perf_result ];then
+perf_file="perf_result"
+
+if [ ! -d "$perf_file" ];then
     echo making perf_result directory
     mkdir perf_result
 else
     echo cleaning perf_result directory
     rm -fr perf_result/*
 fi
-
 for j in $(seq 0 10)
 do
     num_connection=`echo "2^$j" | bc `
@@ -40,7 +41,6 @@ do
                 --num_cores=$num_cores \
                 --size=$buff_size \
                 --time=$test_time \
-                --num_client=$num_connection \
                 --test_mode=$test_mode 
 
     wait
