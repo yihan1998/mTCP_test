@@ -536,5 +536,6 @@ int main(int argc, char **argv){
 	printf(" [%s] Test finished!\n", __func__);
 	
 	mtcp_destroy();
+	exit(1);
 	return 0;
 }
