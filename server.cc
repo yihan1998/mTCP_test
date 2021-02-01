@@ -210,7 +210,9 @@ void
 ServerSignalHandler(int signum) {
 	if (signum == SIGQUIT) {
 		printf("========== Clean up ==========\n");
-    
+
+		gettimeofday(&end, NULL);
+		
 	    double start_time = (double)start.tv_sec * 1000000 + (double)start.tv_usec;
     	double end_time = (double)end.tv_sec * 1000000 + (double)end.tv_usec;
     	double total_time = (end_time - start_time)/1000000.00;
@@ -401,7 +403,7 @@ void * RunServerThread(void *arg){
 					printf("No thread os found\n");
 				} else {
 					printf("succeed!\n");
-					sleep(4);
+					sleep(2);
 					pthread_kill(app_thread[i], SIGTERM);
 				}
 			}
