@@ -215,8 +215,6 @@ ServerSignalHandler(int signum) {
 				printf(" >> exit current thread on core %d\n", i);
 				mtcp_destroy_context(mctx);
 				pthread_exit(NULL);
-
-				return NULL;
 			}
 		}
 	}
