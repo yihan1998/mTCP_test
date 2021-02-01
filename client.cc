@@ -206,7 +206,22 @@ HandleWriteEvent(thread_context_t ctx, int sockid, struct conn_stat * var)
 	}
 }
 
+void
+ServerSignalHandler(int signum) {
+	if (signum == SIGQUIT) {
+		printf(" >> receive SIGQUIT signal\n");
+		for (int i = 0; i < num_cores; i++) {
+			if (app_thread[i] == pthread_self() && !task_start[i]) {
+				printf(" >> exit current thread on core %d\n", i);
+				done[i] = TRUE;
+			}
+		}
+	}
+}
+
 void * RunClientThread(void * arg){
+	signal(SIGQUIT, ServerSignalHandler);
+
     thread_context_t ctx;
 	mctx_t mctx;
 	int core = *(int *)arg;
@@ -371,6 +386,29 @@ void * RunClientThread(void * arg){
 #endif
 
 	sleep(1);
+
+	for (i = 0; i < num_cores; i++) {
+		if (app_thread[i] != pthread_self()) {
+			int kill_rc = pthread_kill(app_thread[i], 0);
+
+			if (kill_rc == ESRCH) {
+				printf("the specified thread did not exists or already quit\n");
+			}else if(kill_rc == EINVAL) {
+				printf("signal is invalid\n");
+			}else{
+				printf("the specified thread is alive\n");
+				int ret = pthread_kill(app_thread[i], SIGQUIT);
+				if (ret == EINVAL) {
+					printf("Invalid signal\n");
+				} else if (ret == ESRCH) {
+					printf("No thread os found\n");
+				} else {
+					printf("succeed!\n");
+					pthread_kill(app_thread[i], SIGTERM);
+				}
+			}
+		}
+	}
 
 	mtcp_destroy_context(mctx);
 	pthread_exit(NULL);
