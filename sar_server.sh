@@ -44,7 +44,7 @@ do
     ./server    --num_cores=$num_cores \
                 --size=$buff_size \
                 --time=$test_time \
-                --test_mode=$test_mode 
+                --test_mode=$test_mode &
 
     wait $!
 
