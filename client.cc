@@ -146,23 +146,22 @@ HandleReadEvent(thread_context_t ctx, int sockid, struct conn_stat * var)
 
 	info->total_recv += len;
 
-#ifdef EVAL_RTT
-    struct timeval current;
-    gettimeofday(&current, NULL);
-
-    long long elapsed;
-    if (current.tv_usec < info->start.tv_usec) {
-        elapsed = 1000000 + current.tv_usec - info->start.tv_usec;
-    } else {
-        elapsed = current.tv_usec - info->start.tv_usec;
-    }
-
-    if (rtt_buff_len < M_128) {
-        rtt_buff[rtt_buff_len++] = elapsed;
-    }
-#endif
-
     if (benchmark == CLOSELOOP && info->total_recv == info->total_send) {
+#ifdef EVAL_RTT
+	    struct timeval current;
+    	gettimeofday(&current, NULL);
+
+	    long long elapsed;
+    	if (current.tv_usec < info->start.tv_usec) {
+        	elapsed = 1000000 + current.tv_usec - info->start.tv_usec;
+	    } else {
+    	    elapsed = current.tv_usec - info->start.tv_usec;
+    	}
+
+	    if (rtt_buff_len < M_128) {
+    	    rtt_buff[rtt_buff_len++] = elapsed;
+    	}
+#endif
         /* Close loop test */
         struct mtcp_epoll_event ev;
         ev.events = MTCP_EPOLLIN | MTCP_EPOLLOUT;
