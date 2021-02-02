@@ -402,6 +402,8 @@ void * RunClientThread(void * arg){
 		}
 	}
 
+	sleep(2);
+
 	mtcp_destroy_context(mctx);
 	pthread_exit(NULL);
 
