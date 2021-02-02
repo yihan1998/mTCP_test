@@ -37,7 +37,7 @@ do
 
     sar_output="$sar_file/sar-mtcp-$num_cores-$num_connection.txt"
 
-    exec_time=`expr $test_time \* 2`
+    exec_time=`expr $test_time \* 3`
 
     sar -A 1 $exec_time > $sar_output &
 
