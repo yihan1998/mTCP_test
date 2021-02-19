@@ -358,6 +358,7 @@ void * RunClientThread(void * arg){
             	}
 			}
 			done[core] = TRUE;
+			sleep(2);
 		}
 	}
 
