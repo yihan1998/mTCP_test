@@ -358,13 +358,8 @@ void * RunClientThread(void * arg){
             	}
 			}
 			done[core] = TRUE;
-			sleep(2);
 		}
 	}
-
-	free(connect_socket);
-	
-	free(events);
 
 #ifdef EVAL_RTT
 	printf(" >> Output Round Trip Time\n");
