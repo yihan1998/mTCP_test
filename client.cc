@@ -21,11 +21,13 @@ __thread int rtt_buff_len;
 __thread FILE * rtt_file;
 #endif
 
+__thread int core;
+
+__thread thread_context_t ctx;
+
 thread_context_t 
 CreateContext(int core)
 {
-	thread_context_t ctx;
-
 	ctx = (thread_context_t)calloc(1, sizeof(struct thread_context));
 	if (!ctx) {
 		perror("malloc");
@@ -212,6 +214,9 @@ ServerSignalHandler(int signum) {
 		for (int i = 0; i < num_cores; i++) {
 			if (app_thread[i] == pthread_self()) {
 				printf(" >> exit current thread on core %d\n", i);
+				for (int i = 0; i < num_connection; i++) {
+					CloseConnection(ctx, ctx->stats[i].sockfd);
+				}
 				done[i] = TRUE;
 			}
 		}
@@ -221,9 +226,8 @@ ServerSignalHandler(int signum) {
 void * RunClientThread(void * arg){
 	signal(SIGQUIT, ServerSignalHandler);
 
-    thread_context_t ctx;
 	mctx_t mctx;
-	int core = *(int *)arg;
+	core = *(int *)arg;
 	struct in_addr daddr_in;
 	int n, maxevents;
 	int ep;
