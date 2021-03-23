@@ -32,8 +32,8 @@ do
 
     queue_size=`expr 1024 \* $j`
 
-    sed -i '$a rcvbuf = $queue_size' server.conf
-    sed -i '$a sndbuf = $queue_size' server.conf
+    sed -i '$a rcvbuf = '${queue_size}'' server.conf
+    sed -i '$a sndbuf = '${queue_size}'' server.conf
 
     num_connection=`echo "2^$j" | bc `
 
