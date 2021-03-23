@@ -25,7 +25,7 @@ make clean && make server
 
 rm throughput_*.txt
 
-for j in $(seq 4 $num_jobs)
+for j in $(seq 1 $num_jobs)
 do
     sed -i '/rcvbuf/d' server.conf
     sed -i '/sndbuf/d' server.conf
@@ -37,7 +37,7 @@ do
 
     num_connection=`echo "2^$j" | bc `
 
-    echo "Testing RTT for $num_connection connections..."
+    echo "Testing for $j queue jobs..."
 
     ./server    --num_cores=$num_cores \
                 --size=$buff_size \

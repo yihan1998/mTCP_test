@@ -38,13 +38,13 @@ make clean && make client RTT=$eval_rtt
 #echo -n "number of connections: "
 #read num_connection
 
-for j in $(seq 4 $num_jobs)
+for j in $(seq 1 $num_jobs)
 do
     num_flow=1
     num_cores=$max_cores
     total_conn=$( expr "$num_cores" '*' "$num_flow" )
 
-    echo "Testing RTT for $total_conn connections on $num_cores core(s), each have $num_flow connection(s) ..."
+    echo "Testing for $total_conn connections on $num_cores core(s), each have $num_flow connection(s) ..."
 
     ./client    --num_cores=$num_cores \
                 --num_flow=$num_flow \
