@@ -213,7 +213,6 @@ int CreateListeningSocket(struct thread_context *ctx){
 void
 ServerSignalHandler(int signum) {
 	if (signum == SIGQUIT) {
-#if 0
 		printf("========== Clean up ==========\n");
 		pthread_mutex_lock(&log_lock);
 		if (!record_complete) {
@@ -248,19 +247,20 @@ ServerSignalHandler(int signum) {
 			fprintf(throughput_file, result_buff);
 
 			fclose(throughput_file);
-		}
 
-		printf(" >> receive SIGQUIT signal\n");
+			int socket = mtcp_socket(ctx->mctx, AF_INET, SOCK_STREAM, 0);
+			struct mtcp_epoll_event ev;
+			ev.events = MTCP_EPOLLOUT;
+			ev.data.sockid = socket;
+			mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_ADD, socket, &ev);
+
+			printf(" >> receive SIGQUIT signal\n");
 	
-		mtcp_destroy_context(mctx);
-		pthread_exit(NULL);
-#endif
-		int socket = mtcp_socket(ctx->mctx, AF_INET, SOCK_STREAM, 0);
-		struct mtcp_epoll_event ev;
-		ev.events = MTCP_EPOLLOUT;
-		ev.data.sockid = socket;
-		mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_ADD, socket, &ev);
-	}
+			mtcp_destroy_context(mctx);
+			pthread_exit(NULL);
+		}
+		pthread_mutex_unlock(&log_lock);
+	}	
 }
 
 void * RunServerThread(void *arg){
@@ -447,22 +447,22 @@ void * RunServerThread(void *arg){
 	sprintf(throughput_file_name, "throughput_core_%d.txt", core);
 
 	pthread_mutex_lock(&log_lock);
-	record_complete = 1;
-	FILE * throughput_file = fopen(throughput_file_name, "a+");
+	if (!record_complete) {
+		record_complete = 1;
+		FILE * throughput_file = fopen(throughput_file_name, "a+");
 
-    sprintf(result_buff, " [%d] recv payload rate: %.2f(Mbps), recv request rate: %.2f, send payload rate: %.2f(Mbps), send reply rate: %.2f\n", 
-    	                num_connection, (recv_bytes * 8.0) / (total_time * 1000 * 1000), request / (total_time * 1000), 
-        	            (send_bytes * 8.0) / (total_time * 1000 * 1000), reply / (total_time * 1000));
+	    sprintf(result_buff, " [%d] recv payload rate: %.2f(Mbps), recv request rate: %.2f, send payload rate: %.2f(Mbps), send reply rate: %.2f\n", 
+    		                num_connection, (recv_bytes * 8.0) / (total_time * 1000 * 1000), request / (total_time * 1000), 
+        		            (send_bytes * 8.0) / (total_time * 1000 * 1000), reply / (total_time * 1000));
+		
+		printf("%s", result_buff);
+
+		fprintf(throughput_file, result_buff);
 	
-	
-	printf("%s", result_buff);
-
-	fprintf(throughput_file, result_buff);
-
+		fclose(throughput_file);
+	}
 	pthread_mutex_unlock(&log_lock);
 	
-	fclose(throughput_file);
-
 	for (i = 0; i < num_cores; i++) {
 		if (app_thread[i] != pthread_self()) {
 			int kill_rc = pthread_kill(app_thread[i], 0);
@@ -481,7 +481,7 @@ void * RunServerThread(void *arg){
 				} else {
 					printf("succeed!\n");
 					sleep(1);
-					pthread_kill(app_thread[i], SIGTERM);
+					//pthread_kill(app_thread[i], SIGTERM);
 				}
 			}
 		}
