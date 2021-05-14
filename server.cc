@@ -126,7 +126,7 @@ struct thread_context * InitializeServerThread(int core){
 #if HT_SUPPORT
 	mtcp_core_affinitize(core + (num_cores / 2));
 #else
-	mtcp_core_affinitize(core);
+	mtcp_core_affinitize(core + 32);
 #endif /* HT_SUPPORT */
 
 	ctx = (struct thread_context *)calloc(1, sizeof(struct thread_context));
