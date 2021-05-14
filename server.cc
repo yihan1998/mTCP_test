@@ -265,7 +265,7 @@ ServerSignalHandler(int signum) {
 			ev.data.sockid = socket;
 			mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_ADD, socket, &ev);
 
-			printf(" >> receive SIGQUIT signal\n");
+			printf(" >> core %d receive SIGQUIT signal\n", core);
 	
 			mtcp_destroy_context(mctx);
 			pthread_exit(NULL);
