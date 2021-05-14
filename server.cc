@@ -11,6 +11,7 @@ int execution_time;
 
 __thread pthread_mutex_t log_lock;
 __thread int record_complete = 0;
+__thread int end_alarm = 0;
 
 #define TIMEVAL_TO_USEC(t)  (double)((t).tv_sec * 1000000.00 + (t).tv_usec)
 
@@ -43,6 +44,14 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 	mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_DEL, sockid, NULL);
 	mtcp_close(ctx->mctx, sockid);
 	gettimeofday(&end, NULL);
+
+	if(!end_alarm) {
+		int end_alarm = mtcp_socket(ctx->mctx, AF_INET, SOCK_STREAM, 0);
+		struct mtcp_epoll_event ev;
+		ev.events = MTCP_EPOLLOUT;
+		ev.data.sockid = end_alarm;
+		mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_ADD, end_alarm, &ev);
+	}
 }
 
 int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struct server_vars *sv){
