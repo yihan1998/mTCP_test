@@ -203,7 +203,7 @@ int CreateListeningSocket(struct thread_context *ctx){
 		TRACE_ERROR("Failed to bind to the listening socket!\n");
 		return -1;
 	}
-
+	
 	/* listen (backlog: can be configured) */
 	ret = mtcp_listen(ctx->mctx, listener, backlog);
 	if (ret < 0) {
