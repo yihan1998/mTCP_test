@@ -240,6 +240,8 @@ ServerSignalHandler(int signum) {
 				}
 			}
 
+			done[core] = true;
+
 		    char result_buff[512];
 
 			char throughput_file_name[32];
