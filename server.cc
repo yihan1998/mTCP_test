@@ -4,6 +4,7 @@
 
 int finish_num = 0;
 __thread int num_connection;
+__thread struct thread_context *ctx;
 __thread mctx_t mctx;
 
 int execution_time;
@@ -212,6 +213,7 @@ int CreateListeningSocket(struct thread_context *ctx){
 void
 ServerSignalHandler(int signum) {
 	if (signum == SIGQUIT) {
+#if 0
 		printf("========== Clean up ==========\n");
 		pthread_mutex_lock(&log_lock);
 		if (!record_complete) {
@@ -252,6 +254,12 @@ ServerSignalHandler(int signum) {
 	
 		mtcp_destroy_context(mctx);
 		pthread_exit(NULL);
+#endif
+		int socket = mtcp_socket(ctx->mctx, AF_INET, SOCK_STREAM, 0);
+		struct mtcp_epoll_event ev;
+		ev.events = MTCP_EPOLLOUT;
+		ev.data.sockid = socket;
+		mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_ADD, socket, &ev);
 	}
 }
 
@@ -266,7 +274,6 @@ void * RunServerThread(void *arg){
 	int core = args->core;
 	int thread_id = args->thread_id;
 
-	struct thread_context *ctx;
 	int listener;
 	int ep;
 	struct mtcp_epoll_event *events;
@@ -309,6 +316,10 @@ void * RunServerThread(void *arg){
 		if (nevents < 0) {
 			if (errno != EINTR)
 				perror("mtcp_epoll_wait");
+			break;
+		}
+
+		if (done[core]) {
 			break;
 		}
 		
