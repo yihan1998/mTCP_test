@@ -243,7 +243,7 @@ ClientSignalHandler(int signum) {
 				}
 			}
 		}
-		printf(" [%s] destroy context on core %d!\n", __func__, i);
+		printf(" [%s] destroy context on core %d!\n", __func__, core);
 		mtcp_destroy_context(ctx->mctx);
 		pthread_exit(NULL);
 	}
