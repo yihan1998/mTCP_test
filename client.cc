@@ -24,6 +24,7 @@ __thread FILE * rtt_file;
 __thread int core;
 
 __thread thread_context_t ctx;
+__thread mctx_t mctx;
 
 thread_context_t 
 CreateContext(int core)
@@ -252,7 +253,6 @@ ServerSignalHandler(int signum) {
 void * RunClientThread(void * arg){
 	signal(SIGQUIT, ServerSignalHandler);
 
-	mctx_t mctx;
 	core = *(int *)arg;
 	struct in_addr daddr_in;
 	int n, maxevents;
