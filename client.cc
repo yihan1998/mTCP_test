@@ -24,7 +24,6 @@ __thread FILE * rtt_file;
 __thread int core;
 
 __thread thread_context_t ctx;
-__thread mctx_t mctx;
 
 thread_context_t 
 CreateContext(int core)
@@ -245,7 +244,8 @@ ClientSignalHandler(int signum) {
 			}
 		}
 	
-		mtcp_destroy_context(mctx);
+		printf(" [%s] destroy context on core %d!\n", __func__, rte_lcore_id());
+		mtcp_destroy_context(ctx->mctx);
 		pthread_exit(NULL);
 	}
 }
@@ -260,6 +260,7 @@ void * RunClientThread(void * arg){
 	struct mtcp_epoll_event *events;
 	int nevents;
 	int i;
+	mctx_t mctx;
 
 	struct timeval cur_tv, prev_tv;
 	//uint64_t cur_ts, prev_ts;
