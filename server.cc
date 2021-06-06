@@ -266,7 +266,7 @@ ServerSignalHandler(int signum) {
 				mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_ADD, socket, &ev);
 
 				printf(" >> receive SIGQUIT signal\n");
-
+/*
 				for (int i = 0; i < num_cores; i++) {
 					if (app_thread[i] != pthread_self()) {
 						int kill_rc = pthread_kill(app_thread[i], 0);
@@ -292,6 +292,7 @@ ServerSignalHandler(int signum) {
 	
 				mtcp_destroy_context(mctx);
 				//pthread_exit(NULL);
+*/
 			}
 			pthread_mutex_unlock(&log_lock);
 		}

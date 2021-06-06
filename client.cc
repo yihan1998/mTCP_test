@@ -218,32 +218,9 @@ ClientSignalHandler(int signum) {
 					CloseConnection(ctx, ctx->stats[i].sockfd);
 				}
 				done[i] = TRUE;
-
-				for (int i = 0; i < num_cores; i++) {
-					if (app_thread[i] != pthread_self()) {
-						int kill_rc = pthread_kill(app_thread[i], 0);
-
-						if (kill_rc == ESRCH) {
-							printf(" [%s] the specified thread did not exists or already quit\n", __func__);
-						}else if(kill_rc == EINVAL) {
-							printf(" [%s] signal is invalid\n", __func__);
-						}else{
-							printf(" [%s] the specified thread is alive\n", __func__);
-							int ret = pthread_kill(app_thread[i], SIGQUIT);
-							if (ret == EINVAL) {
-								printf(" [%s] Invalid signal\n", __func__);
-							} else if (ret == ESRCH) {
-								printf(" [%s] No thread os found\n", __func__);
-							} else {
-								printf(" [%s] succeed!\n", __func__);
-								//pthread_kill(app_thread[i], SIGTERM);
-							}
-						}
-					}
-				}
 			}
 		}
-
+/*
 		sleep(1);
 
 		printf(" [%s] destroy context on core %d!\n", __func__, core);
@@ -251,6 +228,7 @@ ClientSignalHandler(int signum) {
 		printf(" [%s] thread on core %d exit!\n", __func__, core);
 		//pthread_exit(NULL);
 	}
+*/
 }
 
 void * RunClientThread(void * arg){
