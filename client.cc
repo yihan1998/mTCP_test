@@ -220,6 +220,32 @@ ServerSignalHandler(int signum) {
 				done[i] = TRUE;
 			}
 		}
+
+		for (int i = 0; i < num_cores; i++) {
+			if (app_thread[i] != pthread_self()) {
+				int kill_rc = pthread_kill(app_thread[i], 0);
+
+				if (kill_rc == ESRCH) {
+					printf("the specified thread did not exists or already quit\n");
+				}else if(kill_rc == EINVAL) {
+					printf("signal is invalid\n");
+				}else{
+					printf("the specified thread is alive\n");
+					int ret = pthread_kill(app_thread[i], SIGQUIT);
+					if (ret == EINVAL) {
+						printf("Invalid signal\n");
+					} else if (ret == ESRCH) {
+						printf("No thread os found\n");
+					} else {
+						printf("succeed!\n");
+						//pthread_kill(app_thread[i], SIGTERM);
+					}
+				}
+			}
+		}
+	
+		mtcp_destroy_context(mctx);
+		pthread_exit(NULL);
 	}
 }
 
