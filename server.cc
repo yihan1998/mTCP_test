@@ -289,6 +289,8 @@ ServerSignalHandler(int signum) {
 						}
 					}
 				}
+
+				sleep(2);
 	
 				mtcp_destroy_context(mctx);
 				//pthread_exit(NULL);
