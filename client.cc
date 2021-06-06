@@ -427,7 +427,7 @@ void * RunClientThread(void * arg){
 					printf(" [%s] No thread os found\n", __func__);
 				} else {
 					printf(" [%s] succeed!\n", __func__);
-					pthread_kill(app_thread[i], SIGTERM);
+					//pthread_kill(app_thread[i], SIGTERM);
 				}
 			}
 		}
