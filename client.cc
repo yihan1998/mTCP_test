@@ -219,34 +219,34 @@ ClientSignalHandler(int signum) {
 				}
 				done[i] = TRUE;
 			}
-		}
 
-		for (int i = 0; i < num_cores; i++) {
-			if (app_thread[i] != pthread_self()) {
-				int kill_rc = pthread_kill(app_thread[i], 0);
+			for (int i = 0; i < num_cores; i++) {
+				if (app_thread[i] != pthread_self()) {
+					int kill_rc = pthread_kill(app_thread[i], 0);
 
-				if (kill_rc == ESRCH) {
-					printf(" [%s] the specified thread did not exists or already quit\n", __func__);
-				}else if(kill_rc == EINVAL) {
-					printf(" [%s] signal is invalid\n", __func__);
-				}else{
-					printf(" [%s] the specified thread is alive\n", __func__);
-					int ret = pthread_kill(app_thread[i], SIGQUIT);
-					if (ret == EINVAL) {
-						printf(" [%s] Invalid signal\n", __func__);
-					} else if (ret == ESRCH) {
-						printf(" [%s] No thread os found\n", __func__);
-					} else {
-						printf(" [%s] succeed!\n", __func__);
-						//pthread_kill(app_thread[i], SIGTERM);
+					if (kill_rc == ESRCH) {
+						printf(" [%s] the specified thread did not exists or already quit\n", __func__);
+					}else if(kill_rc == EINVAL) {
+						printf(" [%s] signal is invalid\n", __func__);
+					}else{
+						printf(" [%s] the specified thread is alive\n", __func__);
+						int ret = pthread_kill(app_thread[i], SIGQUIT);
+						if (ret == EINVAL) {
+							printf(" [%s] Invalid signal\n", __func__);
+						} else if (ret == ESRCH) {
+							printf(" [%s] No thread os found\n", __func__);
+						} else {
+							printf(" [%s] succeed!\n", __func__);
+							//pthread_kill(app_thread[i], SIGTERM);
+						}
 					}
 				}
 			}
-		}
 	
-		printf(" [%s] destroy context on core %d!\n", __func__, rte_lcore_id());
-		mtcp_destroy_context(ctx->mctx);
-		pthread_exit(NULL);
+			printf(" [%s] destroy context on core %d!\n", __func__, rte_lcore_id());
+			mtcp_destroy_context(ctx->mctx);
+			pthread_exit(NULL);
+		}
 	}
 }
 
