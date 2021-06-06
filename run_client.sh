@@ -62,7 +62,7 @@ do
 
     echo "Test done"
 
-    sleep 5
+    sleep 30
 
     if [ $eval_rtt -eq 1 ]
     then
