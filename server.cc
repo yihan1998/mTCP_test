@@ -291,7 +291,7 @@ ServerSignalHandler(int signum) {
 				}
 	
 				mtcp_destroy_context(mctx);
-				pthread_exit(NULL);
+				//pthread_exit(NULL);
 			}
 			pthread_mutex_unlock(&log_lock);
 		}
