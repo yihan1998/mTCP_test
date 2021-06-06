@@ -116,6 +116,7 @@ int CreateConnection(thread_context_t ctx){
 static inline void 
 CloseConnection(thread_context_t ctx, int sockid)
 {
+	printf(" [%s] close sock %d on core %d\n", __func__, sockid, core);
 	//mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_DEL, sockid, NULL);
 	mtcp_close(ctx->mctx, sockid);
 	ctx->pending--;
