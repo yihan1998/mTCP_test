@@ -209,12 +209,12 @@ HandleWriteEvent(thread_context_t ctx, int sockid, struct conn_stat * var)
 }
 
 void
-ServerSignalHandler(int signum) {
+ClientSignalHandler(int signum) {
 	if (signum == SIGQUIT) {
-		printf(" >> receive SIGQUIT signal\n");
+		printf(" [%s] receive SIGQUIT signal\n", __func__);
 		for (int i = 0; i < num_cores; i++) {
 			if (app_thread[i] == pthread_self()) {
-				printf(" >> exit current thread on core %d\n", i);
+				printf(" [%s] exit current thread on core %d\n", __func__, i);
 				for (int i = 0; i < num_connection; i++) {
 					CloseConnection(ctx, ctx->stats[i].sockfd);
 				}
@@ -227,18 +227,18 @@ ServerSignalHandler(int signum) {
 				int kill_rc = pthread_kill(app_thread[i], 0);
 
 				if (kill_rc == ESRCH) {
-					printf("the specified thread did not exists or already quit\n");
+					printf(" [%s] the specified thread did not exists or already quit\n", __func__);
 				}else if(kill_rc == EINVAL) {
-					printf("signal is invalid\n");
+					printf(" [%s] signal is invalid\n", __func__);
 				}else{
-					printf("the specified thread is alive\n");
+					printf(" [%s] the specified thread is alive\n", __func__);
 					int ret = pthread_kill(app_thread[i], SIGQUIT);
 					if (ret == EINVAL) {
-						printf("Invalid signal\n");
+						printf(" [%s] Invalid signal\n", __func__);
 					} else if (ret == ESRCH) {
-						printf("No thread os found\n");
+						printf(" [%s] No thread os found\n", __func__);
 					} else {
-						printf("succeed!\n");
+						printf(" [%s] succeed!\n", __func__);
 						//pthread_kill(app_thread[i], SIGTERM);
 					}
 				}
@@ -251,7 +251,7 @@ ServerSignalHandler(int signum) {
 }
 
 void * RunClientThread(void * arg){
-	signal(SIGQUIT, ServerSignalHandler);
+	signal(SIGQUIT, ClientSignalHandler);
 
 	core = *(int *)arg;
 	struct in_addr daddr_in;
@@ -410,18 +410,18 @@ void * RunClientThread(void * arg){
 			int kill_rc = pthread_kill(app_thread[i], 0);
 
 			if (kill_rc == ESRCH) {
-				printf("the specified thread did not exists or already quit\n");
+				printf(" [%s] the specified thread did not exists or already quit\n", __func__);
 			}else if(kill_rc == EINVAL) {
-				printf("signal is invalid\n");
+				printf(" [%s] signal is invalid\n", __func__);
 			}else{
-				printf("the specified thread is alive\n");
+				printf(" [%s] the specified thread is alive\n", __func__);
 				int ret = pthread_kill(app_thread[i], SIGQUIT);
 				if (ret == EINVAL) {
-					printf("Invalid signal\n");
+					printf(" [%s] Invalid signal\n", __func__);
 				} else if (ret == ESRCH) {
-					printf("No thread os found\n");
+					printf(" [%s] No thread os found\n", __func__);
 				} else {
-					printf("succeed!\n");
+					printf(" [%s] succeed!\n", __func__);
 					pthread_kill(app_thread[i], SIGTERM);
 				}
 			}
