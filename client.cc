@@ -227,8 +227,8 @@ ClientSignalHandler(int signum) {
 		mtcp_destroy_context(ctx->mctx);
 		printf(" [%s] thread on core %d exit!\n", __func__, core);
 		//pthread_exit(NULL);
-	}
 */
+	}
 }
 
 void * RunClientThread(void * arg){
