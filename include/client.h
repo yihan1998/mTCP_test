@@ -38,8 +38,8 @@ static in_addr_t saddr;
 static int total_flows;
 static int flows[MAX_CPUS];
 static int flowcnt = 0;
-static int concurrency = 1000;
-static int max_fds = 300;
+static int concurrency = 10000;
+static int max_fds = 10000;
 static uint64_t response_size = 0;
 
 //pthread_mutex_t work_done_lock;
