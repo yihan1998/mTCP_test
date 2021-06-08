@@ -221,7 +221,7 @@ ClientSignalHandler(int signum) {
 				done[i] = TRUE;
 			}
 		}
-
+/*
 		for (int i = 0; i < num_cores; i++) {
 			if (app_thread[i] != pthread_self()) {
 				int kill_rc = pthread_kill(app_thread[i], 0);
@@ -244,7 +244,7 @@ ClientSignalHandler(int signum) {
 				}
 			}
 		}
-
+*/
 		sleep(1);
 /*
 		printf(" [%s] destroy context on core %d!\n", __func__, core);
