@@ -244,9 +244,7 @@ ClientSignalHandler(int signum) {
 				}
 			}
 		}
-*/
-		sleep(1);
-/*
+		
 		printf(" [%s] destroy context on core %d!\n", __func__, core);
 		mtcp_destroy_context(ctx->mctx);
 
@@ -394,7 +392,6 @@ void * RunClientThread(void * arg){
 					var->complete = 1;
             	}
 			}
-			sleep(1);
 			done[core] = TRUE;
 		}
 	}
@@ -410,8 +407,6 @@ void * RunClientThread(void * arg){
 	printf(" >> Output finished\n");
 	free(rtt_buff);
 #endif
-
-	sleep(1);
 
 	for (i = 0; i < num_cores; i++) {
 		if (app_thread[i] != pthread_self()) {

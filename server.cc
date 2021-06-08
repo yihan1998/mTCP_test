@@ -290,7 +290,7 @@ ServerSignalHandler(int signum) {
 					}
 				}
 
-				sleep(2);
+				sleep(5);
 	
 				mtcp_destroy_context(mctx);
 				//pthread_exit(NULL);
