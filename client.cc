@@ -195,7 +195,7 @@ HandleWriteEvent(thread_context_t ctx, int sockid, struct conn_stat * var)
 
     int send_len = mtcp_write(mctx, sockid, info->file_ptr, buff_size);
 
-	if(sen36507d_len < 0) {
+	if(send_len < 0) {
         return send_len;
     }
     
@@ -434,7 +434,7 @@ void * RunClientThread(void * arg){
 	}
 */
 
-	fprintf(stdout, " [%s on core %d] Exit client thread\n", __func__, core);
+	//fprintf(stdout, " [%s on core %d] Exit client thread\n", __func__, core);
 	mtcp_destroy_context(mctx);
 	pthread_exit(NULL);
 
