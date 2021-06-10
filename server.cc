@@ -388,8 +388,7 @@ void * RunServerThread(void *arg){
 				socklen_t len = sizeof(err);
 
 				/* error on the connection */
-				TRACE_APP("[CPU %d] Error on socket %d\n", 
-						core, events[i].data.sockid);
+				fprintf(stdout, " [%s on core %d] error on socket %d\n", __func__, core, events[i].data.sockid);
 				if (mtcp_getsockopt(mctx, events[i].data.sockid, 
 						SOL_SOCKET, SO_ERROR, (void *)&err, &len) == 0) {
 					if (err != ETIMEDOUT) {
@@ -414,6 +413,7 @@ void * RunServerThread(void *arg){
     	            if (finish_num == num_connection) {
             	        done[core] = 1;
                 	}
+/*
 					for (i = 0; i < num_cores; i++) {
 						if (app_thread[i] != pthread_self()) {
 							int kill_rc = pthread_kill(app_thread[i], 0);
@@ -437,6 +437,7 @@ void * RunServerThread(void *arg){
 							}
 						}
 					}
+*/
 				} else if (ret < 0) {
 					/* if not EAGAIN, it's an error */
 					if (errno != EAGAIN) {
