@@ -384,7 +384,7 @@ void * RunClientThread(void * arg){
 
 		gettimeofday(&current, NULL);
 		if(current.tv_sec - start.tv_sec >= execution_time) {
-			fprintf(stdout, " [%s] Time's up! End %d connections\n", __func__, num_connection);
+			fprintf(stdout, " [%s on core %d] Time's up! End %d connections\n", __func__, core, num_connection);
             for (int i = 0; i < num_connection; i++) {
 				struct conn_stat * var = &ctx->stats[i];
 	            if (!var->complete) {
@@ -432,7 +432,9 @@ void * RunClientThread(void * arg){
 	}
 */
 
+	fprintf(stdout, " [%s on core %d] Exit client thread\n", __func__, core);
 	mtcp_destroy_context(mctx);
+	pthread_exit(NULL);
 
 	return NULL;
 }
