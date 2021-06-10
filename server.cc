@@ -527,7 +527,7 @@ void * RunServerThread(void *arg){
 		}
 	}
 */
-	sleep(5);
+	sleep(10);
 	/* destroy mtcp context: this will kill the mtcp thread */
 	mtcp_destroy_context(mctx);
 
