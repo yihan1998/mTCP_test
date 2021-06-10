@@ -501,7 +501,7 @@ void * RunServerThread(void *arg){
 		}
 		pthread_mutex_unlock(&log_lock);
 	}
-	
+/*	
 	for (i = 0; i < num_cores; i++) {
 		if (app_thread[i] != pthread_self()) {
 			int kill_rc = pthread_kill(app_thread[i], 0);
@@ -525,10 +525,10 @@ void * RunServerThread(void *arg){
 			}
 		}
 	}
-
+*/
+	sleep(5);
 	/* destroy mtcp context: this will kill the mtcp thread */
 	mtcp_destroy_context(mctx);
-	pthread_exit(NULL);
 
 	return NULL;
 }

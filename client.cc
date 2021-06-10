@@ -430,9 +430,9 @@ void * RunClientThread(void * arg){
 			}
 		}
 	}
-
-	sleep(5);
 */
+	sleep(5);
+
 	mtcp_destroy_context(mctx);
 
 	return NULL;
