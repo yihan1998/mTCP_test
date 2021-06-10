@@ -544,6 +544,8 @@ int main(int argc, char * argv[]){
 	}
 
 	printf(" [%s] Test finished!\n", __func__);
+
+	sleep(5);
 	
 	mtcp_destroy();
 	return 0;
