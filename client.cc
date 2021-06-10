@@ -85,7 +85,7 @@ int CreateConnection(thread_context_t ctx){
 		}
 	}
 
-	printf(" [%s on core %d] create sock %d\n", __func__, core, ret);
+	//printf(" [%s on core %d] create sock %d\n", __func__, core, ret);
 
 	ret = mtcp_setsock_nonblock(mctx, sockid);
 	if (ret < 0) {
@@ -118,7 +118,7 @@ int CreateConnection(thread_context_t ctx){
 static inline void 
 CloseConnection(thread_context_t ctx, int sockid)
 {
-	printf(" [%s on core %d] close sock %d\n", __func__, core, sockid);
+	//printf(" [%s on core %d] close sock %d\n", __func__, core, sockid);
 	//mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_DEL, sockid, NULL);
 	mtcp_close(ctx->mctx, sockid);
 	ctx->pending--;
@@ -195,7 +195,7 @@ HandleWriteEvent(thread_context_t ctx, int sockid, struct conn_stat * var)
 
     int send_len = mtcp_write(mctx, sockid, info->file_ptr, buff_size);
 
-	if(send_len < 0) {
+	if(sen36507d_len < 0) {
         return send_len;
     }
     
