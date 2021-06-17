@@ -382,8 +382,8 @@ void * RunServerThread(void *arg){
 			if (events[i].data.sockid == listener) {
 				/* if the event is for the listener, accept connection */
 				do_accept = TRUE;
-#if 0
 			} else if (events[i].events & MTCP_EPOLLERR) {
+#if 0
 				int err;
 				socklen_t len = sizeof(err);
 

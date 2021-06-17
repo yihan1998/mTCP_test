@@ -367,8 +367,8 @@ void * RunClientThread(void * arg){
 
 			} else if (events[i].events == MTCP_EPOLLOUT) {
 				HandleWriteEvent(ctx, var->sockfd, var);
-#if 0
 			} else if (events[i].events & MTCP_EPOLLERR) {
+#if 0			
 				int err;
 				socklen_t len = sizeof(err);
 
