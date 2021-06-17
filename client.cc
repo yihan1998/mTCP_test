@@ -361,8 +361,14 @@ void * RunClientThread(void * arg){
 
 		for (i = 0; i < nevents; i++) {
             struct conn_stat * var = (struct conn_stat *)events[i].data.ptr;
+			
+			if (events[i].events & MTCP_EPOLLIN) {
+				HandleReadEvent(ctx, var->sockfd, var);
 
-			if (events[i].events & MTCP_EPOLLERR) {
+			} else if (events[i].events == MTCP_EPOLLOUT) {
+				HandleWriteEvent(ctx, var->sockfd, var);
+#if 0
+			} else if (events[i].events & MTCP_EPOLLERR) {
 				int err;
 				socklen_t len = sizeof(err);
 
@@ -370,13 +376,7 @@ void * RunClientThread(void * arg){
 						core, var->sockfd);
 				ctx->errors++;
 				CloseConnection(ctx, var->sockfd);
-
-			} else if (events[i].events & MTCP_EPOLLIN) {
-				HandleReadEvent(ctx, var->sockfd, var);
-
-			} else if (events[i].events == MTCP_EPOLLOUT) {
-				HandleWriteEvent(ctx, var->sockfd, var);
-
+#endif
 			} else {
 				fprintf(stdout,"Socket %d: event: %s\n", 
 						var->sockfd, EventToString(events[i].events));

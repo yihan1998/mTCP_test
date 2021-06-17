@@ -382,7 +382,7 @@ void * RunServerThread(void *arg){
 			if (events[i].data.sockid == listener) {
 				/* if the event is for the listener, accept connection */
 				do_accept = TRUE;
-
+#if 0
 			} else if (events[i].events & MTCP_EPOLLERR) {
 				int err;
 				socklen_t len = sizeof(err);
@@ -400,7 +400,7 @@ void * RunServerThread(void *arg){
 				}
 				CloseConnection(ctx, events[i].data.sockid, 
 						&ctx->svars[events[i].data.sockid]);
-
+#endif
 			} else if (events[i].events & MTCP_EPOLLIN) {
 				ret = HandleReadEvent(ctx, thread_id, events[i].data.sockid, 
 						&ctx->svars[events[i].data.sockid]);
