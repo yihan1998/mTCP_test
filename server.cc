@@ -38,6 +38,8 @@ void CleanServerVariable(struct server_vars *sv){
 //    sv->recv_buf = (struct ring_buf *)malloc(RING_BUF_SIZE);
 //    init_ring_buff(sv->recv_buf);
 	sv->scan_range = 4;
+	sv->buff_recv_ptr = 0;
+	sv->buff_send_ptr = 0;
 }
 
 void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars *sv){
