@@ -58,9 +58,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	int len, sent, recv_len;
 	len = sent = 0;
 
-    char buff[buff_size + 1];
-
-	len = mtcp_recv(ctx->mctx, sockid, buff, buff_size, 0);
+	len = mtcp_recv(ctx->mctx, sockid, sv->buff + sv->buff_recv_ptr, buff_size - sv->buff_recv_ptr, 0);
 
 	if(len == 0){
 		return len;
@@ -69,18 +67,29 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 	recv_bytes += len;
 	request++;
 
-	if (benchmark == CLOSELOOP) {
-		int send_len = mtcp_write(ctx->mctx, sockid, buff, len);
-
-		if(send_len < 0) {
-            return send_len;
-        }
-
-		send_bytes += send_len;
-		reply++;
-	}
+	sv->buff_recv_ptr += len;
 
     return len;
+}
+
+static inline int
+HandleWriteEvent(thread_context_t ctx, int sockid, struct server_vars *sv)
+{
+    int len = mtcp_write(ctx->mctx, sockid, sv->buff + sv->buff_send_ptr, sv->buff_recv_ptr - sv->buff_send_ptr);
+
+	if(len < 0) {
+        return len;
+    }
+    
+	send_bytes += len;
+    reply++;
+
+	sv->buff_send_ptr += len;
+	
+	sv->buff_recv_ptr = sv->buff_recv_ptr % 1024;
+	sv->buff_send_ptr = sv->buff_send_ptr % 1024;
+
+	return len;
 }
 
 int AcceptConnection(struct thread_context *ctx, int listener){
@@ -100,7 +109,7 @@ int AcceptConnection(struct thread_context *ctx, int listener){
 		sv = &ctx->svars[c];
 		CleanServerVariable(sv);
 		TRACE_APP("New connection %d accepted.\n", c);
-		ev.events = MTCP_EPOLLIN;
+		ev.events = MTCP_EPOLLIN | MTCP_EPOLLOUT;
 		ev.data.sockid = c;
 		mtcp_setsock_nonblock(ctx->mctx, c);
 		mtcp_epoll_ctl(mctx, ctx->ep, MTCP_EPOLL_CTL_ADD, c, &ev);
@@ -413,31 +422,30 @@ void * RunServerThread(void *arg){
     	            if (finish_num == num_connection) {
             	        done[core] = 1;
                 	}
-/*
-					for (i = 0; i < num_cores; i++) {
-						if (app_thread[i] != pthread_self()) {
-							int kill_rc = pthread_kill(app_thread[i], 0);
-
-							if (kill_rc == ESRCH) {
-								printf("the specified thread did not exists or already quit\n");
-							}else if(kill_rc == EINVAL) {
-								printf("signal is invalid\n");
-							}else{
-								printf("the specified thread is alive\n");
-								int ret = pthread_kill(app_thread[i], SIGQUIT);
-								if (ret == EINVAL) {
-									printf("Invalid signal\n");
-								} else if (ret == ESRCH) {
-									printf("No thread os found\n");
-								} else {
-									printf("succeed!\n");
-									sleep(1);
-									//pthread_kill(app_thread[i], SIGTERM);
-								}
-							}
-						}
+				} else if (ret < 0) {
+					/* if not EAGAIN, it's an error */
+					if (errno != EAGAIN) {
+						CloseConnection(ctx, events[i].data.sockid, 
+								&ctx->svars[events[i].data.sockid]);
+						finish_num++;
+	    	            if (finish_num == num_connection) {
+    	        	        done[core] = 1;
+        	        	}
 					}
-*/
+				}
+
+			}  else if (events[i].events & MTCP_EPOLLOUT) {
+				ret = HandleWriteEvent(ctx, thread_id, events[i].data.sockid, 
+						&ctx->svars[events[i].data.sockid]);
+
+				if (ret == 0) {
+					/* connection closed by remote host */
+					CloseConnection(ctx, events[i].data.sockid, 
+							&ctx->svars[events[i].data.sockid]);
+					finish_num++;
+    	            if (finish_num == num_connection) {
+            	        done[core] = 1;
+                	}
 				} else if (ret < 0) {
 					/* if not EAGAIN, it's an error */
 					if (errno != EAGAIN) {

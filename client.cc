@@ -364,7 +364,6 @@ void * RunClientThread(void * arg){
 			
 			if (events[i].events & MTCP_EPOLLIN) {
 				HandleReadEvent(ctx, var->sockfd, var);
-
 			} else if (events[i].events == MTCP_EPOLLOUT) {
 				HandleWriteEvent(ctx, var->sockfd, var);
 			} else if (events[i].events & MTCP_EPOLLERR) {

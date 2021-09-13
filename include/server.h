@@ -72,6 +72,9 @@ struct server_vars {
 	int total_time;
 	int scan_range;
 //    struct ring_buf * recv_buf;
+	char buff[1024];
+	int buff_recv_ptr;
+	int buff_send_ptr;
 };
 
 static int total_cores;
