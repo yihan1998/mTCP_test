@@ -72,7 +72,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
     return len;
 }
 
-int HandleWriteEvent(struct thread_context *ctx, int sockid, struct server_vars *sv) {
+int HandleWriteEvent(struct thread_context *ctx, int thread_id, int sockid, struct server_vars *sv) {
     int len = mtcp_write(ctx->mctx, sockid, sv->buff + sv->buff_send_ptr, sv->buff_recv_ptr - sv->buff_send_ptr);
 
 	if(len < 0) {
