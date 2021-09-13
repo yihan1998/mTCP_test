@@ -115,7 +115,7 @@ int CreateConnection(thread_context_t ctx){
 	return sockid;
 }
 
-static inline void 
+void 
 CloseConnection(thread_context_t ctx, int sockid)
 {
 	//printf(" [%s on core %d] close sock %d\n", __func__, core, sockid);
@@ -134,7 +134,7 @@ CloseConnection(thread_context_t ctx, int sockid)
 */
 }
 
-static inline int
+int
 HandleReadEvent(thread_context_t ctx, int sockid, struct conn_stat * var)
 {
     struct sock_info * info = var->info;
@@ -178,7 +178,7 @@ HandleReadEvent(thread_context_t ctx, int sockid, struct conn_stat * var)
 	return len;
 }
 
-static inline int
+int
 HandleWriteEvent(thread_context_t ctx, int sockid, struct conn_stat * var)
 {
     struct sock_info * info = var->info;
