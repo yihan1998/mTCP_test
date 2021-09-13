@@ -65,7 +65,7 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 		return len;
 	}
 
-	printf(" recv data: %.*s\n", len, len, sv->buff + sv->buff_recv_ptr);
+	printf(" recv data: %.*s\n", len, sv->buff + sv->buff_recv_ptr);
 
 	recv_bytes += len;
 	request++;
