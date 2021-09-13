@@ -57,16 +57,15 @@ void CloseConnection(struct thread_context *ctx, int sockid, struct server_vars 
 }
 
 int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struct server_vars *sv){
-	int len, sent, recv_len;
-	len = sent = 0;
+	int len = mtcp_recv(ctx->mctx, sockid, sv->buff + sv->buff_recv_ptr, buff_size - sv->buff_recv_ptr, 0);
 
-	len = mtcp_recv(ctx->mctx, sockid, sv->buff + sv->buff_recv_ptr, buff_size - sv->buff_recv_ptr, 0);
+	printf(" recv len: %d\n", len);
 
 	if(len <= 0){
 		return len;
 	}
 
-	printf(" recv data: %.*s\n", len, sv->buff + sv->buff_recv_ptr);
+	printf(" recv data: %.*s\n", len, len, sv->buff + sv->buff_recv_ptr);
 
 	recv_bytes += len;
 	request++;
@@ -78,6 +77,8 @@ int HandleReadEvent(struct thread_context *ctx, int thread_id, int sockid, struc
 
 int HandleWriteEvent(struct thread_context *ctx, int thread_id, int sockid, struct server_vars *sv) {
     int len = mtcp_write(ctx->mctx, sockid, sv->buff + sv->buff_send_ptr, sv->buff_recv_ptr - sv->buff_send_ptr);
+
+	printf(" send len: %d\n", len);
 
 	if(len <= 0) {
         return len;
