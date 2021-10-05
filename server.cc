@@ -255,7 +255,7 @@ ServerSignalHandler(int signum) {
 	
 				printf("%s", result_buff);
 
-				fprintf(throughput_file, result_buff);
+				fprintf(throughput_file, "%s", result_buff);
 
 				fclose(throughput_file);
 
