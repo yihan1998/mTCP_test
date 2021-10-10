@@ -525,7 +525,7 @@ int main(int argc, char * argv[]){
 	TRACE_INFO("Application initialization finished.\n");
 
 	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_cores; i++) {
-		cores[i] = i;
+		cores[i] = i + 1;
 		done[i] = FALSE;
 		
 		if (pthread_create(&app_thread[i], 

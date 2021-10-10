@@ -634,7 +634,7 @@ int main(int argc, char **argv){
 	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_cores; i++) {
 		cores[i] = i;
 		done[i] = FALSE;
-		sv_thread_arg[i].core = i;
+		sv_thread_arg[i].core = i + 1;
         sv_thread_arg[i].thread_id = i;
 		
 		if (pthread_create(&app_thread[i], 
