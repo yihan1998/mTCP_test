@@ -163,7 +163,7 @@ HandleReadEvent(thread_context_t ctx, int sockid, struct conn_stat * var)
     	    elapsed = current.tv_usec - info->start.tv_usec;
     	}
 
-	    if (rtt_buff_len < M_128) {
+	    if (rtt_buff_len < M_1) {
     	    rtt_buff[rtt_buff_len++] = elapsed;
     	}
 #endif
@@ -327,7 +327,7 @@ void * RunClientThread(void * arg){
     rtt_file = fopen(name, "wb");
     fseek(rtt_file, 0, SEEK_END);
 
-    rtt_buff = (long long *)calloc(M_128, sizeof(long long));
+    rtt_buff = (long long *)calloc(M_1, sizeof(long long));
     rtt_buff_len = 0;
 #endif
 
