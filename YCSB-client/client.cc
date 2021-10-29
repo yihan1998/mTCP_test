@@ -314,7 +314,7 @@ void * RunClientThread(void * arg) {
 	sprintf(output_file_name, "throughput_core_%d.txt", core);
 	FILE * output_file = fopen(output_file_name, "a+");
 
-    sprintf(output, " [core %d] # Transaction throughput : %.2f (KTPS) \t %s \t %s \t %d\n", \
+    sprintf(output, " [core %d] # Transaction throughput : %.2f (KTPS) \t %s \t %d\n", \
                 core, operation_total_ops / transaction_duration / 1000, (*props)["workload"].c_str(), num_flows);
 
     fprintf(stdout, "%s", output);
