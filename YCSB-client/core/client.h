@@ -82,9 +82,6 @@ class KVReply {
 class Client {
     public:
         Client(CoreWorkload &wl) : workload_(wl) { }
-        
-        virtual bool DoInsert();
-        virtual bool DoTransaction();
 
         virtual int InsertRecord(KVRequest &request);
 
@@ -112,100 +109,8 @@ class Client {
         virtual int UpdateReply(KVReply &reply);
         virtual int InsertReply(KVReply &reply);
 
-        virtual int TransactionRead();
-        virtual int TransactionReadModifyWrite();
-        virtual int TransactionScan();
-        virtual int TransactionUpdate();
-        virtual int TransactionInsert();
-
         CoreWorkload &workload_;
 };
-
-inline bool Client::DoInsert() {
-    std::string key = workload_.NextSequenceKey();
-    std::string value;
-    workload_.BuildValues(value);
-    // return (db_.Insert(workload_.NextTable(), key, value) == DB::kOK);
-    db_.Insert(workload_.NextTable(), key, value);
-
-    std::cout <<  " Insert table: " <<  workload_.NextTable() << ", key: " << key.c_str() << ", value: " << value.c_str() << "\n" << std::endl;
-}
-
-inline bool Client::DoTransaction() {
-  int status = -1;
-  switch (workload_.NextOperation()) {
-    case READ:
-      status = TransactionRead();
-      break;
-    case UPDATE:
-      status = TransactionUpdate();
-      break;
-    case INSERT:
-      status = TransactionInsert();
-      break;
-    case SCAN:
-      status = TransactionScan();
-      break;
-    case READMODIFYWRITE:
-      status = TransactionReadModifyWrite();
-      break;
-    default:
-      throw utils::Exception("Operation request is not recognized!");
-  }
-  assert(status >= 0);
-  return (status == DB::kOK);
-}
-
-inline int Client::TransactionRead() {
-    const std::string &table = workload_.NextTable();
-    const std::string &key = workload_.NextTransactionKey();
-    std::string result;
-    db_.Read(table, key, result);
-    std::cout <<  " Read table: " <<  workload_.NextTable() << ", key: " << key.c_str() << ", value: " << result.c_str() << "\n" << std::endl;
-    return DB::kOK;
-}
-
-inline int Client::TransactionReadModifyWrite() {
-    const std::string &table = workload_.NextTable();
-    const std::string &key = workload_.NextTransactionKey();
-    std::string result;
-
-    db_.Read(table, key, result);
-
-    std::string value;
-    workload_.BuildUpdate(value);
-    return db_.Update(table, key, value);
-}
-
-inline int Client::TransactionScan() {
-//   const std::string &table = workload_.NextTable();
-//   const std::string &key = workload_.NextTransactionKey();
-//   int len = workload_.NextScanLength();
-//   std::vector<std::vector<DB::KVPair>> result;
-//   if (!workload_.read_all_fields()) {
-//     std::vector<std::string> fields;
-//     fields.push_back("field" + workload_.NextFieldName());
-//     return db_.Scan(table, key, len, &fields, result);
-//   } else {
-//     return db_.Scan(table, key, len, NULL, result);
-//   }
-}
-
-inline int Client::TransactionUpdate() {
-    const std::string &table = workload_.NextTable();
-    const std::string &key = workload_.NextTransactionKey();
-    std::string value;
-    workload_.BuildUpdate(value);
-    return db_.Update(table, key, value);
-}
-
-inline int Client::TransactionInsert() {
-    const std::string &table = workload_.NextTable();
-    const std::string &key = workload_.NextSequenceKey();
-    std::string value;
-    workload_.BuildValues(value);
-    return db_.Insert(table, key, value);
-} 
 
 inline int Client::InsertRecord(KVRequest &request) {
     const std::string &table = workload_.NextTable();
@@ -422,11 +327,6 @@ inline int Client::UpdateReply(KVReply &reply) {
 }
 
 inline int Client::InsertRequest(KVRequest &request) {
-    // const std::string &table = workload_.NextTable();
-    // const std::string &key = workload_.NextSequenceKey();
-    // std::vector<DB::KVPair> values;
-    // workload_.BuildValues(values);
-    // return db_.Insert(table, key, values);
     const std::string &table = workload_.NextTable();
     const std::string &key = workload_.NextTransactionKey();
 
