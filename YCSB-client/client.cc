@@ -345,7 +345,6 @@ void * RunClientThread(void * arg) {
 int main(const int argc, const char *argv[]) {
     int ret;
 	struct mtcp_conf mcfg;
-    char * conf_file;
 	int process_cpu = -1;
 
 	char conf_name[] = "client.conf";
@@ -353,6 +352,9 @@ int main(const int argc, const char *argv[]) {
 
     string filename;
     ifstream input;
+
+    utils::Properties props;
+	char s[20];
 
     for (int i = 0; i < argc; i++){
         long long unsigned n;
@@ -404,12 +406,10 @@ int main(const int argc, const char *argv[]) {
 	}
 
     mtcp_getconf(&mcfg);
-	mcfg.max_concurrency = max_fds;
-	mcfg.max_num_buffers = max_fds;
-	mtcp_setconf(&mcfg);
 	
 	/* register signal handler to mtcp */
 	mtcp_register_signal(SIGINT, SignalHandler);
+	mtcp_register_signal(SIGTERM, SignalHandler);
 
 	fprintf(stdout, "Application initialization finished.\n");
 
