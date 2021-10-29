@@ -169,7 +169,7 @@ int RunServerThread(void * arg) {
             if (events[i].data.fd == sock) {
                 /* Accept connection */
                 int c;
-                if ((c = server.AcceptConnection(sock)) > 0) {
+                if ((c = mtcp_accept(mctx, sock, NULL, NULL)) > 0) {
                     struct server_vars * sv = &ctx->svars[num_accept++];
             		memset(sv, 0, sizeof(sv));
 

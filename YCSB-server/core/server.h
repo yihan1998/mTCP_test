@@ -77,9 +77,8 @@ class Server {
     public:
         Server(DB &db) : db_(db) { }
 
-        virtual int AcceptConnection(int sock);
-        virtual int HandleReadEvent(int sock);
-        virtual int HandleErrorEvent(int sock);
+        virtual int HandleReadEvent(struct server_vars * sv);
+        virtual int HandleErrorEvent(struct server_vars * sv);
 
         virtual int ReceiveRequest(KVRequest &request, KVReply &reply);
         
@@ -240,32 +239,6 @@ inline int Server::Insert(KVRequest &request, KVReply &reply) {
     reply.return_val = ret;
     return ret;
 } 
-
-inline int Server::AcceptConnection(struct thread_context * ctx, int sock) {
-    mctx_t mctx = ctx->mctx;
-	struct server_vars * sv;
-	struct mtcp_epoll_event ev;
-	int c;
-
-	c = mtcp_accept(mctx, sock, NULL, NULL);
-
-	if (c >= 0) {
-		if (c >= MAX_FLOW_NUM) {
-			TRACE_ERROR("Invalid socket id %d.\n", c);
-			return -1;
-		}
-
-		sv = &ctx->svars[c];
-		memset(sv, 0, sizeof(sv));
-		TRACE_APP("New connection %d accepted.\n", c);
-	} else {
-		if (errno != EAGAIN) {
-			TRACE_ERROR("mtcp_accept() error %s\n", strerror(errno));
-		}
-	}
-
-	return c;
-}
 
 }
 
