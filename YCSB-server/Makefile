@@ -1,4 +1,4 @@
-RTE_SDK=/home/yihan-18/mtcp/dpdk
+RTE_SDK=/home/yihan-18/nus-sys/cetus/dpdk
 RTE_TARGET=x86_64-native-linuxapp-gcc
 
 CC		= g++
