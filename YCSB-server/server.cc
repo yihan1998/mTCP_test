@@ -93,7 +93,6 @@ struct thread_context * InitializeServerThread(int core){
 
 int CreateListeningSocket(struct thread_context * ctx){
 	int sock;
-	struct mtcp_epoll_event ev;
 	struct sockaddr_in saddr;
 	int ret;
 
@@ -130,9 +129,9 @@ int CreateListeningSocket(struct thread_context * ctx){
     struct mtcp_epoll_event ev;
 	ev.events = MTCP_EPOLLIN;
 	ev.data.sockid = sock;
-	mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_ADD, sock, &ev);
+	mtcp_epoll_ctl(ctx->mctx, ctx->epfd, MTCP_EPOLL_CTL_ADD, sock, &ev);
 
-	return listener;
+	return sock;
 }
 
 void * RunServerThread(void * arg) {
@@ -181,7 +180,7 @@ void * RunServerThread(void * arg) {
 
     int done = 0;
     while(!done) {
-        nevents = mtcp_epoll_wait(mctx, epfd, events, MAX_EVENTS, -1);
+        nevents = mtcp_epoll_wait(ctx->mctx, ctx->epfd, events, MAX_EVENTS, -1);
 
         for (int i = 0; i < nevents; i++) {
             if (events[i].data.sockid == sock) {
