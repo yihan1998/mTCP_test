@@ -46,19 +46,19 @@ LIBS += -L$(LIBCCP) -lccp -lstartccp
 INC += -I$(LIBCCP)
 endif
 
-all: $(SUBDIRS) $(EXEC)
+all: $(SUBDIRS) $(TARGETS)
 
 $(SUBDIRS):
 	$(MAKE) -C $@
 
-$(EXEC): $(wildcard *.cc) $(OBJECTS) ${MTCP_FLD}/lib/libmtcp.a ${UTIL_OBJ}
+$(TARGETS): $(wildcard *.cc) $(OBJECTS) ${MTCP_FLD}/lib/libmtcp.a ${UTIL_OBJ}
 	$(CC) $(INC) ${LIBS} $(CFLAGS) $^ $(LDFLAGS) -o $@
 
 clean:
 	for dir in $(SUBDIRS); do \
 		$(MAKE) -C $$dir $@; \
 	done
-	$(RM) $(EXEC)
+	$(RM) $(TARGETS)
 
-.PHONY: $(SUBDIRS) $(EXEC)
+.PHONY: $(SUBDIRS) $(TARGETS)
 
