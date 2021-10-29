@@ -81,7 +81,7 @@ class KVReply {
 
 class Client {
     public:
-        Client(DB &db, CoreWorkload &wl) : db_(db), workload_(wl) { }
+        Client(CoreWorkload &wl) : workload_(wl) { }
         
         virtual bool DoInsert();
         virtual bool DoTransaction();

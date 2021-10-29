@@ -15,7 +15,6 @@
 #include "core/timer.h"
 #include "core/client.h"
 #include "core/core_workload.h"
-#include "db/db_factory.h"
 
 #include <stdio.h>
 #include <sys/socket.h>
@@ -298,20 +297,20 @@ void * RunClientThread(void * arg) {
     events = (struct mtcp_epoll_event *)calloc(MAX_EVENTS, sizeof(struct mtcp_epoll_event));
 
     ycsbc::CoreWorkload wl;
-    wl.Init(props);
+    wl.Init(*props);
 
-    const int num_flows = stoi(props.GetProperty("flows", "1"));
+    const int num_flows = stoi(props->GetProperty("flows", "1"));
 
-    int record_total_ops = stoi(props[ycsbc::CoreWorkload::RECORD_COUNT_PROPERTY]);
-    int operation_total_ops = stoi(props[ycsbc::CoreWorkload::OPERATION_COUNT_PROPERTY]);
+    int record_total_ops = stoi(*props[ycsbc::CoreWorkload::RECORD_COUNT_PROPERTY]);
+    int operation_total_ops = stoi(*props[ycsbc::CoreWorkload::OPERATION_COUNT_PROPERTY]);
     fprintf(stdout, " [core %d] # Total records (K) :\t %.2f \n", core_id, (double)record_total_ops / 1000.0);  
     fprintf(stdout, " [core %d] # Total transactions (K) :\t %.2f\n", core_id, (double)operation_total_ops / 1000.0);  
 
     // double duration = DelegateClient(db, &wl, record_total_ops, operation_total_ops, num_flows);
 
-    ycsbc::Client client(*db, wl);
+    ycsbc::Client client(wl);
     
-    int port = stoi(props.GetProperty("port", "80"));
+    int port = stoi(props->GetProperty("port", "80"));
 
     double load_duration = 0.0;
     load_duration = LoadRecord(ctx, events, client, record_total_ops, operation_total_ops, port, num_flows);
@@ -328,16 +327,13 @@ void * RunClientThread(void * arg) {
 	FILE * output_file = fopen(output_file_name, "a+");
 
     sprintf(output, " [core %d] # Transaction throughput : %.2f (KTPS) \t %s \t %s \t %d\n", \
-                    core_id, operation_total_ops / transaction_duration / 1000, props["dbname"].c_str(), \
-                    file_name.c_str(), num_flows);
+                core_id, operation_total_ops / transaction_duration / 1000, file_name.c_str(), num_flows);
 
     fprintf(stdout, "%s", output);
     fflush(stdout);
 
     fprintf(output_file, "%s", output);
 	fclose(output_file);
-
-    db->Close();
 
     return NULL;
 }
@@ -374,14 +370,13 @@ int main(const int argc, const char *argv[]) {
         } else if (sscanf(argv[i], "--flows=%s\n", s, &junk) == 1){
             props.SetProperty("flows", s);
             std::cout << " Flows: " << props["flows"].c_str() << std::endl;
-        } else if (sscanf(argv[i], "--db=%s\n", s, &junk) == 1){
-            props.SetProperty("dbname", s);
-            std::cout << " Database: " << props["dbname"].c_str() << std::endl;
         } else if (sscanf(argv[i], "--port=%s\n", s, &junk) == 1) {
             props.SetProperty("port", s);
             std::cout << " Port: " << props["port"].c_str() << std::endl;
         } else if (sscanf(argv[i], "--workload=%s\n", s, &junk) == 1) {
             filename.assign(optarg);
+            props.SetProperty("workload", filename);
+            std::cout << " Workload: " << props["workload"].c_str() << std::endl;
             input.open(filename);
             try {
                 props.Load(input);
