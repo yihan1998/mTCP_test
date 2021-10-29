@@ -22,6 +22,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
+#include <signal.h>
 #include <getopt.h>
 
 #include <sys/epoll.h>
