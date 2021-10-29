@@ -367,7 +367,7 @@ inline int Client::ConnectServer(mctx_t mctx, char * ip, int port) {
     server_addr.sin_addr.s_addr = inet_addr(ip);
    
     int ret;
-    ret = mtcp_connect(mctx, sock, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+    ret = mtcp_connect(mctx, sock, (struct sockaddr *)&server_addr, sizeof(struct sockaddr_in));
 	if (ret < 0) {
         printf("\nConnection Failed \n");
         return -1;
