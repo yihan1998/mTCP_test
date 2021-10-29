@@ -191,11 +191,11 @@ double PerformTransaction(struct thread_context * ctx, struct mtcp_epoll_event *
                     /* Increase actual ops */
                     oks++;
                     if(++info->actual_operation_ops == info->total_operation_ops) {
-                        shutdown(info->sockfd, SHUT_WR);
+                        // shutdown(info->sockfd, SHUT_WR);
                         if (++num_transaction_complete == num_conn) {
                             done = 1;
                         }
-                        close(info->sockfd);
+                        mtcp_close(ctx->mctx, info->sockfd);
                     }
 
                     struct mtcp_epoll_event ev;
