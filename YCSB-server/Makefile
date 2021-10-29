@@ -3,7 +3,7 @@ RTE_TARGET	= x86_64-native-linuxapp-gcc
 
 CC		= g++
 DPDK	= 1
-CCP		= 0
+CCP		= 1
 CFLAGS	= -std=c++11 -g -O3 -fkeep-inline-functions -march=x86-64 -msse4.1 #-fgnu89-inline
 LDFLAGS	= -lpthread -ltbb -lhiredis
 SUBDIRS	= core db redis
@@ -44,7 +44,7 @@ endif
 ifeq ($(CCP), 1)
 # LIBCCP
 LIBCCP = $(MTCP_FLD)/src/libccp
-LIBS += -L$(LIBCCP) -lccp -lstartccp
+LIBS += -L$(LIBCCP) -lccp
 INC += -I$(LIBCCP)
 endif
 
