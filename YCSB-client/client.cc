@@ -155,7 +155,7 @@ double LoadRecord(struct thread_context * ctx, struct mtcp_epoll_event * events,
         ev.events = MTCP_EPOLLIN | MTCP_EPOLLOUT;
         ev.data.ptr = &ctx->info[i];
 
-        mtcp_epoll_ctl(ctx->info[i].epfd, MTCP_EPOLL_CTL_MOD, ctx->info[i].sockfd, &ev);
+        mtcp_epoll_ctl(ctx->mctx, ctx->epfd, MTCP_EPOLL_CTL_MOD, ctx->info[i].sockfd, &ev);
     }
     
     return duration;
