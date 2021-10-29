@@ -88,7 +88,7 @@ class Client {
         virtual int SendRequest(KVRequest &request);
         virtual int ReceiveReply(KVReply &reply);
 
-        virtual int ConnectServer(char * ip, int port);
+        virtual int ConnectServer(mctx_t mctx, char * ip, int port);
         virtual int HandleReadEvent(struct conn_info * info);
         virtual int HandleWriteEvent(struct conn_info * info);
         virtual int HandleErrorEvent(struct conn_info * info);
