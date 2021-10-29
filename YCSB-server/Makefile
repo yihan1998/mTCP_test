@@ -51,8 +51,8 @@ all: $(SUBDIRS) $(TARGETS)
 $(SUBDIRS):
 	$(MAKE) -C $@
 
-$(TARGETS): ${MTCP_FLD}/lib/libmtcp.a ${UTIL_OBJ} $(wildcard *.cc) $(OBJECTS)
-	$(CC) $(INC) ${LIBS} $(CFLAGS) $^ $(LDFLAGS) -o $@
+$(TARGETS): $(wildcard *.cc) $(OBJECTS)
+	$(CC) $(INC) ${LIBS} $(CFLAGS) ${MTCP_FLD}/lib/libmtcp.a ${UTIL_OBJ} $^ $(LDFLAGS) -o $@
 
 clean:
 	for dir in $(SUBDIRS); do \
