@@ -92,7 +92,7 @@ double LoadRecord(struct thread_context * ctx, struct mtcp_epoll_event * events,
                 struct mtcp_epoll_event ev;
                 ev.events = MTCP_EPOLLIN | MTCP_EPOLLOUT;
                 ev.data.ptr = conn_info;
-            	mtcp_epoll_ctl(ctx->mtcp, ctx->epfd, MTCP_EPOLL_CTL_ADD, sock, &ev);
+            	mtcp_epoll_ctl(ctx->mctx, ctx->epfd, MTCP_EPOLL_CTL_ADD, sock, &ev);
             } else {
                 fprintf(stderr, " [%s] connect server failed!", __func__);
                 exit(1);
@@ -128,7 +128,7 @@ double LoadRecord(struct thread_context * ctx, struct mtcp_epoll_event * events,
                     ev.events = EMTCP_POLLIN | MTCP_EPOLLOUT;
                     ev.data.ptr = info;
 
-            	    mtcp_epoll_ctl(ctx->mtcp, ctx->epfd, MTCP_EPOLL_CTL_MOD, sock, &ev);
+            	    mtcp_epoll_ctl(ctx->mctx, ctx->epfd, MTCP_EPOLL_CTL_MOD, sock, &ev);
                 }
             } else if ((events[i].events & MTCP_EPOLLOUT)) {
                 ycsbc::KVRequest request;
@@ -140,7 +140,7 @@ double LoadRecord(struct thread_context * ctx, struct mtcp_epoll_event * events,
                     struct mtcp_epoll_event ev;
                     ev.events = MTCP_EPOLLIN;
                     ev.data.ptr = info;
-            	    mtcp_epoll_ctl(ctx->mtcp, ctx->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
+            	    mtcp_epoll_ctl(ctx->mctx, ctx->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
                 }
             } else {
                 printf(" >> unknown event!\n");
@@ -202,7 +202,7 @@ double PerformTransaction(struct thread_context * ctx, struct mtcp_epoll_event *
                     ev.events = MTCP_EPOLLIN | MTCP_EPOLLOUT;
                     ev.data.ptr = info;
 
-                    mtcp_epoll_ctl(ctx->mtcp, ctx->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
+                    mtcp_epoll_ctl(ctx->mctx, ctx->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
                 }
             } else if ((events[i].events & EPOLLOUT)) {
                 ret = client.HandleWriteEvent(info);
@@ -211,7 +211,7 @@ double PerformTransaction(struct thread_context * ctx, struct mtcp_epoll_event *
                     ev.events = EPOLLIN;
                     ev.data.ptr = info;
 
-                    mtcp_epoll_ctl(ictx->mtcp, ctx->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
+                    mtcp_epoll_ctl(ctx->mctx, ctx->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
                 }
             } else {
                 printf(" >> unknown event!\n");
@@ -289,8 +289,8 @@ void * RunClientThread(void * arg) {
 
     const int num_flows = stoi(props->GetProperty("flows", "1"));
 
-    int record_total_ops = stoi(*props[ycsbc::CoreWorkload::RECORD_COUNT_PROPERTY]);
-    int operation_total_ops = stoi(*props[ycsbc::CoreWorkload::OPERATION_COUNT_PROPERTY]);
+    int record_total_ops = stoi((*props)[ycsbc::CoreWorkload::RECORD_COUNT_PROPERTY]);
+    int operation_total_ops = stoi((*props)[ycsbc::CoreWorkload::OPERATION_COUNT_PROPERTY]);
     fprintf(stdout, " [core %d] # Total records (K) :\t %.2f \n", core, (double)record_total_ops / 1000.0);  
     fprintf(stdout, " [core %d] # Total transactions (K) :\t %.2f\n", core, (double)operation_total_ops / 1000.0);  
 
@@ -303,7 +303,7 @@ void * RunClientThread(void * arg) {
     double load_duration = 0.0;
     load_duration = LoadRecord(ctx, events, client, record_total_ops, operation_total_ops, port, num_flows);
 
-    fprintf(stdout, " [core %d] loaded records done! \n", core_id);  
+    fprintf(stdout, " [core %d] loaded records done! \n", core);  
 
     double transaction_duration = 0.0;
     transaction_duration = PerformTransaction(ctx, events, client);
@@ -311,11 +311,11 @@ void * RunClientThread(void * arg) {
     char output[256];
 
     char output_file_name[32];
-	sprintf(output_file_name, "throughput_core_%d.txt", core_id);
+	sprintf(output_file_name, "throughput_core_%d.txt", core);
 	FILE * output_file = fopen(output_file_name, "a+");
 
     sprintf(output, " [core %d] # Transaction throughput : %.2f (KTPS) \t %s \t %s \t %d\n", \
-                core_id, operation_total_ops / transaction_duration / 1000, *props["workload"].c_str(), num_flows);
+                core, operation_total_ops / transaction_duration / 1000, (*props)["workload"].c_str(), num_flows);
 
     fprintf(stdout, "%s", output);
     fflush(stdout);
