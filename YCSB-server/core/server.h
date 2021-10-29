@@ -160,10 +160,9 @@ inline int Server::Read(KVRequest &request, KVReply &reply) {
 
     // std::cout <<  " Read table: " <<  table.c_str() << ", key: " << key.c_str() << ", value: " <<  value.c_str() << "\n" << std::endl;
 
-    if (ret == DB::kOK) {
-        strcpy(reply.result.first, key.c_str());
-        strcpy(reply.result.second, value.c_str());
-    }
+    strncpy(reply.result.first, key.c_str(), 100);
+    strncpy(reply.result.second, value.c_str(), 100);
+
     return ret;
 }
 
@@ -181,10 +180,8 @@ inline int Server::ReadModifyWrite(KVRequest &request, KVReply &reply) {
     
     reply.op = READMODIFYWRITE;
 
-    if (ret == DB::kOK) {
-        strcpy(reply.result.first, key.c_str());
-        strcpy(reply.result.second, old.c_str());
-    }
+    strncpy(reply.result.first, key.c_str(), 100);
+    strncpy(reply.result.second, old.c_str(), 100);
 
     ret = db_.Update(table, key, value);
     reply.return_val = ret;
@@ -213,10 +210,8 @@ inline int Server::Update(KVRequest &request, KVReply &reply) {
     
     reply.op = UPDATE;
 
-    if (ret == DB::kOK) {
-        strcpy(reply.result.first, key.c_str());
-        strcpy(reply.result.second, value.c_str());
-    }
+    strncpy(reply.result.first, key.c_str(), 100);
+    strncpy(reply.result.second, value.c_str(), 100);
 
     reply.return_val = ret;
     return ret;
@@ -231,10 +226,8 @@ inline int Server::Insert(KVRequest &request, KVReply &reply) {
     
     reply.op = INSERT;
 
-    if (ret == DB::kOK) {
-        strcpy(reply.result.first, key.c_str());
-        strcpy(reply.result.second, value.c_str());
-    }
+    strncpy(reply.result.first, key.c_str(), 100);
+    strncpy(reply.result.second, value.c_str(), 100);
 
     reply.return_val = ret;
     return ret;

@@ -121,11 +121,11 @@ inline int Client::InsertRecord(KVRequest &request) {
     request.op = INSERT;
     // request.table = table;
     // request.request = std::make_pair(key, std::string());
-    strncpy(request.table, table.c_str());
+    strncpy(request.table, table.c_str(), 16);
     // key.copy(request.request.first, key.size());
-    strncpy(request.request.first, key.c_str());
+    strncpy(request.request.first, key.c_str(), 100);
     // value.copy(request.request.second, value.size());
-    strncpy(request.request.second, value.c_str());
+    strncpy(request.request.second, value.c_str(), 100);
     // std::cout <<  " Insert record to table: " << request.table << ", key: " << request.request.first << ", value: " << request.request.second << "\n" << std::endl;
     return DB::kOK;
 }
