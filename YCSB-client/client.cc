@@ -34,13 +34,15 @@ static char * conf_file = NULL;
 
 __thread int num_conn = 0;
 
+__thread int num_cores = 0;
+
 using namespace std;
 
 void UsageMessage(const char *command);
 bool StrStartWith(const char *str, const char *pre);
 string ParseCommandLine(int argc, const char *argv[], utils::Properties &props);
 
-double LoadRecord(int epfd, struct epoll_event * events, ycsbc::Client &client, const int num_record_ops, const int num_operation_ops, const int port, const int num_flows) {
+double LoadRecord(int epfd, struct mtcp_epoll_event * events, ycsbc::Client &client, const int num_record_ops, const int num_operation_ops, const int port, const int num_flows) {
     int record_per_flow = num_record_ops / num_flows;
     int operation_per_flow = num_operation_ops / num_flows;
 
@@ -72,8 +74,8 @@ double LoadRecord(int epfd, struct epoll_event * events, ycsbc::Client &client, 
 
                 num_conn++;
 
-                struct epoll_event ev;
-                ev.events = EPOLLIN | EPOLLOUT;
+                struct mtcp_epoll_event ev;
+                ev.events = MTCP_EPOLLIN | MTCP_EPOLLOUT;
                 ev.data.ptr = conn_info;
                 epoll_ctl(epfd, EPOLL_CTL_ADD, sock, &ev);
                 mtcp_epoll_ctl(ctx->mctx, ctx->epfd, MTCP_EPOLL_CTL_ADD, c, &ev);
@@ -88,11 +90,11 @@ double LoadRecord(int epfd, struct epoll_event * events, ycsbc::Client &client, 
         for (int i = 0; i < nevents; i++) {
             struct conn_info * info = (struct conn_info *)(events[i].data.ptr);
             int ret;
-            if ((events[i].events & EPOLLERR)) {
+            if ((events[i].events & MTCP_EPOLLERR)) {
                 client.HandleErrorEvent(info);
             }
             
-            if ((events[i].events & EPOLLIN)) {
+            if ((events[i].events & MTCP_EPOLLIN)) {
                 ycsbc::KVReply reply;
                 int len = read(info->sockfd, &reply, sizeof(reply));
 
@@ -108,24 +110,24 @@ double LoadRecord(int epfd, struct epoll_event * events, ycsbc::Client &client, 
                         }
                     }
                     
-                    struct epoll_event ev;
-                    ev.events = EPOLLIN | EPOLLOUT;
+                    struct mtcp_epoll_event ev;
+                    ev.events = EMTCP_POLLIN | MTCP_EPOLLOUT;
                     ev.data.ptr = info;
 
-                    epoll_ctl(info->epfd, EPOLL_CTL_MOD, info->sockfd, &ev);
+                    epoll_ctl(info->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
                 }
-            } else if ((events[i].events & EPOLLOUT)) {
+            } else if ((events[i].events & MTCP_EPOLLOUT)) {
                 ycsbc::KVRequest request;
                 client.InsertRecord(request);
 
                 int len = send(info->sockfd, &request, sizeof(request), 0);
             
                 if(len > 0) {
-                    struct epoll_event ev;
-                    ev.events = EPOLLIN;
+                    struct mtcp_epoll_event ev;
+                    ev.events = MTCP_EPOLLIN;
                     ev.data.ptr = info;
 
-                    epoll_ctl(info->epfd, EPOLL_CTL_MOD, info->sockfd, &ev);
+                    epoll_ctl(info->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
                 }
             } else {
                 printf(" >> unknown event!\n");
@@ -136,7 +138,7 @@ double LoadRecord(int epfd, struct epoll_event * events, ycsbc::Client &client, 
     duration = timer.End();
 
     for (int i = 0; i < num_conn; i++) {
-        struct epoll_event ev;
+        struct mtcp_epoll_event ev;
         ev.events = EPOLLIN | EPOLLOUT;
         ev.data.ptr = &info[i];
 
@@ -146,7 +148,7 @@ double LoadRecord(int epfd, struct epoll_event * events, ycsbc::Client &client, 
     return duration;
 }
 
-double PerformTransaction(int epfd, struct epoll_event * events, ycsbc::Client &client) {
+double PerformTransaction(int epfd, struct mtcp_epoll_event * events, ycsbc::Client &client) {
     int done = 0;
 
     utils::Timer<double> timer;
@@ -183,7 +185,7 @@ double PerformTransaction(int epfd, struct epoll_event * events, ycsbc::Client &
                         close(info->sockfd);
                     }
 
-                    struct epoll_event ev;
+                    struct mtcp_epoll_event ev;
                     ev.events = EPOLLIN | EPOLLOUT;
                     ev.data.ptr = info;
 
@@ -192,7 +194,7 @@ double PerformTransaction(int epfd, struct epoll_event * events, ycsbc::Client &
             } else if ((events[i].events & EPOLLOUT)) {
                 ret = client.HandleWriteEvent(info);
                 if(ret > 0) {
-                    struct epoll_event ev;
+                    struct mtcp_epoll_event ev;
                     ev.events = EPOLLIN;
                     ev.data.ptr = info;
 
@@ -219,14 +221,14 @@ struct thread_context * InitializeClientThread(int core){
 
 	ctx = (struct thread_context *)calloc(1, sizeof(struct thread_context));
 	if (!ctx) {
-		TRACE_ERROR("Failed to create thread context!\n");
+		fprintf(stderr, "Failed to create thread context!\n");
 		return NULL;
 	}
 
 	/* create mtcp context: this will spawn an mtcp thread */
 	ctx->mctx = mtcp_create_context(core);
 	if (!ctx->mctx) {
-		TRACE_ERROR("Failed to create mtcp context!\n");
+		fprintf(stderr, "Failed to create mtcp context!\n");
 		free(ctx);
 		return NULL;
 	}
@@ -236,7 +238,7 @@ struct thread_context * InitializeClientThread(int core){
 	if (ctx->epfd < 0) {
 		mtcp_destroy_context(ctx->mctx);
 		free(ctx);
-		TRACE_ERROR("Failed to create epoll descriptor!\n");
+		fprintf(stderr, "Failed to create epoll descriptor!\n");
 		return NULL;
 	}
 
@@ -246,14 +248,14 @@ struct thread_context * InitializeClientThread(int core){
 		mtcp_close(ctx->mctx, ctx->epfd);
 		mtcp_destroy_context(ctx->mctx);
 		free(ctx);
-		TRACE_ERROR("Failed to create server_vars struct!\n");
+		fprintf(stderr, "Failed to create server_vars struct!\n");
 		return NULL;
 	}
 
 	return ctx;
 }
 
-int RunClientThread(void * arg) {
+void * RunClientThread(void * arg) {
     struct server_arg * sarg = (struct server_arg *)arg;
 
     int core = sarg->core;
@@ -267,7 +269,7 @@ int RunClientThread(void * arg) {
     struct thread_context * ctx;
 	ctx = InitializeClientThread(core);
 	if (!ctx) {
-		TRACE_ERROR("Failed to initialize server thread.\n");
+		fprintf(stderr, "Failed to initialize server thread.\n");
 		return NULL;
 	}
 
@@ -322,6 +324,8 @@ int RunClientThread(void * arg) {
 	fclose(output_file);
 
     db->Close();
+
+    return NULL;
 }
 
 int main(const int argc, const char *argv[]) {
@@ -333,6 +337,9 @@ int main(const int argc, const char *argv[]) {
 	char conf_name[] = "client.conf";
 	conf_file = conf_name;
 
+    string filename;
+    ifstream input;
+
     for (int i = 0; i < argc; i++){
         long long unsigned n;
         char junk;
@@ -341,38 +348,44 @@ int main(const int argc, const char *argv[]) {
             num_cores = n;
 			printf(" >> core num: %d\n", num_cores);
 			if (num_cores > MAX_CPUS) {
-				TRACE_CONFIG("CPU limit should be smaller than the "
+				fprintf(stdout, "CPU limit should be smaller than the "
 					     "number of CPUs: %d\n", MAX_CPUS);
-				return FALSE;
+				return 0;
 			}
 			mtcp_getconf(&mcfg);
 			mcfg.num_cores = num_cores;
 			mtcp_setconf(&mcfg);
-        } else if(sscanf(argv[i], "--num_flow=%llu%c", &n, &junk) == 1) {
-            num_flow = n; 
-			printf(" >> flow num: %d\n", num_flow);
-        } else if(sscanf(argv[i], "--size=%llu%c", &n, &junk) == 1) {
-            buff_size = n;
-			printf(" >> buff size: %d\n", buff_size);
-        } else if(sscanf(argv[i], "--time=%llu", &n) == 1){
-            execution_time = n;
-			printf(" >> total time of execution: %d\n", execution_time);
-        } else if(sscanf(argv[i], "--server_ip=%s%c", server_ip, &junk) == 1) {
-            printf(" >> server ip: %s\n", server_ip);
-        } else if(sscanf(argv[i], "--server_port=%d%c", &server_port, &junk) == 1) {
-            printf(" >> server port: %d\n", server_port);
+        } else if (sscanf(argv[i], "--flows=%s\n", s, &junk) == 1){
+            props.SetProperty("flows", s);
+            std::cout << " Flows: " << props["flows"].c_str() << std::endl;
+        } else if (sscanf(argv[i], "--db=%s\n", s, &junk) == 1){
+            props.SetProperty("dbname", s);
+            std::cout << " Database: " << props["dbname"].c_str() << std::endl;
+        } else if (sscanf(argv[i], "--port=%s\n", s, &junk) == 1) {
+            props.SetProperty("port", s);
+            std::cout << " Port: " << props["port"].c_str() << std::endl;
+        } else if (sscanf(argv[i], "--workload=%s\n", s, &junk) == 1) {
+            filename.assign(optarg);
+            input.open(filename);
+            try {
+                props.Load(input);
+            } catch (const string &message) {
+                cout << message << endl;
+                exit(0);
+            }
+            input.close();
         }
     }
 
 	/* initialize mtcp */
 	if (conf_file == NULL) {
-		TRACE_CONFIG("You forgot to pass the mTCP startup config file!\n");
+		fprintf(stdout, "You forgot to pass the mTCP startup config file!\n");
 		exit(EXIT_FAILURE);
 	}
 
 	ret = mtcp_init(conf_file);
 	if (ret) {
-		TRACE_CONFIG("Failed to initialize mtcp\n");
+		fprintf(stdout, "Failed to initialize mtcp\n");
 		exit(EXIT_FAILURE);
 	}
 
@@ -384,23 +397,21 @@ int main(const int argc, const char *argv[]) {
 	/* register signal handler to mtcp */
 	mtcp_register_signal(SIGINT, SignalHandler);
 
-	TRACE_INFO("Application initialization finished.\n");
+	fprintf(stdout, "Application initialization finished.\n");
 
 	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_cores; i++) {
 		cl_thread_arg[i].core = i;
         cl_thread_arg[i].props = &props;
 
-		if (pthread_create(&app_thread[i], NULL, RunClientThread, (void *)&cl_thread_arg[i])) {
+		if (pthread_create(&cl_thread[i], NULL, RunClientThread, (void *)&cl_thread_arg[i])) {
 			perror("pthread_create");
-			TRACE_CONFIG("Failed to create server thread.\n");
-				exit(EXIT_FAILURE);
 		}
 		if (process_cpu != -1)
 			break;
 	}
 	
 	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_cores; i++) {
-		pthread_join(app_thread[i], NULL);
+		pthread_join(cl_thread[i], NULL);
 
 		if (process_cpu != -1)
 			break;
