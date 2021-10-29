@@ -204,11 +204,11 @@ double PerformTransaction(struct thread_context * ctx, struct mtcp_epoll_event *
 
                     mtcp_epoll_ctl(ctx->mctx, ctx->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
                 }
-            } else if ((events[i].events & EPOLLOUT)) {
+            } else if ((events[i].events & MTCP_EPOLLOUT)) {
                 ret = client.HandleWriteEvent(info);
                 if(ret > 0) {
                     struct mtcp_epoll_event ev;
-                    ev.events = EPOLLIN;
+                    ev.events = MTCP_EPOLLIN;
                     ev.data.ptr = info;
 
                     mtcp_epoll_ctl(ctx->mctx, ctx->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);

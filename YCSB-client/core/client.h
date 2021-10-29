@@ -89,9 +89,9 @@ class Client {
         virtual int ReceiveReply(KVReply &reply);
 
         virtual int ConnectServer(mctx_t mctx, char * ip, int port);
-        virtual int HandleReadEvent(struct conn_info * info);
-        virtual int HandleWriteEvent(struct conn_info * info);
-        virtual int HandleErrorEvent(struct conn_info * info);
+        virtual int HandleReadEvent(mctx_t mctx, struct conn_info * info);
+        virtual int HandleWriteEvent(mctx_t mctx, struct conn_info * info);
+        virtual int HandleErrorEvent(mctx_t mctx, struct conn_info * info);
         
         virtual ~Client() { }
     
@@ -180,7 +180,7 @@ inline int Client::ReceiveReply(KVReply &reply) {
     return (status == DB::kOK);
 }
 
-inline int Client::HandleReadEvent(struct conn_info * info) {
+inline int Client::HandleReadEvent(mctx_t mctx, struct conn_info * info) {
     // char buff[BUFF_SIZE];
 
     // int len = read(info->sockfd, buff, BUFF_SIZE);
@@ -188,7 +188,7 @@ inline int Client::HandleReadEvent(struct conn_info * info) {
 
     // return len;
     KVReply reply;
-    int len = read(info->sockfd, &reply, sizeof(reply));
+    int len = mtcp_read(mctx, info->sockfd, (char *)&reply, sizeof(reply));
 
     if (len <= 0) {
         return len;
@@ -199,7 +199,7 @@ inline int Client::HandleReadEvent(struct conn_info * info) {
     return len;
 }
 
-inline int Client::HandleWriteEvent(struct conn_info * info) {
+inline int Client::HandleWriteEvent(mctx_t mctx, struct conn_info * info) {
     // char buff[BUFF_SIZE];
     // sprintf(buff, "Hello from client(%d)", counter++);
 
@@ -213,12 +213,12 @@ inline int Client::HandleWriteEvent(struct conn_info * info) {
     KVRequest request;
     int ret = SendRequest(request);
     
-    int len = write(info->sockfd, &request, sizeof(request));
+    int len = mtcp_write(mctx, info->sockfd, (char *)&request, sizeof(request));
 
     return len;
 }
 
-inline int Client::HandleErrorEvent(struct conn_info * info) {
+inline int Client::HandleErrorEvent(mctx_t mctx, struct conn_info * info) {
     return 0;
 }
 
