@@ -352,25 +352,32 @@ inline int Client::InsertReply(KVReply &reply) {
     return reply.return_val;
 }
 
-inline int Client::ConnectServer(char * ip, int port) {
+inline int Client::ConnectServer(mctx_t mctx, char * ip, int port) {
     int sock = 0;
     struct sockaddr_in server_addr;
 
-    if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        printf("\n Socket creation error \n");
-        return -1;
-    }
+    sock = mtcp_socket(mctx, AF_INET, SOCK_STREAM, 0);
+	if (sock < 0) {
+		fprintf(stderr, "Failed to create socket!\n");
+		return -1;
+	}
    
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(port);
     server_addr.sin_addr.s_addr = inet_addr(ip);
    
-    if (connect(sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+    int ret;
+    ret = mtcp_connect(mctx, sock, (struct sockaddr *)&addr, sizeof(struct sockaddr_in));
+	if (ret < 0) {
         printf("\nConnection Failed \n");
         return -1;
     }
 
-    fcntl(sock, F_SETFL, O_NONBLOCK);
+    ret = mtcp_setsock_nonblock(mctx, sock);
+	if (ret < 0) {
+		fprintf(stderr, "Failed to set socket in nonblocking mode.\n");
+		exit(-1);
+	}
 
     return sock;
 }

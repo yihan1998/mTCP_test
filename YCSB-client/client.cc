@@ -76,7 +76,7 @@ double LoadRecord(struct thread_context * ctx, struct mtcp_epoll_event * events,
         while(num_conn < num_flows) {
             /* Connect server */
             int sock;
-            if ((sock = client.ConnectServer("10.0.0.1", port)) > 0) {
+            if ((sock = client.ConnectServer(ctx->mctx, "10.0.0.1", port)) > 0) {
                 // fprintf(stdout, " [%s] connect server through sock %d\n", __func__, sock);
                 struct conn_info * conn_info = &ctx->info[num_conn];
                 conn_info->sockfd = sock;
