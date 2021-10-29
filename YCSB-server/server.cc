@@ -29,6 +29,21 @@ void UsageMessage(const char *command);
 bool StrStartWith(const char *str, const char *pre);
 int ParseCommandLine(int argc, const char *argv[], utils::Properties &props);
 
+void SignalHandler(int signum){
+	int i;
+
+    if (signum == SIGINT) {
+        for (i = 0; i < num_cores; i++) {
+            if (sv_thread[i] == pthread_self()) {
+                //TRACE_INFO("Server thread %d got SIGINT\n", i);
+                pthread_kill(sv_thread[i], SIGTERM);
+            }
+        }
+    } else if (signum == SIGTERM) {
+        exit(0);
+    }
+}
+
 struct thread_context * InitializeServerThread(int core){
 	struct thread_context * ctx;
 
@@ -279,6 +294,7 @@ int main(const int argc, const char *argv[]) {
 	
 	/* register signal handler to mtcp */
 	mtcp_register_signal(SIGINT, SignalHandler);
+	mtcp_register_signal(SIGTERM, SignalHandler);
 
 	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_cores; i++) {
 		sv_thread_arg[i].core = i;
