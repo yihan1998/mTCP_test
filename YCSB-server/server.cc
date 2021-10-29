@@ -37,14 +37,14 @@ struct thread_context * InitializeServerThread(int core){
 
 	ctx = (struct thread_context *)calloc(1, sizeof(struct thread_context));
 	if (!ctx) {
-		TRACE_ERROR("Failed to create thread context!\n");
+		fprintf(stderr, "Failed to create thread context!\n");
 		return NULL;
 	}
 
 	/* create mtcp context: this will spawn an mtcp thread */
 	ctx->mctx = mtcp_create_context(core);
 	if (!ctx->mctx) {
-		TRACE_ERROR("Failed to create mtcp context!\n");
+		fprintf(stderr, "Failed to create mtcp context!\n");
 		free(ctx);
 		return NULL;
 	}
@@ -54,7 +54,7 @@ struct thread_context * InitializeServerThread(int core){
 	if (ctx->epfd < 0) {
 		mtcp_destroy_context(ctx->mctx);
 		free(ctx);
-		TRACE_ERROR("Failed to create epoll descriptor!\n");
+		fprintf(stderr, "Failed to create epoll descriptor!\n");
 		return NULL;
 	}
 
@@ -64,7 +64,7 @@ struct thread_context * InitializeServerThread(int core){
 		mtcp_close(ctx->mctx, ctx->epfd);
 		mtcp_destroy_context(ctx->mctx);
 		free(ctx);
-		TRACE_ERROR("Failed to create server_vars struct!\n");
+		fprintf(stderr, "Failed to create server_vars struct!\n");
 		return NULL;
 	}
 
@@ -80,13 +80,13 @@ int CreateListeningSocket(struct thread_context * ctx){
 	/* create socket and set it as nonblocking */
 	sock = mtcp_socket(ctx->mctx, AF_INET, SOCK_STREAM, 0);
 	if (sock < 0) {
-		TRACE_ERROR("Failed to create listening socket!\n");
+		fprintf(stderr, "Failed to create listening socket!\n");
 		return -1;
 	}
 
 	ret = mtcp_setsock_nonblock(ctx->mctx, sock);
 	if (ret < 0) {
-		TRACE_ERROR("Failed to set socket in nonblocking mode.\n");
+		fprintf(stderr, "Failed to set socket in nonblocking mode.\n");
 		return -1;
 	}
 
@@ -96,14 +96,14 @@ int CreateListeningSocket(struct thread_context * ctx){
 	saddr.sin_port = htons(80);
 	ret = mtcp_bind(ctx->mctx, sock, (struct sockaddr *)&saddr, sizeof(struct sockaddr_in));
 	if (ret < 0) {
-		TRACE_ERROR("Failed to bind to the listening socket!\n");
+		fprintf(stderr, "Failed to bind to the listening socket!\n");
 		return -1;
 	}
 	
 	/* listen (backlog: can be configured) */
 	ret = mtcp_listen(ctx->mctx, sock, 1024);
 	if (ret < 0) {
-		TRACE_ERROR("mtcp_listen() failed!\n");
+		fprintf(stderr, "mtcp_listen() failed!\n");
 		return -1;
 	}
 	
@@ -146,7 +146,7 @@ int RunServerThread(void * arg) {
     struct thread_context * ctx;
 	ctx = InitializeServerThread(core);
 	if (!ctx) {
-		TRACE_ERROR("Failed to initialize server thread.\n");
+		fprintf(stderr, "Failed to initialize server thread.\n");
 		return NULL;
 	}
 
@@ -157,7 +157,7 @@ int RunServerThread(void * arg) {
     int sock;
     sock = CreateListeningSocket(ctx);
 	if (sock < 0) {
-		TRACE_ERROR("Failed to create listening socket.\n");
+		fprintf(stderr, "Failed to create listening socket.\n");
 		exit(-1);
 	}
 
@@ -185,8 +185,6 @@ int RunServerThread(void * arg) {
                     mtcp_setsock_nonblock(ctx->mctx, c);
                     
                     mtcp_epoll_ctl(mctx, ctx->epfd, MTCP_EPOLL_CTL_ADD, c, &ev);
-                    
-                    TRACE_APP("Socket %d registered.\n", c);
                 }
             } else if ((events[i].events & EPOLLERR)) {
                 // cout << " Closing sock " << events[i].events << endl;
@@ -226,7 +224,7 @@ int main(const int argc, const char *argv[]) {
 	conf_file = conf_name;
 
 	if (argc < 2) {
-		TRACE_CONFIG("$%s directory_to_service\n", argv[0]);
+		fprintf(stdout, "$%s directory_to_service\n", argv[0]);
 		return FALSE;
 	}
 
@@ -240,7 +238,7 @@ int main(const int argc, const char *argv[]) {
             num_cores = n;
 			printf(" >> core num: %d\n", num_cores);
 			if (num_cores > MAX_CPUS) {
-				TRACE_CONFIG("CPU limit should be smaller than the "
+				fprintf(stdout, "CPU limit should be smaller than the "
 					     "number of CPUs: %d\n", MAX_CPUS);
 				return FALSE;
 			}
@@ -258,19 +256,19 @@ int main(const int argc, const char *argv[]) {
 
 	/* initialize mtcp */
 	if (conf_file == NULL) {
-		TRACE_CONFIG("You forgot to pass the mTCP startup config file!\n");
+		fprintf(stderr, "You forgot to pass the mTCP startup config file!\n");
 		exit(EXIT_FAILURE);
 	}
 
 	ret = mtcp_init(conf_file);
 	if (ret) {
-		TRACE_CONFIG("Failed to initialize mtcp\n");
+		fprintf(stderr, "Failed to initialize mtcp\n");
 		exit(EXIT_FAILURE);
 	}
 
 	mtcp_getconf(&mcfg);
 	if (backlog > mcfg.max_concurrency) {
-		TRACE_CONFIG("backlog can not be set larger than CONFIG.max_concurrency\n");
+		fprintf(stderr, "backlog can not be set larger than CONFIG.max_concurrency\n");
 		return FALSE;
 	}
 
@@ -282,16 +280,12 @@ int main(const int argc, const char *argv[]) {
 	/* register signal handler to mtcp */
 	mtcp_register_signal(SIGINT, SignalHandler);
 
-	TRACE_INFO("Application initialization finished.\n");
-
 	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_cores; i++) {
 		sv_thread_arg[i].core = i;
         sv_thread_arg[i].props = &props;
 		
-		if (pthread_create(&app_thread[i], NULL, RunServerThread, (void *)&sv_thread_arg[i])) {
-			perror("pthread_create");
-			TRACE_CONFIG("Failed to create server thread.\n");
-				exit(EXIT_FAILURE);
+		if (pthread_create(&sv_thread[i], NULL, RunServerThread, (void *)&sv_thread_arg[i])) {
+			perror("pthread_create() failed!");
 		}
 		if (process_cpu != -1)
 			break;
