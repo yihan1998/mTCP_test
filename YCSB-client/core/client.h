@@ -118,7 +118,6 @@ class Client {
         virtual int TransactionUpdate();
         virtual int TransactionInsert();
 
-        DB &db_;
         CoreWorkload &workload_;
 };
 

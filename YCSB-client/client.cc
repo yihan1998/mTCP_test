@@ -78,7 +78,7 @@ double LoadRecord(struct thread_context * ctx, struct mtcp_epoll_event * events,
             int sock;
             if ((sock = client.ConnectServer("10.0.0.1", port)) > 0) {
                 // fprintf(stdout, " [%s] connect server through sock %d\n", __func__, sock);
-                struct conn_info * conn_info = &info[num_conn];
+                struct conn_info * conn_info = &ctx->info[num_conn];
                 conn_info->sockfd = sock;
                 conn_info->epfd = ctx->epfd;
 
@@ -110,7 +110,7 @@ double LoadRecord(struct thread_context * ctx, struct mtcp_epoll_event * events,
             
             if ((events[i].events & MTCP_EPOLLIN)) {
                 ycsbc::KVReply reply;
-                int len = read(info->sockfd, &reply, sizeof(reply));
+                int len = mtcp_read(ctx->mctx, info->sockfd, (char *)&reply, sizeof(reply));
 
                 if (len > 0) {
                     client.ReceiveReply(reply);
@@ -125,7 +125,7 @@ double LoadRecord(struct thread_context * ctx, struct mtcp_epoll_event * events,
                     }
                     
                     struct mtcp_epoll_event ev;
-                    ev.events = EMTCP_POLLIN | MTCP_EPOLLOUT;
+                    ev.events = MTCP_EPOLLIN | MTCP_EPOLLOUT;
                     ev.data.ptr = info;
 
             	    mtcp_epoll_ctl(ctx->mctx, ctx->epfd, MTCP_EPOLL_CTL_MOD, sock, &ev);
@@ -134,7 +134,7 @@ double LoadRecord(struct thread_context * ctx, struct mtcp_epoll_event * events,
                 ycsbc::KVRequest request;
                 client.InsertRecord(request);
 
-                int len = mtcp_write(info->sockfd, (char *)&request, sizeof(request));
+                int len = mtcp_write(ctx->mctx, info->sockfd, (char *)&request, sizeof(request));
             
                 if(len > 0) {
                     struct mtcp_epoll_event ev;
@@ -153,9 +153,9 @@ double LoadRecord(struct thread_context * ctx, struct mtcp_epoll_event * events,
     for (int i = 0; i < num_conn; i++) {
         struct mtcp_epoll_event ev;
         ev.events = MTCP_EPOLLIN | MTCP_EPOLLOUT;
-        ev.data.ptr = &info[i];
+        ev.data.ptr = &ctx->info[i];
 
-        mtcp_epoll_ctl(info[i].epfd, MTCP_EPOLL_CTL_MOD, info[i].sockfd, &ev);
+        mtcp_epoll_ctl(info[i].epfd, MTCP_EPOLL_CTL_MOD, ctx->info[i].sockfd, &ev);
     }
     
     return duration;
