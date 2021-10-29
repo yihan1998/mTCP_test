@@ -42,6 +42,21 @@ void UsageMessage(const char *command);
 bool StrStartWith(const char *str, const char *pre);
 string ParseCommandLine(int argc, const char *argv[], utils::Properties &props);
 
+void SignalHandler(int signum){
+	int i;
+
+    if (signum == SIGINT) {
+        for (i = 0; i < num_cores; i++) {
+            if (cl_thread[i] == pthread_self()) {
+                //TRACE_INFO("Server thread %d got SIGINT\n", i);
+                pthread_kill(cl_thread[i], SIGTERM);
+            }
+        }
+    } else if (signum == SIGTERM) {
+        exit(0);
+    }
+}
+
 double LoadRecord(struct thread_context * ctx, struct mtcp_epoll_event * events, ycsbc::Client &client, const int num_record_ops, const int num_operation_ops, const int port, const int num_flows) {
     int record_per_flow = num_record_ops / num_flows;
     int operation_per_flow = num_operation_ops / num_flows;
