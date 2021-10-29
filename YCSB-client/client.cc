@@ -362,7 +362,7 @@ int main(const int argc, const char *argv[]) {
             props.SetProperty("port", s);
             std::cout << " Port: " << props["port"].c_str() << std::endl;
         } else if (sscanf(argv[i], "--workload=%s\n", s, &junk) == 1) {
-            filename.assign(optarg);
+            filename.assign(s);
             props.SetProperty("workload", filename);
             std::cout << " Workload: " << props["workload"].c_str() << std::endl;
             input.open(filename);
