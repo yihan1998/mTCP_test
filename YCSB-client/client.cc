@@ -105,7 +105,7 @@ double LoadRecord(struct thread_context * ctx, struct mtcp_epoll_event * events,
             struct conn_info * info = (struct conn_info *)(events[i].data.ptr);
             int ret;
             if ((events[i].events & MTCP_EPOLLERR)) {
-                client.HandleErrorEvent(info);
+                client.HandleErrorEvent(ctx->mctx, info);
             }
             
             if ((events[i].events & MTCP_EPOLLIN)) {
@@ -182,11 +182,11 @@ double PerformTransaction(struct thread_context * ctx, struct mtcp_epoll_event *
             struct conn_info * info = (struct conn_info *)(events[i].data.ptr);
             int ret;
             if ((events[i].events & MTCP_EPOLLERR)) {
-                client.HandleErrorEvent(info);
+                client.HandleErrorEvent(ctx->mctx, info);
             }
             
             if ((events[i].events & MTCP_EPOLLIN)) {
-                ret = client.HandleReadEvent(info);
+                ret = client.HandleReadEvent(ctx->mctx, info);
                 if (ret > 0) {
                     /* Increase actual ops */
                     oks++;
@@ -205,7 +205,7 @@ double PerformTransaction(struct thread_context * ctx, struct mtcp_epoll_event *
                     mtcp_epoll_ctl(ctx->mctx, ctx->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
                 }
             } else if ((events[i].events & MTCP_EPOLLOUT)) {
-                ret = client.HandleWriteEvent(info);
+                ret = client.HandleWriteEvent(ctx->mctx, info);
                 if(ret > 0) {
                     struct mtcp_epoll_event ev;
                     ev.events = MTCP_EPOLLIN;
