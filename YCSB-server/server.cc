@@ -13,6 +13,7 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <string.h>
+#include <signal.h>
 #include <getopt.h>
 
 #include <sys/epoll.h>
@@ -24,6 +25,10 @@
 using namespace std;
 
 __thread int num_accept = 0;
+
+__thread int num_cores = 0;
+
+static char * conf_file = NULL;
 
 void UsageMessage(const char *command);
 bool StrStartWith(const char *str, const char *pre);
@@ -114,8 +119,7 @@ int CreateListeningSocket(struct thread_context * ctx){
 		fprintf(stderr, "Failed to bind to the listening socket!\n");
 		return -1;
 	}
-	
-	/* listen (backlog: can be configured) */
+
 	ret = mtcp_listen(ctx->mctx, sock, 1024);
 	if (ret < 0) {
 		fprintf(stderr, "mtcp_listen() failed!\n");
@@ -123,6 +127,7 @@ int CreateListeningSocket(struct thread_context * ctx){
 	}
 	
 	/* wait for incoming accept events */
+    struct mtcp_epoll_event ev;
 	ev.events = MTCP_EPOLLIN;
 	ev.data.sockid = sock;
 	mtcp_epoll_ctl(ctx->mctx, ctx->ep, MTCP_EPOLL_CTL_ADD, sock, &ev);
@@ -136,8 +141,6 @@ void * RunServerThread(void * arg) {
     int core = sarg->core;
     utils::Properties * props = sarg->props;
 
-	struct mtcp_epoll_event * events;
-	int nevents;
 	int i, ret;
 
     ycsbc::DB *db = ycsbc::DBFactory::CreateDB(*props);
@@ -181,7 +184,7 @@ void * RunServerThread(void * arg) {
         nevents = mtcp_epoll_wait(mctx, epfd, events, MAX_EVENTS, -1);
 
         for (int i = 0; i < nevents; i++) {
-            if (events[i].data.fd == sock) {
+            if (events[i].data.sockid == sock) {
                 /* Accept connection */
                 int c;
                 if ((c = mtcp_accept(mctx, sock, NULL, NULL)) > 0) {
@@ -203,13 +206,13 @@ void * RunServerThread(void * arg) {
                 }
             } else if ((events[i].events & EPOLLERR)) {
                 // cout << " Closing sock " << events[i].events << endl;
-                struct server_vars * sv = events[i].data.ptr;
+                struct server_vars * sv = (struct server_vars *)events[i].data.ptr;
                 server.HandleErrorEvent(sv);
                 if (++num_complete == num_accept) {
                     done = 1;
                 }
             } else if ((events[i].events & EPOLLIN)) {
-                struct server_vars * sv = events[i].data.ptr;
+                struct server_vars * sv = (struct server_vars *)events[i].data.ptr;
                 int ret = server.HandleReadEvent(sv);
                 if (ret <= 0) {
                     close(sv->sockfd);
@@ -231,6 +234,8 @@ int main(const int argc, const char *argv[]) {
 	struct mtcp_conf mcfg;
 	int process_cpu;
 
+    int num_cores, total_cores;
+
 	total_cores = sysconf(_SC_NPROCESSORS_ONLN);
 	num_cores = total_cores;
 	process_cpu = -1;
@@ -240,7 +245,7 @@ int main(const int argc, const char *argv[]) {
 
 	if (argc < 2) {
 		fprintf(stdout, "$%s directory_to_service\n", argv[0]);
-		return FALSE;
+		return 0;
 	}
 
     utils::Properties props;
@@ -255,17 +260,20 @@ int main(const int argc, const char *argv[]) {
 			if (num_cores > MAX_CPUS) {
 				fprintf(stdout, "CPU limit should be smaller than the "
 					     "number of CPUs: %d\n", MAX_CPUS);
-				return FALSE;
+				return 0;
 			}
 			mtcp_getconf(&mcfg);
 			mcfg.num_cores = num_cores;
 			mtcp_setconf(&mcfg);
-        } else if (sscanf(argv[i], "--size=%llu%c", &n, &junk) == 1) {
-            buff_size = n;
-			printf(" >> buff size: %d\n", buff_size);
-        } else if(sscanf(argv[i], "--time=%llu%c", &n, &junk) == 1) {
-            execution_time = n;
-			printf(" >> total time of execution: %d\n", execution_time);
+        } else if (sscanf(argv[i], "--db=%s\n", s, &junk) == 1){
+            props.SetProperty("dbname", s);
+            std::cout << " Database: " << props["dbname"].c_str() << std::endl;
+        } else if (sscanf(argv[i], "--port=%s\n", s, &junk) == 1) {
+            props.SetProperty("port", s);
+            std::cout << " Port: " << props["port"].c_str() << std::endl;
+        } else if (sscanf(argv[i], "--time=%s\n", s, &junk) == 1) {
+            props.SetProperty("time", s);
+            std::cout << " Wait time: " << props["time"].c_str() << std::endl;
         }
     }
 
@@ -282,15 +290,6 @@ int main(const int argc, const char *argv[]) {
 	}
 
 	mtcp_getconf(&mcfg);
-	if (backlog > mcfg.max_concurrency) {
-		fprintf(stderr, "backlog can not be set larger than CONFIG.max_concurrency\n");
-		return FALSE;
-	}
-
-	/* if backlog is not specified, set it to 4K */
-	if (backlog == -1) {
-		backlog = 4096;
-	}
 	
 	/* register signal handler to mtcp */
 	mtcp_register_signal(SIGINT, SignalHandler);
