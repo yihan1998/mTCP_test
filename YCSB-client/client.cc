@@ -30,6 +30,10 @@
 #define MAX_CONNECT 4100
 #define MAX_EVENTS  8192
 
+static char * conf_file = NULL;
+
+__thread int num_conn = 0;
+
 using namespace std;
 
 void UsageMessage(const char *command);
@@ -72,13 +76,14 @@ double LoadRecord(int epfd, struct epoll_event * events, ycsbc::Client &client, 
                 ev.events = EPOLLIN | EPOLLOUT;
                 ev.data.ptr = conn_info;
                 epoll_ctl(epfd, EPOLL_CTL_ADD, sock, &ev);
+                mtcp_epoll_ctl(ctx->mctx, ctx->epfd, MTCP_EPOLL_CTL_ADD, c, &ev);
             } else {
                 fprintf(stderr, " [%s] connect server failed!", __func__);
                 exit(1);
             }
         }
 
-        nevents = epoll_wait(epfd, events, MAX_EVENTS, -1);
+        nevents = mtcp_epoll_wait(ctx->mctx, ctx->epfd, events, MAX_EVENTS, -1);
 
         for (int i = 0; i < nevents; i++) {
             struct conn_info * info = (struct conn_info *)(events[i].data.ptr);
@@ -266,6 +271,16 @@ int RunClientThread(void * arg) {
 		return NULL;
 	}
 
+    /* Initialize connection info array */
+    ctx->info = (struct conn_info *)calloc(MAX_CONNECT, sizeof(struct conn_info));
+
+    int epfd;
+    struct mtcp_epoll_event * events;
+
+    epfd = ctx->epfd;
+    /* Initialize epoll event array */
+    events = (struct mtcp_epoll_event *)calloc(MAX_EVENTS, sizeof(struct mtcp_epoll_event));
+
     ycsbc::CoreWorkload wl;
     wl.Init(props);
 
@@ -279,16 +294,7 @@ int RunClientThread(void * arg) {
     // double duration = DelegateClient(db, &wl, record_total_ops, operation_total_ops, num_flows);
 
     ycsbc::Client client(*db, wl);
-
-    /* Initialize connection info array */
-    ctx->info = (struct conn_info *)calloc(MAX_CONNECT, sizeof(struct conn_info));
-
-    int epfd;
-    struct epoll_event * events;
-
-    /* Initialize epoll event array */
-    events = (struct epoll_event *)calloc(MAX_EVENTS, sizeof(struct epoll_event));
-
+    
     int port = stoi(props.GetProperty("port", "80"));
 
     double load_duration = 0.0;

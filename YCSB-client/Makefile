@@ -1,5 +1,5 @@
-RTE_SDK=/home/yihan/mtcp/dpdk
-RTE_TARGET=x86_64-native-linuxapp-gcc
+RTE_SDK		= /home/yihan-18/nus-sys/cetus/dpdk
+RTE_TARGET	= x86_64-native-linuxapp-gcc
 
 CC		= g++
 DPDK	= 1
@@ -17,12 +17,14 @@ LIBS += -m64
 endif
 
 # mtcp library and header 
-MTCP_FLD    = /home/yihan-18/mtcp
+SRC_FLD    = /home/yihan-18/mtcp
+
+MTCP_FLD	= $(SRC_FLD)/mtcp
 MTCP_INC    = -I${MTCP_FLD}/include -I${MTCP_FLD}/src/include
 MTCP_LIB    = -L${MTCP_FLD}/lib
 MTCP_TARGET = ${MTCP_LIB}/libmtcp.a
 
-UTIL_FLD 	= $(MTCP_FLD)/mtcp/util
+UTIL_FLD 	= $(SRC_FLD)/util
 UTIL_INC 	= -I${UTIL_FLD}/include
 UTIL_OBJ 	= ${UTIL_FLD}/http_parsing.o ${UTIL_FLD}/tdate_parse.o ${UTIL_FLD}/netlib.o
 
@@ -35,7 +37,7 @@ ifeq ($(DPDK),1)
 DPDK_MACHINE_LINKER_FLAGS	=${RTE_SDK}/${RTE_TARGET}/lib/ldflags.txt
 DPDK_MACHINE_LDFLAGS		=$(shell cat ${DPDK_MACHINE_LINKER_FLAGS})
 DPDK_INC	= ${RTE_SDK}/${RTE_TARGET}/include
-INC			+= -I$(MTCP_DIR)/mtcp/io_engine/include -I${DPDK_INC} 
+INC			+= -I$(SRC_FLD)/io_engine/include -I${DPDK_INC} 
 LIBS		+= -g -O3 -pthread -lrt -march=native ${MTCP_FLD}/lib/libmtcp.a -lnuma -lmtcp -lpthread -lrt -ldl -lgmp -L${RTE_SDK}/${RTE_TARGET}/lib ${DPDK_MACHINE_LDFLAGS}
 endif
 
@@ -51,8 +53,8 @@ all: $(SUBDIRS) $(TARGETS)
 $(SUBDIRS):
 	$(MAKE) -C $@
 
-$(TARGETS): ${MTCP_FLD}/lib/libmtcp.a ${UTIL_OBJ} $(wildcard *.cc) $(OBJECTS)
-	$(CC) $(INC) ${LIBS} $(CFLAGS) $^ $(LDFLAGS) -o $@
+$(TARGETS): $(wildcard *.cc) $(OBJECTS)
+	$(CC) $(CFLAGS) ${MTCP_FLD}/lib/libmtcp.a ${UTIL_OBJ} $^ $(INC) ${LIBS} -o $@ $(LDFLAGS)
 
 clean:
 	for dir in $(SUBDIRS); do \
