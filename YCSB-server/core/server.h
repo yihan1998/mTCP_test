@@ -3,7 +3,7 @@
 
 #include <string>
 #include "db.h"
-#include "utils.h"
+#include "properties.h"
 
 #include <stdio.h>
 #include <sys/socket.h>

@@ -29,6 +29,7 @@
         "string_view": "cpp",
         "cmath": "cpp",
         "typeinfo": "cpp",
-        "cerrno": "cpp"
+        "cerrno": "cpp",
+        "cstring": "cpp"
     }
 }
