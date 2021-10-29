@@ -79,7 +79,7 @@ struct thread_context * InitializeServerThread(int core){
 	}
 
 	/* allocate memory for server variables */
-	ctx->svars = (struct server_vars *)calloc(MAX_FLOW_NUM, sizeof(struct server_vars));
+	ctx->svars = (struct server_vars *)calloc(MAX_CONNECT, sizeof(struct server_vars));
 	if (!ctx->svars) {
 		mtcp_close(ctx->mctx, ctx->epfd);
 		mtcp_destroy_context(ctx->mctx);
@@ -155,6 +155,7 @@ void * RunServerThread(void * arg) {
 
     int epfd;
     struct mtcp_epoll_event * events;
+    struct mtcp_epoll_event ev;
     int nevents;
 
     int num_complete = 0;
@@ -186,7 +187,7 @@ void * RunServerThread(void * arg) {
             if (events[i].data.sockid == sock) {
                 /* Accept connection */
                 int c;
-                if ((c = mtcp_accept(mctx, sock, NULL, NULL)) > 0) {
+                if ((c = mtcp_accept(ctx->mctx, sock, NULL, NULL)) > 0) {
                     struct server_vars * sv = &ctx->svars[num_accept++];
             		memset(sv, 0, sizeof(sv));
 
@@ -201,7 +202,7 @@ void * RunServerThread(void * arg) {
 
                     mtcp_setsock_nonblock(ctx->mctx, c);
                     
-                    mtcp_epoll_ctl(mctx, ctx->epfd, MTCP_EPOLL_CTL_ADD, c, &ev);
+                    mtcp_epoll_ctl(ctx->mctx, ctx->epfd, MTCP_EPOLL_CTL_ADD, c, &ev);
                 }
             } else if ((events[i].events & EPOLLERR)) {
                 // cout << " Closing sock " << events[i].events << endl;
