@@ -1,18 +1,58 @@
-CC=g++
-CFLAGS=-std=c++11 -g -Wall -pthread -I./
-LDFLAGS= -lpthread -ltbb -lhiredis
-SUBDIRS=core db redis
-SUBSRCS=$(wildcard core/*.cc) $(wildcard db/*.cc)
-OBJECTS=$(SUBSRCS:.cc=.o)
-EXEC=client
+RTE_SDK=/home/yihan/mtcp/dpdk
+RTE_TARGET=x86_64-native-linuxapp-gcc
+
+CC		= g++
+DPDK	= 1
+CCP		= 0
+CFLAGS	= -std=c++11 -g -O3 -fkeep-inline-functions -march=x86-64 -msse4.1 #-fgnu89-inline
+LDFLAGS	= -lpthread -ltbb -lhiredis
+SUBDIRS	= core db redis
+SUBSRCS	= $(wildcard core/*.cc) $(wildcard db/*.cc)
+OBJECTS	= $(SUBSRCS:.cc=.o)
+TARGETS	= client
+
+# Add arch-specific optimization
+ifeq ($(shell uname -m),x86_64)
+LIBS += -m64
+endif
+
+# mtcp library and header 
+MTCP_FLD    = /home/yihan-18/mtcp
+MTCP_INC    = -I${MTCP_FLD}/include -I${MTCP_FLD}/src/include
+MTCP_LIB    = -L${MTCP_FLD}/lib
+MTCP_TARGET = ${MTCP_LIB}/libmtcp.a
+
+UTIL_FLD 	= $(MTCP_FLD)/mtcp/util
+UTIL_INC 	= -I${UTIL_FLD}/include
+UTIL_OBJ 	= ${UTIL_FLD}/http_parsing.o ${UTIL_FLD}/tdate_parse.o ${UTIL_FLD}/netlib.o
+
+# util library and header
+INC 		= -I./ ${UTIL_INC} ${MTCP_INC}
+LIBS 		= ${MTCP_LIB} -lpthread 
+
+# dpdk-specific variables
+ifeq ($(DPDK),1)
+DPDK_MACHINE_LINKER_FLAGS	=${RTE_SDK}/${RTE_TARGET}/lib/ldflags.txt
+DPDK_MACHINE_LDFLAGS		=$(shell cat ${DPDK_MACHINE_LINKER_FLAGS})
+DPDK_INC	= ${RTE_SDK}/${RTE_TARGET}/include
+INC			+= -I$(MTCP_DIR)/mtcp/io_engine/include -I${DPDK_INC} 
+LIBS		+= -g -O3 -pthread -lrt -march=native ${MTCP_FLD}/lib/libmtcp.a -lnuma -lmtcp -lpthread -lrt -ldl -lgmp -L${RTE_SDK}/${RTE_TARGET}/lib ${DPDK_MACHINE_LDFLAGS}
+endif
+
+ifeq ($(CCP), 1)
+# LIBCCP
+LIBCCP = $(MTCP_FLD)/src/libccp
+LIBS += -L$(LIBCCP) -lccp -lstartccp
+INC += -I$(LIBCCP)
+endif
 
 all: $(SUBDIRS) $(EXEC)
 
 $(SUBDIRS):
 	$(MAKE) -C $@
 
-$(EXEC): $(wildcard *.cc) $(OBJECTS)
-	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
+$(EXEC): $(wildcard *.cc) $(OBJECTS) ${MTCP_FLD}/lib/libmtcp.a ${UTIL_OBJ}
+	$(CC) $(INC) ${LIBS} $(CFLAGS) $^ $(LDFLAGS) -o $@
 
 clean:
 	for dir in $(SUBDIRS); do \
