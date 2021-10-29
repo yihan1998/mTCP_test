@@ -115,7 +115,7 @@ int CreateListeningSocket(struct thread_context * ctx){
 	return listener;
 }
 
-int RunServerThread(void * arg) {
+void * RunServerThread(void * arg) {
     struct server_arg * sarg = (struct server_arg *)arg;
 
     int core = sarg->core;
@@ -208,7 +208,7 @@ int RunServerThread(void * arg) {
     }
 
     db->Close();
-    return oks;
+    return NULL;
 }
 
 int main(const int argc, const char *argv[]) {
@@ -292,7 +292,7 @@ int main(const int argc, const char *argv[]) {
 	}
 
 	for (int i = ((process_cpu == -1) ? 0 : process_cpu); i < num_cores; i++) {
-		pthread_join(app_thread[i], NULL);
+		pthread_join(sv_thread[i], NULL);
 
 		if (process_cpu != -1) {
 			break;
