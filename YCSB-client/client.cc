@@ -202,7 +202,7 @@ double PerformTransaction(struct thread_context * ctx, struct mtcp_epoll_event *
                     ev.events = MTCP_EPOLLIN | MTCP_EPOLLOUT;
                     ev.data.ptr = info;
 
-                    mtcp_epoll_ctl(info->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
+                    mtcp_epoll_ctl(ctx->mtcp, ctx->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
                 }
             } else if ((events[i].events & EPOLLOUT)) {
                 ret = client.HandleWriteEvent(info);
@@ -211,7 +211,7 @@ double PerformTransaction(struct thread_context * ctx, struct mtcp_epoll_event *
                     ev.events = EPOLLIN;
                     ev.data.ptr = info;
 
-                    mtcp_epoll_ctl(info->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
+                    mtcp_epoll_ctl(ictx->mtcp, ctx->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
                 }
             } else {
                 printf(" >> unknown event!\n");
@@ -255,27 +255,18 @@ struct thread_context * InitializeClientThread(int core){
 		return NULL;
 	}
 
-	/* allocate memory for server variables */
-	ctx->cvars = (struct server_vars *)calloc(MAX_FLOW_NUM, sizeof(struct server_vars));
-	if (!ctx->cvars) {
-		mtcp_close(ctx->mctx, ctx->epfd);
-		mtcp_destroy_context(ctx->mctx);
-		free(ctx);
-		fprintf(stderr, "Failed to create server_vars struct!\n");
-		return NULL;
-	}
+	/* Initialize connection info array */
+    ctx->info = (struct conn_info *)calloc(MAX_CONNECT, sizeof(struct conn_info));
 
 	return ctx;
 }
 
 void * RunClientThread(void * arg) {
-    struct server_arg * sarg = (struct server_arg *)arg;
+    struct client_arg * carg = (struct client_arg *)arg;
 
-    int core = sarg->core;
-    utils::Properties * props = sarg->props;
+    int core = carg->core;
+    utils::Properties * props = carg->props;
 
-	struct mtcp_epoll_event * events;
-	int nevents;
 	int i, ret;
 
     /* mTCP initialization */
@@ -285,9 +276,6 @@ void * RunClientThread(void * arg) {
 		fprintf(stderr, "Failed to initialize server thread.\n");
 		return NULL;
 	}
-
-    /* Initialize connection info array */
-    ctx->info = (struct conn_info *)calloc(MAX_CONNECT, sizeof(struct conn_info));
 
     int epfd;
     struct mtcp_epoll_event * events;
@@ -303,8 +291,8 @@ void * RunClientThread(void * arg) {
 
     int record_total_ops = stoi(*props[ycsbc::CoreWorkload::RECORD_COUNT_PROPERTY]);
     int operation_total_ops = stoi(*props[ycsbc::CoreWorkload::OPERATION_COUNT_PROPERTY]);
-    fprintf(stdout, " [core %d] # Total records (K) :\t %.2f \n", core_id, (double)record_total_ops / 1000.0);  
-    fprintf(stdout, " [core %d] # Total transactions (K) :\t %.2f\n", core_id, (double)operation_total_ops / 1000.0);  
+    fprintf(stdout, " [core %d] # Total records (K) :\t %.2f \n", core, (double)record_total_ops / 1000.0);  
+    fprintf(stdout, " [core %d] # Total transactions (K) :\t %.2f\n", core, (double)operation_total_ops / 1000.0);  
 
     // double duration = DelegateClient(db, &wl, record_total_ops, operation_total_ops, num_flows);
 
@@ -327,7 +315,7 @@ void * RunClientThread(void * arg) {
 	FILE * output_file = fopen(output_file_name, "a+");
 
     sprintf(output, " [core %d] # Transaction throughput : %.2f (KTPS) \t %s \t %s \t %d\n", \
-                core_id, operation_total_ops / transaction_duration / 1000, file_name.c_str(), num_flows);
+                core_id, operation_total_ops / transaction_duration / 1000, *props["workload"].c_str(), num_flows);
 
     fprintf(stdout, "%s", output);
     fflush(stdout);
