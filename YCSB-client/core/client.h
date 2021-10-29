@@ -121,11 +121,11 @@ inline int Client::InsertRecord(KVRequest &request) {
     request.op = INSERT;
     // request.table = table;
     // request.request = std::make_pair(key, std::string());
-    strcpy(request.table, table.c_str());
+    strncpy(request.table, table.c_str());
     // key.copy(request.request.first, key.size());
-    strcpy(request.request.first, key.c_str());
+    strncpy(request.request.first, key.c_str());
     // value.copy(request.request.second, value.size());
-    strcpy(request.request.second, value.c_str());
+    strncpy(request.request.second, value.c_str());
     // std::cout <<  " Insert record to table: " << request.table << ", key: " << request.request.first << ", value: " << request.request.second << "\n" << std::endl;
     return DB::kOK;
 }
@@ -229,9 +229,9 @@ inline int Client::ReadRequest(KVRequest &request) {
     request.op = READ;
     
     std::string empty;
-    strcpy(request.table, table.c_str());
-    strcpy(request.request.first, key.c_str());
-    strcpy(request.request.second, empty.c_str());
+    strncpy(request.table, table.c_str(), 16);
+    strncpy(request.request.first, key.c_str(), 100);
+    strncpy(request.request.second, empty.c_str(), 100);
 
     // std::cout <<  " Read table: " <<  request.table << ", key: " << request.request.first << "\n" << std::endl;
 
@@ -256,9 +256,9 @@ inline int Client::ReadModifyWriteRequest(KVRequest &request) {
 
     request.op = READMODIFYWRITE;
 
-    strcpy(request.table, table.c_str());
-    strcpy(request.request.first, key.c_str());
-    strcpy(request.request.second, value.c_str());
+    strncpy(request.table, table.c_str(), 16);
+    strncpy(request.request.first, key.c_str(), 100);
+    strncpy(request.request.second, value.c_str(), 100);
     
     // std::cout <<  " ReadModifyWrite table: " << request.table << ", key: " << request.request.first << ", value: " << request.request.second << "\n" << std::endl;
     
@@ -282,9 +282,9 @@ inline int Client::ScanRequest(KVRequest &request) {
 
     request.op = SCAN;
 
-    strcpy(request.table, table.c_str());
-    strcpy(request.request.first, key.c_str());
-    strcpy(request.request.second, record_count.c_str());
+    strncpy(request.table, table.c_str(), 16);
+    strncpy(request.request.first, key.c_str(), 100);
+    strncpy(request.request.second, record_count.c_str(), 100);
 
     // std::cout <<  " Scan table: " <<  table.c_str() << ", key: " << key.c_str() << ", record len: " << len << "\n" << std::endl;
     
@@ -309,9 +309,9 @@ inline int Client::UpdateRequest(KVRequest &request) {
     
     request.op = UPDATE;
 
-    strcpy(request.table, table.c_str());
-    strcpy(request.request.first, key.c_str());
-    strcpy(request.request.second, value.c_str());
+    strncpy(request.table, table.c_str(), 16);
+    strncpy(request.request.first, key.c_str(), 100);
+    strncpy(request.request.second, value.c_str(), 100);
     
     // std::cout <<  " Update table: " <<  table.c_str() << ", key: " << key.c_str() << ", value: " << value.c_str() << "\n" << std::endl;
     
@@ -335,9 +335,9 @@ inline int Client::InsertRequest(KVRequest &request) {
     
     request.op = INSERT;
 
-    strcpy(request.table, table.c_str());
-    strcpy(request.request.first, key.c_str());
-    strcpy(request.request.second, value.c_str());
+    strncpy(request.table, table.c_str(), 16);
+    strncpy(request.request.first, key.c_str(), 100);
+    strncpy(request.request.second, value.c_str(), 100);
     
     // std::cout <<  " Insert table: " <<  table.c_str() << ", key: " << key.c_str() << ", value: " << value.c_str() << "\n" << std::endl;
     
