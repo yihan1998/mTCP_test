@@ -22,7 +22,7 @@ MTCP_INC    = -I${MTCP_FLD}/include -I${MTCP_FLD}/src/include
 MTCP_LIB    = -L${MTCP_FLD}/lib
 MTCP_TARGET = ${MTCP_LIB}/libmtcp.a
 
-UTIL_FLD 	= $(MTCP_FLD)/mtcp/util
+UTIL_FLD 	= $(MTCP_FLD)/util
 UTIL_INC 	= -I${UTIL_FLD}/include
 UTIL_OBJ 	= ${UTIL_FLD}/http_parsing.o ${UTIL_FLD}/tdate_parse.o ${UTIL_FLD}/netlib.o
 
