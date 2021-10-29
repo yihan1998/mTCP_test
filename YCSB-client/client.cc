@@ -42,7 +42,7 @@ void UsageMessage(const char *command);
 bool StrStartWith(const char *str, const char *pre);
 string ParseCommandLine(int argc, const char *argv[], utils::Properties &props);
 
-double LoadRecord(int epfd, struct mtcp_epoll_event * events, ycsbc::Client &client, const int num_record_ops, const int num_operation_ops, const int port, const int num_flows) {
+double LoadRecord(struct thread_context * ctx, struct mtcp_epoll_event * events, ycsbc::Client &client, const int num_record_ops, const int num_operation_ops, const int port, const int num_flows) {
     int record_per_flow = num_record_ops / num_flows;
     int operation_per_flow = num_operation_ops / num_flows;
 
@@ -65,7 +65,7 @@ double LoadRecord(int epfd, struct mtcp_epoll_event * events, ycsbc::Client &cli
                 // fprintf(stdout, " [%s] connect server through sock %d\n", __func__, sock);
                 struct conn_info * conn_info = &info[num_conn];
                 conn_info->sockfd = sock;
-                conn_info->epfd = epfd;
+                conn_info->epfd = ctx->epfd;
 
                 conn_info->total_record_ops = record_per_flow;
                 conn_info->total_operation_ops = operation_per_flow;
@@ -77,8 +77,7 @@ double LoadRecord(int epfd, struct mtcp_epoll_event * events, ycsbc::Client &cli
                 struct mtcp_epoll_event ev;
                 ev.events = MTCP_EPOLLIN | MTCP_EPOLLOUT;
                 ev.data.ptr = conn_info;
-                epoll_ctl(epfd, EPOLL_CTL_ADD, sock, &ev);
-                mtcp_epoll_ctl(ctx->mctx, ctx->epfd, MTCP_EPOLL_CTL_ADD, c, &ev);
+            	mtcp_epoll_ctl(ctx->mtcp, ctx->epfd, MTCP_EPOLL_CTL_ADD, sock, &ev);
             } else {
                 fprintf(stderr, " [%s] connect server failed!", __func__);
                 exit(1);
@@ -114,20 +113,19 @@ double LoadRecord(int epfd, struct mtcp_epoll_event * events, ycsbc::Client &cli
                     ev.events = EMTCP_POLLIN | MTCP_EPOLLOUT;
                     ev.data.ptr = info;
 
-                    epoll_ctl(info->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
+            	    mtcp_epoll_ctl(ctx->mtcp, ctx->epfd, MTCP_EPOLL_CTL_MOD, sock, &ev);
                 }
             } else if ((events[i].events & MTCP_EPOLLOUT)) {
                 ycsbc::KVRequest request;
                 client.InsertRecord(request);
 
-                int len = send(info->sockfd, &request, sizeof(request), 0);
+                int len = mtcp_write(info->sockfd, (char *)&request, sizeof(request));
             
                 if(len > 0) {
                     struct mtcp_epoll_event ev;
                     ev.events = MTCP_EPOLLIN;
                     ev.data.ptr = info;
-
-                    epoll_ctl(info->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
+            	    mtcp_epoll_ctl(ctx->mtcp, ctx->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
                 }
             } else {
                 printf(" >> unknown event!\n");
@@ -139,16 +137,16 @@ double LoadRecord(int epfd, struct mtcp_epoll_event * events, ycsbc::Client &cli
 
     for (int i = 0; i < num_conn; i++) {
         struct mtcp_epoll_event ev;
-        ev.events = EPOLLIN | EPOLLOUT;
+        ev.events = MTCP_EPOLLIN | MTCP_EPOLLOUT;
         ev.data.ptr = &info[i];
 
-        epoll_ctl(info[i].epfd, EPOLL_CTL_MOD, info[i].sockfd, &ev);
+        mtcp_epoll_ctl(info[i].epfd, MTCP_EPOLL_CTL_MOD, info[i].sockfd, &ev);
     }
     
     return duration;
 }
 
-double PerformTransaction(int epfd, struct mtcp_epoll_event * events, ycsbc::Client &client) {
+double PerformTransaction(struct thread_context * ctx, struct mtcp_epoll_event * events, ycsbc::Client &client) {
     int done = 0;
 
     utils::Timer<double> timer;
@@ -163,16 +161,16 @@ double PerformTransaction(int epfd, struct mtcp_epoll_event * events, ycsbc::Cli
     timer.Start();
 
     while(!done) {
-        nevents = epoll_wait(epfd, events, MAX_EVENTS, -1);
+		nevents = mtcp_epoll_wait(ctx->mctx, ctx->epfd, events, MAX_EVENTS, -1);
 
         for (int i = 0; i < nevents; i++) {
             struct conn_info * info = (struct conn_info *)(events[i].data.ptr);
             int ret;
-            if ((events[i].events & EPOLLERR)) {
+            if ((events[i].events & MTCP_EPOLLERR)) {
                 client.HandleErrorEvent(info);
             }
             
-            if ((events[i].events & EPOLLIN)) {
+            if ((events[i].events & MTCP_EPOLLIN)) {
                 ret = client.HandleReadEvent(info);
                 if (ret > 0) {
                     /* Increase actual ops */
@@ -186,10 +184,10 @@ double PerformTransaction(int epfd, struct mtcp_epoll_event * events, ycsbc::Cli
                     }
 
                     struct mtcp_epoll_event ev;
-                    ev.events = EPOLLIN | EPOLLOUT;
+                    ev.events = MTCP_EPOLLIN | MTCP_EPOLLOUT;
                     ev.data.ptr = info;
 
-                    epoll_ctl(info->epfd, EPOLL_CTL_MOD, info->sockfd, &ev);
+                    mtcp_epoll_ctl(info->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
                 }
             } else if ((events[i].events & EPOLLOUT)) {
                 ret = client.HandleWriteEvent(info);
@@ -198,7 +196,7 @@ double PerformTransaction(int epfd, struct mtcp_epoll_event * events, ycsbc::Cli
                     ev.events = EPOLLIN;
                     ev.data.ptr = info;
 
-                    epoll_ctl(info->epfd, EPOLL_CTL_MOD, info->sockfd, &ev);
+                    mtcp_epoll_ctl(info->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
                 }
             } else {
                 printf(" >> unknown event!\n");
@@ -300,12 +298,12 @@ void * RunClientThread(void * arg) {
     int port = stoi(props.GetProperty("port", "80"));
 
     double load_duration = 0.0;
-    load_duration = LoadRecord(epfd, events, client, record_total_ops, operation_total_ops, port, num_flows);
+    load_duration = LoadRecord(ctx, events, client, record_total_ops, operation_total_ops, port, num_flows);
 
     fprintf(stdout, " [core %d] loaded records done! \n", core_id);  
 
     double transaction_duration = 0.0;
-    transaction_duration = PerformTransaction(epfd, events, client);
+    transaction_duration = PerformTransaction(ctx, events, client);
 
     char output[256];
 

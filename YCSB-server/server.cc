@@ -204,14 +204,14 @@ void * RunServerThread(void * arg) {
                     
                     mtcp_epoll_ctl(ctx->mctx, ctx->epfd, MTCP_EPOLL_CTL_ADD, c, &ev);
                 }
-            } else if ((events[i].events & EPOLLERR)) {
+            } else if ((events[i].events & MTCP_EPOLLERR)) {
                 // cout << " Closing sock " << events[i].events << endl;
                 struct server_vars * sv = (struct server_vars *)events[i].data.ptr;
                 server.HandleErrorEvent(sv);
                 if (++num_complete == num_accept) {
                     done = 1;
                 }
-            } else if ((events[i].events & EPOLLIN)) {
+            } else if ((events[i].events & MTCP_EPOLLIN)) {
                 struct server_vars * sv = (struct server_vars *)events[i].data.ptr;
                 int ret = server.HandleReadEvent(sv);
                 if (ret <= 0) {
