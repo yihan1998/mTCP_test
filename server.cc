@@ -529,7 +529,8 @@ void * RunServerThread(void *arg){
 */
 	sleep(10);
 	/* destroy mtcp context: this will kill the mtcp thread */
-	mtcp_destroy_context(mctx);
+	mtcp_destroy_context(ctx->mctx);
+	pthread_exit(NULL);
 
 	return NULL;
 }
@@ -656,8 +657,6 @@ int main(int argc, char **argv){
 	}
 	
 	printf(" [%s] Test finished!\n", __func__);
-	exit(1);
-	mtcp_destroy();
 	
 	return 0;
 }
