@@ -3,6 +3,7 @@
 
 #include <string>
 #include "db.h"
+#include "utils.h"
 
 #include <stdio.h>
 #include <sys/socket.h>
@@ -32,7 +33,7 @@ struct server_vars {
 
 struct server_arg {
     int         core;
-    Properties  * props;
+    utils::Properties  * props;
 };
 
 #ifndef MAX_CPUS
