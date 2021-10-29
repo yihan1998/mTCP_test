@@ -17,7 +17,7 @@ LIBS += -m64
 endif
 
 # mtcp library and header 
-SRC_FLD    = /home/yihan-18/mtcp
+SRC_FLD    = /home/yihan/mtcp
 
 MTCP_FLD	= $(SRC_FLD)/mtcp
 MTCP_INC    = -I${MTCP_FLD}/include -I${MTCP_FLD}/src/include
