@@ -70,7 +70,7 @@ for db_name in ${db_names[@]}; do
         echo "Testing RTT for $total_conn connections on $num_cores core(s), each have $num_flow connection(s) ..."
 
         ./client    --port=$port \
-                    --num_cores=$i \
+                    --num_cores=$num_cores \
                     --flows=$num_flow \
                     --workload=workloads/workloada.spec
 
