@@ -28,7 +28,7 @@
 #   done
 # done
 
-server_ip='10.0.1.2'
+server_ip='10.0.0.1'
 start_port=81
 
 # echo -n "Buffer size(B): "
@@ -69,18 +69,10 @@ for db_name in ${db_names[@]}; do
 
         echo "Testing RTT for $total_conn connections on $num_cores core(s), each have $num_flow connection(s) ..."
 
-        for i in $(seq 1 $num_cores); do
-
-            offset=`echo "$i % $num_server_core" | bc`
-            port=`expr $start_port + $offset`
-
-            ./client    --db=$db_name \
-                        --port=$port \
-                        --core_id=$i \
-                        --flows=$num_flow \
-                        --workload=workloads/workloada.spec &
-
-        done
+        ./client    --port=$port \
+                    --num_cores=$i \
+                    --flows=$num_flow \
+                    --workload=workloads/workloada.spec
 
         wait
 

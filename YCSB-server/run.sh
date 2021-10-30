@@ -27,14 +27,7 @@ for db_name in ${db_names[@]}; do
 
         echo "Testing $total_conn connections on $num_cores core(s) ..."
 
-        for i in $(seq 1 $num_cores); do
-
-            offset=`echo "$i % $num_cores" | bc`
-            port=`expr $start_port + $offset`
-
-            ./server    --db=$db_name --port=$port --core_id=$i &
-
-        done
+        ./server    --db=$db_name --time=60 --num_cores=$num_cores
 
         wait
 
