@@ -183,6 +183,11 @@ double PerformTransaction(struct thread_context * ctx, struct mtcp_epoll_event *
             int ret;
             if ((events[i].events & MTCP_EPOLLERR)) {
                 client.HandleErrorEvent(ctx->mctx, info);
+                if (++num_transaction_complete == num_conn) {
+                    done = 1;
+                }
+                mtcp_close(ctx->mctx, info->sockfd);
+                continue;
             }
             
             if ((events[i].events & MTCP_EPOLLIN)) {
