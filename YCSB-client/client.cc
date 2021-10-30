@@ -231,7 +231,7 @@ double PerformTransaction(struct thread_context * ctx, struct mtcp_epoll_event *
 	FILE * output_file = fopen(output_file_name, "a+");
 
     sprintf(output, " [core %d] # Transaction throughput : %.2f (KTPS) \t %s \t %d\n", \
-                ctx->core_id, oks / duration / 1000, (*ctx->props)["workload"].c_str(), num_conn);
+                ctx->core_id, oks / duration / 1000, (*ctx->props)["file"].c_str(), num_conn);
 
     fprintf(stdout, "%s", output);
     fflush(stdout);
@@ -370,8 +370,8 @@ int main(const int argc, const char *argv[]) {
             std::cout << " Port: " << props["port"].c_str() << std::endl;
         } else if (sscanf(argv[i], "--workload=%s\n", s, &junk) == 1) {
             filename.assign(s);
-            props.SetProperty("workload", filename);
-            std::cout << " Workload: " << props["workload"].c_str() << std::endl;
+            props.SetProperty("file", filename);
+            std::cout << " Workload file: " << props["file"].c_str() << std::endl;
             input.open(filename);
             try {
                 props.Load(input);
