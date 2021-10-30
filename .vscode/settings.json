@@ -31,6 +31,11 @@
         "typeinfo": "cpp",
         "cerrno": "cpp",
         "cstring": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "__hash_table": "cpp",
+        "__string": "cpp",
+        "__tree": "cpp",
+        "map": "cpp",
+        "unordered_map": "cpp"
     }
 }
