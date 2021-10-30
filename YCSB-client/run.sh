@@ -43,8 +43,8 @@ max_cores=4
 # echo -n "Total test time(s): "
 # read test_time
 
-echo -n "Number of CPU cores on server side: "
-read num_server_core
+# echo -n "Number of CPU cores on server side: "
+# read num_server_core
 
 make clean && make
 
