@@ -226,6 +226,10 @@ void * RunServerThread(void * arg) {
     }
 
     db->Close();
+
+    mtcp_destroy_context(mctx);
+	pthread_exit(NULL);
+
     return NULL;
 }
 
@@ -315,7 +319,6 @@ int main(const int argc, const char *argv[]) {
 	}
 	
 	printf(" [%s] Test finished!\n", __func__);
-	mtcp_destroy_context(mctx);
 	
 	return 0;
 }

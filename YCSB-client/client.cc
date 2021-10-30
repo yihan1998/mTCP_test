@@ -323,6 +323,9 @@ void * RunClientThread(void * arg) {
     fprintf(output_file, "%s", output);
 	fclose(output_file);
 
+    mtcp_destroy_context(ctx->mctx);
+	pthread_exit(NULL);
+
     return NULL;
 }
 
@@ -415,8 +418,6 @@ int main(const int argc, const char *argv[]) {
 	}
 
 	printf(" [%s] Test finished!\n", __func__);
-	
-	mtcp_destroy_context(mctx);
 
 	return 0;
 }
