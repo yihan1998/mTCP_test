@@ -215,7 +215,7 @@ void * RunServerThread(void * arg) {
                 struct server_vars * sv = (struct server_vars *)events[i].data.ptr;
                 int ret = server.HandleReadEvent(sv);
                 if (ret <= 0) {
-                    close(sv->sockfd);
+                    mtcp_close(sv->ctx, sv->sockfd);
                     if (++num_complete == num_accept) {
                         done = 1;
                     }
