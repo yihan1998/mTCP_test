@@ -315,7 +315,7 @@ int main(const int argc, const char *argv[]) {
 	}
 	
 	printf(" [%s] Test finished!\n", __func__);
-	mtcp_destroy();
+	mtcp_destroy_context(mctx);
 	
 	return 0;
 }
