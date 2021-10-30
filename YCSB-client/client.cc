@@ -214,7 +214,7 @@ double PerformTransaction(struct thread_context * ctx, struct mtcp_epoll_event *
                     mtcp_epoll_ctl(ctx->mctx, ctx->epfd, MTCP_EPOLL_CTL_MOD, info->sockfd, &ev);
                 }
             } else {
-                printf(" >> unknown event!\n");
+                fprintf(stderr, " unknown event (%d)!\n", events[i].events);
             }
 
         }
