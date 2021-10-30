@@ -44,6 +44,7 @@ struct thread_context {
 	int                 epfd;
     int                 num_conn;
 	struct conn_info    * info;
+    utils::Properties   * props;
 };
 
 struct client_arg {

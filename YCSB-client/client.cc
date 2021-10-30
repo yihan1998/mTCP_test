@@ -223,6 +223,22 @@ double PerformTransaction(struct thread_context * ctx, struct mtcp_epoll_event *
     fprintf(stdout, " # Transaction: %llu\n", oks);
 
     duration = timer.End();
+
+    char output[256];
+
+    char output_file_name[32];
+	sprintf(output_file_name, "throughput_core_%d.txt", core);
+	FILE * output_file = fopen(output_file_name, "a+");
+
+    sprintf(output, " [core %d] # Transaction throughput : %.2f (KTPS) \t %s \t %d\n", \
+                core, oks / duration / 1000, (*ctx->props)["workload"].c_str(), num_conn);
+
+    fprintf(stdout, "%s", output);
+    fflush(stdout);
+
+    fprintf(output_file, "%s", output);
+	fclose(output_file);
+
     return duration;
 }
 
@@ -277,6 +293,8 @@ void * RunClientThread(void * arg) {
 		return NULL;
 	}
 
+    ctx->props = props;
+
     int epfd;
     struct mtcp_epoll_event * events;
 
@@ -307,21 +325,6 @@ void * RunClientThread(void * arg) {
 
     double transaction_duration = 0.0;
     transaction_duration = PerformTransaction(ctx, events, client);
-
-    char output[256];
-
-    char output_file_name[32];
-	sprintf(output_file_name, "throughput_core_%d.txt", core);
-	FILE * output_file = fopen(output_file_name, "a+");
-
-    sprintf(output, " [core %d] # Transaction throughput : %.2f (KTPS) \t %s \t %d\n", \
-                core, operation_total_ops / transaction_duration / 1000, (*props)["workload"].c_str(), num_flows);
-
-    fprintf(stdout, "%s", output);
-    fflush(stdout);
-
-    fprintf(output_file, "%s", output);
-	fclose(output_file);
 
     mtcp_destroy_context(ctx->mctx);
 	pthread_exit(NULL);
