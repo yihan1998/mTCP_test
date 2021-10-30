@@ -40,6 +40,7 @@ struct conn_info {
 };
 
 struct thread_context {
+    int                 core_id;
 	mctx_t              mctx;
 	int                 epfd;
     int                 num_conn;
