@@ -40,6 +40,10 @@ struct server_arg {
 #define MAX_CPUS		16
 #endif
 
+#define TABLE_NAME_SIZE 16
+#define KEY_SIZE        32
+#define VALUE_SIZE      32
+
 static pthread_t sv_thread[MAX_CPUS];
 static struct server_arg sv_thread_arg[MAX_CPUS];
 
@@ -59,8 +63,8 @@ class KVRequest {
         KVRequest() { }
 
         Operation op;
-        char table[16];
-        std::pair<char[100], char[100]> request;
+        char table[TABLE_NAME_SIZE];
+        std::pair<char[KEY_SIZE], char[VALUE_SIZE]> request;
 };
 
 class KVReply {
@@ -70,7 +74,7 @@ class KVReply {
 
         Operation op;
         int return_val;
-        std::pair<char[100], char[100]> result;
+        std::pair<char[KEY_SIZE], char[VALUE_SIZE]> result;
 };
 
 class Server {
@@ -160,8 +164,8 @@ inline int Server::Read(KVRequest &request, KVReply &reply) {
 
     // std::cout <<  " Read table: " <<  table.c_str() << ", key: " << key.c_str() << ", value: " <<  value.c_str() << "\n" << std::endl;
 
-    strncpy(reply.result.first, key.c_str(), 100);
-    strncpy(reply.result.second, value.c_str(), 100);
+    strncpy(reply.result.first, key.c_str(), KEY_SIZE);
+    strncpy(reply.result.second, value.c_str(), VALUE_SIZE);
 
     return ret;
 }
@@ -180,8 +184,8 @@ inline int Server::ReadModifyWrite(KVRequest &request, KVReply &reply) {
     
     reply.op = READMODIFYWRITE;
 
-    strncpy(reply.result.first, key.c_str(), 100);
-    strncpy(reply.result.second, old.c_str(), 100);
+    strncpy(reply.result.first, key.c_str(), KEY_SIZE);
+    strncpy(reply.result.second, old.c_str(), VALUE_SIZE);
 
     ret = db_.Update(table, key, value);
     reply.return_val = ret;
@@ -210,8 +214,8 @@ inline int Server::Update(KVRequest &request, KVReply &reply) {
     
     reply.op = UPDATE;
 
-    strncpy(reply.result.first, key.c_str(), 100);
-    strncpy(reply.result.second, value.c_str(), 100);
+    strncpy(reply.result.first, key.c_str(), KEY_SIZE);
+    strncpy(reply.result.second, value.c_str(), VALUE_SIZE);
 
     reply.return_val = ret;
     return ret;
@@ -226,8 +230,8 @@ inline int Server::Insert(KVRequest &request, KVReply &reply) {
     
     reply.op = INSERT;
 
-    strncpy(reply.result.first, key.c_str(), 100);
-    strncpy(reply.result.second, value.c_str(), 100);
+    strncpy(reply.result.first, key.c_str(), KEY_SIZE);
+    strncpy(reply.result.second, value.c_str(), VALUE_SIZE);
 
     reply.return_val = ret;
     return ret;

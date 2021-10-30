@@ -28,6 +28,10 @@
 
 #define BUFF_SIZE   1024
 
+#define TABLE_NAME_SIZE 16
+#define KEY_SIZE        32
+#define VALUE_SIZE      32
+
 struct conn_info {
     int     sockfd;
     int     epfd;
@@ -67,8 +71,8 @@ class KVRequest {
         KVRequest() { }
 
         Operation op;
-        char table[16];
-        std::pair<char[100], char[100]> request;
+        char table[TABLE_NAME_SIZE];
+        std::pair<char[KEY_SIZE], char[VALUE_SIZE]> request;
 };
 
 class KVReply {
@@ -78,7 +82,7 @@ class KVReply {
 
         Operation op;
         int return_val;
-        std::pair<char[100], char[100]> result;
+        std::pair<char[KEY_SIZE], char[VALUE_SIZE]> result;
 };
 
 class Client {
@@ -123,11 +127,11 @@ inline int Client::InsertRecord(KVRequest &request) {
     request.op = INSERT;
     // request.table = table;
     // request.request = std::make_pair(key, std::string());
-    strncpy(request.table, table.c_str(), 16);
+    strncpy(request.table, table.c_str(), TABLE_NAME_SIZE);
     // key.copy(request.request.first, key.size());
-    strncpy(request.request.first, key.c_str(), 100);
+    strncpy(request.request.first, key.c_str(), KEY_SIZE);
     // value.copy(request.request.second, value.size());
-    strncpy(request.request.second, value.c_str(), 100);
+    strncpy(request.request.second, value.c_str(), VALUE_SIZE);
     // std::cout <<  " Insert record to table: " << request.table << ", key: " << request.request.first << ", value: " << request.request.second << "\n" << std::endl;
     return DB::kOK;
 }
@@ -231,9 +235,9 @@ inline int Client::ReadRequest(KVRequest &request) {
     request.op = READ;
     
     std::string empty;
-    strncpy(request.table, table.c_str(), 16);
-    strncpy(request.request.first, key.c_str(), 100);
-    strncpy(request.request.second, empty.c_str(), 100);
+    strncpy(request.table, table.c_str(), TABLE_NAME_SIZE);
+    strncpy(request.request.first, key.c_str(), KEY_SIZE);
+    strncpy(request.request.second, empty.c_str(), VALUE_SIZE);
 
     // std::cout <<  " Read table: " <<  request.table << ", key: " << request.request.first << "\n" << std::endl;
 
@@ -258,9 +262,9 @@ inline int Client::ReadModifyWriteRequest(KVRequest &request) {
 
     request.op = READMODIFYWRITE;
 
-    strncpy(request.table, table.c_str(), 16);
-    strncpy(request.request.first, key.c_str(), 100);
-    strncpy(request.request.second, value.c_str(), 100);
+    strncpy(request.table, table.c_str(), TABLE_NAME_SIZE);
+    strncpy(request.request.first, key.c_str(), KEY_SIZE);
+    strncpy(request.request.second, value.c_str(), VALUE_SIZE);
     
     // std::cout <<  " ReadModifyWrite table: " << request.table << ", key: " << request.request.first << ", value: " << request.request.second << "\n" << std::endl;
     
@@ -284,9 +288,9 @@ inline int Client::ScanRequest(KVRequest &request) {
 
     request.op = SCAN;
 
-    strncpy(request.table, table.c_str(), 16);
-    strncpy(request.request.first, key.c_str(), 100);
-    strncpy(request.request.second, record_count.c_str(), 100);
+    strncpy(request.table, table.c_str(), TABLE_NAME_SIZE);
+    strncpy(request.request.first, key.c_str(), KEY_SIZE);
+    strncpy(request.request.second, record_count.c_str(), VALUE_SIZE);
 
     // std::cout <<  " Scan table: " <<  table.c_str() << ", key: " << key.c_str() << ", record len: " << len << "\n" << std::endl;
     
@@ -311,9 +315,9 @@ inline int Client::UpdateRequest(KVRequest &request) {
     
     request.op = UPDATE;
 
-    strncpy(request.table, table.c_str(), 16);
-    strncpy(request.request.first, key.c_str(), 100);
-    strncpy(request.request.second, value.c_str(), 100);
+    strncpy(request.table, table.c_str(), TABLE_NAME_SIZE);
+    strncpy(request.request.first, key.c_str(), KEY_SIZE);
+    strncpy(request.request.second, value.c_str(), VALUE_SIZE);
     
     // std::cout <<  " Update table: " <<  table.c_str() << ", key: " << key.c_str() << ", value: " << value.c_str() << "\n" << std::endl;
     
@@ -337,9 +341,9 @@ inline int Client::InsertRequest(KVRequest &request) {
     
     request.op = INSERT;
 
-    strncpy(request.table, table.c_str(), 16);
-    strncpy(request.request.first, key.c_str(), 100);
-    strncpy(request.request.second, value.c_str(), 100);
+    strncpy(request.table, table.c_str(), TABLE_NAME_SIZE);
+    strncpy(request.request.first, key.c_str(), KEY_SIZE);
+    strncpy(request.request.second, value.c_str(), VALUE_SIZE);
     
     // std::cout <<  " Insert table: " <<  table.c_str() << ", key: " << key.c_str() << ", value: " << value.c_str() << "\n" << std::endl;
     

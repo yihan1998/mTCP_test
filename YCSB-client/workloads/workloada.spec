@@ -9,6 +9,7 @@
 recordcount=100000
 operationcount=100000
 workload=com.yahoo.ycsb.workloads.CoreWorkload
+valuelength=32
 
 readproportion=0.5
 updateproportion=0.5
