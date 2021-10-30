@@ -227,7 +227,7 @@ void * RunServerThread(void * arg) {
 
     db->Close();
 
-    mtcp_destroy_context(mctx);
+    mtcp_destroy_context(ctx->mctx);
 	pthread_exit(NULL);
 
     return NULL;
