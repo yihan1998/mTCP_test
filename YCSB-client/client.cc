@@ -27,7 +27,7 @@
 #include <sys/epoll.h>
 #include <sys/timerfd.h>
 
-#define MAX_CONNECT 4100
+#define MAX_CONNECT 2100
 #define MAX_EVENTS  8192
 
 static char * conf_file = NULL;
