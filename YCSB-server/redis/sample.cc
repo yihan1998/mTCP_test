@@ -16,7 +16,7 @@ int main(int argc, const char *argv[]) {
   client.Command("HMSET Ren field1 jinglei@ren.systems field2 Jinglei");
 
   RedisDB db(host, port, false);
-  db.Init();
+  db.Init(32, 32);
   string key = "Ren";
   vector<DB::KVPair> result;
 
