@@ -16,7 +16,7 @@ make clean && make
 
 db_names=(
     # "tbb_rand"
-    "memcached_db"
+    "memcached"
 )
 
 key_length=32
