@@ -5,7 +5,7 @@ CC		= g++
 DPDK	= 1
 CCP		= 1
 CFLAGS	= -std=c++11 -g -O3 -fkeep-inline-functions -march=x86-64 -msse4.1 #-fgnu89-inline
-LDFLAGS	= -lpthread -ltbb -lhiredis
+LDFLAGS	= -lpthread -ltbb -lhiredis -lmemcached
 SUBDIRS	= core db redis
 SUBSRCS	= $(wildcard core/*.cc) $(wildcard db/*.cc)
 OBJECTS	= $(SUBSRCS:.cc=.o)
