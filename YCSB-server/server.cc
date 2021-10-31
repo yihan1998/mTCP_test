@@ -148,7 +148,7 @@ void * RunServerThread(void * arg) {
         exit(0);
     }
 
-    db->Init(stoi(props["keylength"]), stoi(props["valuelength"]));
+    db->Init(stoi((*props)["keylength"]), stoi((*props)["valuelength"]));
     ycsbc::Server server(*db);
 
     int oks = 0;
