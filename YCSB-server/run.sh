@@ -15,19 +15,23 @@ read num_cores
 make clean && make
 
 db_names=(
-    "tbb_rand"
+    # "tbb_rand"
+    "memcached_db"
 )
+
+key_length=32
+value_length=32
 
 for db_name in ${db_names[@]}; do
     
     echo "Running $db_name with $num_cores cores"
 
-    for j in $(seq 0 12); do
+    for j in $(seq 0 11); do
         total_conn=`echo "2^$j" | bc `
 
         echo "Testing $total_conn connections on $num_cores core(s) ..."
 
-        ./server    --db=$db_name --time=60 --num_cores=$num_cores
+        ./server    --db=$db_name --time=60 --num_cores=$num_cores --key_length=$key_length --value_length=$value_length
 
         wait
 

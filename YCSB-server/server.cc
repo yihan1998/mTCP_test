@@ -148,7 +148,7 @@ void * RunServerThread(void * arg) {
         exit(0);
     }
 
-    db->Init();
+    db->Init(stoi(props["keylength"]), stoi(props["valuelength"]));
     ycsbc::Server server(*db);
 
     int oks = 0;
@@ -278,7 +278,13 @@ int main(const int argc, const char *argv[]) {
         } else if (sscanf(argv[i], "--time=%s\n", s, &junk) == 1) {
             props.SetProperty("time", s);
             std::cout << " Wait time: " << props["time"].c_str() << std::endl;
-        }
+        } else if (sscanf(argv[i], "--key_length=%s\n", s, &junk) == 1) {
+            props.SetProperty("keylength", s);
+            std::cout << " Key length: " << props["keylength"].c_str() << std::endl;
+        } else if (sscanf(argv[i], "--value_length=%s\n", s, &junk) == 1) {
+            props.SetProperty("valuelength", s);
+            std::cout << " Value length: " << props["valuelength"].c_str() << std::endl;
+        } 
     }
 
 	/* initialize mtcp */

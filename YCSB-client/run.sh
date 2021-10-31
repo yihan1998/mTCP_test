@@ -51,11 +51,11 @@ make clean && make
 rm throughput_*.txt
 
 db_names=(
-    "tbb_rand"
+    "memcached_db"
 )
 
 for db_name in ${db_names[@]}; do
-    for j in $(seq 0 12); do
+    for j in $(seq 0 11); do
         total_conn=`echo "2^$j" | bc `
 
         if [ $total_conn -gt $max_cores ]
