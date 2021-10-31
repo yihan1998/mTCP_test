@@ -51,7 +51,7 @@ make clean && make
 rm throughput_*.txt
 
 db_names=(
-    "memcached_db"
+    "memcached"
 )
 
 for db_name in ${db_names[@]}; do
