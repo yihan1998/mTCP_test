@@ -162,28 +162,29 @@ inline int Client::SendRequest(KVRequest &request) {
 }
 
 inline int Client::ReceiveReply(KVReply &reply) {
-    int status = -1;
-    switch (reply.op) {
-        case READ:
-            status = ReadReply(reply);
-            break;
-        case UPDATE:
-            status = UpdateReply(reply);
-            break;
-        case INSERT:
-            status = InsertReply(reply);
-            break;
-        case SCAN:
-            status = ScanReply(reply);
-            break;
-        case READMODIFYWRITE:
-            status = ReadModifyWriteReply(reply);
-            break;
-        default:
-            throw utils::Exception("Operation request is not recognized!");
-    }
-    assert(status >= 0);
-    return (status == DB::kOK);
+    // int status = -1;
+    // switch (reply.op) {
+    //     case READ:
+    //         status = ReadReply(reply);
+    //         break;
+    //     case UPDATE:
+    //         status = UpdateReply(reply);
+    //         break;
+    //     case INSERT:
+    //         status = InsertReply(reply);
+    //         break;
+    //     case SCAN:
+    //         status = ScanReply(reply);
+    //         break;
+    //     case READMODIFYWRITE:
+    //         status = ReadModifyWriteReply(reply);
+    //         break;
+    //     default:
+    //         throw utils::Exception("Operation request is not recognized!");
+    // }
+    // assert(status >= 0);
+    // return (status == DB::kOK);
+    return DB::kOK;
 }
 
 inline int Client::HandleReadEvent(mctx_t mctx, struct conn_info * info) {
