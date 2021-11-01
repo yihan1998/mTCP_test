@@ -183,7 +183,8 @@ inline int Client::ReceiveReply(KVReply &reply) {
     //         throw utils::Exception("Operation request is not recognized!");
     // }
     // assert(status >= 0);
-    return (status == DB::kOK);
+    // return (status == DB::kOK);
+    return DB::kOK;
 }
 
 inline int Client::HandleReadEvent(mctx_t mctx, struct conn_info * info) {
