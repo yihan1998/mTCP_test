@@ -46,6 +46,21 @@ int RedisDB::Read(const std::string &table, const std::string &key, std::string 
   //   freeReplyObject(reply);
   // }
   // return DB::kOK;
+
+  int argc = 2;
+  const char * argv[argc];
+  size_t argvlen[argc];
+  int i = 0;
+  argv[i] = "HMGET"; 
+  argvlen[i] = strlen(argv[i]);
+  argv[++i] = key.c_str(); 
+  argvlen[i] = key.length();
+  assert(i == argc - 1);
+  redisReply *reply = (redisReply *)redisCommandArgv(redis_.context(), argc, argv, argvlen);
+  if (!reply) return DB::kOK;
+  assert(reply->type == REDIS_REPLY_ARRAY);
+  value = std::string(reply->element[0]->str);
+  freeReplyObject(reply);
 }
 
 int RedisDB::Update(const std::string &table, const std::string &key,

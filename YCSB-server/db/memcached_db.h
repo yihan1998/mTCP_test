@@ -85,15 +85,15 @@ public:
         const char * update_key = CopyString(key);
         const char * update_value = CopyString(value);
 
-        // memcached_return_t rc = memcached_set(memc_, update_key, strlen(update_key), update_value, strlen(update_value), (time_t)0, (uint32_t)0);
+        memcached_return_t rc = memcached_set(memc_, update_key, strlen(update_key), update_value, strlen(update_value), (time_t)0, (uint32_t)0);
         // if (rc == MEMCACHED_SUCCESS) {
         //     std::cout << "Update " << table << ' ' << key << " [ " << value << ']' << std::endl;
         // } else {
         //     fprintf(stderr,"Couldn't update key: %s\n", memcached_strerror(memc_, rc));
         // }
-        // if (rc != MEMCACHED_SUCCESS) {
-        //     fprintf(stderr,"Couldn't update key: %s\n", memcached_strerror(memc_, rc));
-        // }
+        if (rc != MEMCACHED_SUCCESS) {
+            fprintf(stderr,"Couldn't update key: %s\n", memcached_strerror(memc_, rc));
+        }
         
         // DeleteString(update_key);
         // DeleteString(update_value);

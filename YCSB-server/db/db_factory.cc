@@ -26,9 +26,11 @@ DB* DBFactory::CreateDB(utils::Properties &props) {
   } else if (props["dbname"] == "lock_stl") {
     return new LockStlDB;
   } else if (props["dbname"] == "redis") {
-    int port = stoi(props["port"]);
-    int slaves = stoi(props["slaves"]);
-    return new RedisDB(props["host"].c_str(), port, slaves);
+    // int port = stoi(props["port"]);
+    // int slaves = stoi(props["slaves"]);
+    const char * host = "127.0.0.1";
+    int port = 6379;
+    return new RedisDB(host.c_str(), port, false);
   } else if (props["dbname"] == "tbb_rand") {
     return new TbbRandDB;
   } else if (props["dbname"] == "tbb_scan") {
