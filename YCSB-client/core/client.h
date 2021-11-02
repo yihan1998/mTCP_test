@@ -200,7 +200,7 @@ inline int Client::HandleReadEvent(mctx_t mctx, struct conn_info * info) {
         return len;
     }
     
-    int ret = ReceiveReply(reply);
+    // int ret = ReceiveReply(reply);
 
     return len;
 }
