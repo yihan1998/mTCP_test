@@ -30,7 +30,7 @@ DB* DBFactory::CreateDB(utils::Properties &props) {
     // int slaves = stoi(props["slaves"]);
     const char * host = "127.0.0.1";
     int port = 6379;
-    return new RedisDB(host.c_str(), port, false);
+    return new RedisDB(host, port, false);
   } else if (props["dbname"] == "tbb_rand") {
     return new TbbRandDB;
   } else if (props["dbname"] == "tbb_scan") {
