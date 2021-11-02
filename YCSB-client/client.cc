@@ -113,7 +113,7 @@ double LoadRecord(struct thread_context * ctx, struct mtcp_epoll_event * events,
                 int len = mtcp_read(ctx->mctx, info->sockfd, (char *)&reply, sizeof(reply));
 
                 if (len > 0) {
-                    client.ReceiveReply(reply);
+                    // client.ReceiveReply(reply);
 
                     /* Increase actual ops */
                     if(++info->actual_record_ops == info->total_record_ops) {

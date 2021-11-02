@@ -136,7 +136,7 @@ inline int Server::HandleReadEvent(struct server_vars * sv) {
     }
 
     KVReply reply;
-    int ret = ReceiveRequest(request, reply);
+    // int ret = ReceiveRequest(request, reply);
 
     // char send_buff[BUFF_SIZE];
     // sprintf(send_buff, "Hello from server(%d)", counter++);
