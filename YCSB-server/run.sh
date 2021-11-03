@@ -27,6 +27,7 @@ for db_name in ${db_names[@]}; do
     echo "Running $db_name with $num_cores cores"
 
     for j in $(seq 0 11); do
+        ifconfig dpdk0 10.0.0.1 netmask 255.255.255.0
         total_conn=`echo "2^$j" | bc `
 
         echo "Testing $total_conn connections on $num_cores core(s) ..."

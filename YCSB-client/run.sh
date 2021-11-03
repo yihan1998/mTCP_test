@@ -56,6 +56,7 @@ db_names=(
 
 for db_name in ${db_names[@]}; do
     for j in $(seq 0 11); do
+        ifconfig dpdk0 10.0.0.2 netmask 255.255.255.0
         total_conn=`echo "2^$j" | bc `
 
         if [ $total_conn -gt $max_cores ]
