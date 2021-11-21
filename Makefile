@@ -1,4 +1,4 @@
-RTE_SDK=/home/yihan/mtcp/dpdk
+RTE_SDK=/home/yihan/nus-sys/cygnus/dpdkåå
 RTE_TARGET=x86_64-native-linuxapp-gcc
 
 TARGETS = server client
