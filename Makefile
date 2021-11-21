@@ -83,11 +83,11 @@ ifeq ($(RTT),1)
 CFLAGS += -DEVAL_RTT
 endif
 
-server: server.cc 
-	$(CC) $(CFLAGS) ${MTCP_FLD}/lib/libmtcp.a $^ $(INC) ${LIBS} ${UTIL_OBJ} -o $@ $(LDFLAGS) 
+server: server.cc ${MTCP_FLD}/lib/libmtcp.a
+	$(CC) $(CFLAGS) $^ $(INC) ${LIBS} ${UTIL_OBJ} -o $@ $(LDFLAGS) 
 
-client: client.cc 
-	$(CC) $(CFLAGS) ${MTCP_FLD}/lib/libmtcp.a $^ $(INC) ${LIBS} ${UTIL_OBJ} -o $@ $(LDFLAGS) 
+client: client.cc ${MTCP_FLD}/lib/libmtcp.a
+	$(CC) $(CFLAGS) $^ $(INC) ${LIBS} ${UTIL_OBJ} -o $@ $(LDFLAGS) 
 
 clean:
 		rm -f *.o $(TARGETS)
